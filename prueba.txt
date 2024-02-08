@@ -1,1 +1,6 @@
+<<<<<<< HEAD
 cambio prueba
+=======
+aaaaaaaaaaa
+AAAAAAAAAAA
+>>>>>>> 915feb43a13884fbddd7f348014c6808105c494a
