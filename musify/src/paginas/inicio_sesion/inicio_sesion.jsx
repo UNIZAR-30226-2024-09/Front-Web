@@ -46,7 +46,7 @@ function InicioSesion() {
                     </Button>
                 </div>
                 <div className="text-center mt-2">
-                    <p style={{ color: 'white', marginBottom: '10px' }}>¿No tienes cuenta? <a href="/suscribirse" style={{ color: '#54b2e7' }}>Suscríbete a Musify</a></p>
+                    <p style={{ color: 'white', marginBottom: '10px' }}>¿No tienes cuenta? <a href="/registro_correo" style={{ color: '#54b2e7' }}>Suscríbete a Musify</a></p>
                 </div>
                 {/* Otro contenido que desees incluir en la tarjeta */}
             </div>
