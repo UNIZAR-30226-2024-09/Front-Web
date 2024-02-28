@@ -11,7 +11,7 @@ function InicioSesion() {
         // Aquí puedes manejar la lógica para iniciar sesión
         console.log("Iniciando sesión...");
     };
-
+    
     return (
         <>
             <Navbar bg="black" variant="black" style={{ width: '1600px', height: '100px', margin: '0 auto' }}>

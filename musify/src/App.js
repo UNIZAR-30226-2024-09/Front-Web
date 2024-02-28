@@ -1,5 +1,6 @@
 import React from 'react';
 import InicioSesion from "./paginas/inicio_sesion/inicio_sesion";
+import Base from "./componentes/base";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 export default class App extends React.Component {
@@ -8,6 +9,7 @@ export default class App extends React.Component {
       <BrowserRouter>
         <Routes>
           <Route path="/inicio_sesion" element={<InicioSesion />} />
+          <Route path="/base" element={<Base />} />
         </Routes>
       </BrowserRouter>
     );  
