@@ -2,7 +2,6 @@ import React from 'react';
 import { Navbar, Image, Button } from 'react-bootstrap';
 import { FaGoogle } from 'react-icons/fa';
 import './registro_correo.css'; // Si necesitas estilos adicionales que no están cubiertos por Bootstrap
-import logo from '../../imagenes/logo-musify.png';
 
 function RegistroCorreo() {
     document.body.style.backgroundColor = "rgb(28,28,30)";
@@ -16,7 +15,7 @@ function RegistroCorreo() {
         <>
             <Navbar bg="black" variant="black" style={{ width: '1600px', height: '100px', margin: '0 auto' }}>
                 <Navbar.Brand>
-                    <Image src={logo} alt="Logo" style={{ marginRight: '10px', marginTop: '10px', width: '150px', height: '100%' }} />
+                    <Image src="/imagenes/prueba.jpg"style={{ marginRight: '10px', marginTop: '10px', width: '150px', height: '100%' }} />
                 </Navbar.Brand>
             </Navbar>
             <div className="registroCorreo-card">
