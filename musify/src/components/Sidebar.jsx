@@ -20,12 +20,12 @@ export default function Sidebar() {
                     <span>Buscar</span>
                 </li>
                 <li>
-                    <IoLibrary />
-                    <span>Biblioteca</span>
-                </li>
-                <li>
                     <IoChatbubblesOutline />
                     <span>Chats Grupales</span>
+                </li>
+                <li>
+                    <IoLibrary />
+                    <span>Biblioteca</span>
                 </li>
             </ul>
         </div>

@@ -1,7 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 
-
 export default function CurrentTrack() {
     return <Container>
        <div className="track">
@@ -15,7 +14,6 @@ export default function CurrentTrack() {
        </div>
     </Container>
 }
-
 
 const Container = styled.div`
     .track{
