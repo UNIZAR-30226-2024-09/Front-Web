@@ -3,7 +3,6 @@ import styled from "styled-components";
 import { FaUser, FaLock} from "react-icons/fa";
 import "./LoginForm.css"
 import { FaGoogle } from 'react-icons/fa';
-import { Image } from 'react-bootstrap';
 
 export default function LoginForm() {
     const handleGoogleSignIn = () => {
