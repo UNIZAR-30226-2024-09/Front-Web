@@ -1,20 +1,18 @@
 import React from "react";
 import styled from "styled-components";
 import Sidebar from "./components/Sidebar";
-import Navbar from "./components/Navbar";
-import Body from "./components/Body";
 import Footer from "./components/Footer";
+import Body_inicio from "./components/Body_inicio"
 
 
-export default function Musify(){
+export default function Musify_inicio(){
     return (
     <Container>
         <div className="musify__body">
             <Sidebar />
             <div className="body">
-            <Navbar />
                 <div className="body__contents">
-                <Body />
+                    <Body_inicio />
                 </div>
             </div>
         </div>
@@ -33,7 +31,7 @@ const Container = styled.div`
     grid-template-rows: 85vh 15vh;
     .musify__body {
         display: grid;
-        grid-template-columns: 23vw 77vw;
+        grid-template-columns: 15vw 85vw;
         height: 100%;
         width: 100%;
         background: linear-gradient(transparent, rgba(0,0,0,1));
