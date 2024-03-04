@@ -15,6 +15,7 @@ export default function Playercontrols() {
     const [isPlaying, setIsPlaying] = useState(false); // Estado inicial: no se está reproduciendo
     const [currentTime, setCurrentTime] = useState(0);
 
+
     const togglePlayPause = () => {
         setIsPlaying(!isPlaying); // Alternar entre verdadero y falso
     };
