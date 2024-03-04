@@ -52,9 +52,9 @@ const Logo = styled.img`
     position: absolute;
     top: 0;
     left: 0;
-    height: 200px; /* O el tamaño que prefieras */
-    margin-left: 15px; /* Añade un margen si quieres más espacio del borde */
-    margin-top: 0px; /* Añade un margen si quieres más espacio del borde */
+    height: 200px;
+    margin-left: 15px;
+    margin-top: 0px;
 `;
 
 const Container = styled.div`
@@ -68,7 +68,7 @@ const Container = styled.div`
     flex-direction: column;
     align-items: center;
     margin-top: 80px;
-    background: rgba(0, 0, 0, 0.25); /* Fondo negro con 25% de opacidad */
+    background: rgba(0, 0, 0, 0.25);
 }
 .wrapper h1{
     font-size: 36px;
