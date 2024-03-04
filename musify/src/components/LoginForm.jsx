@@ -3,15 +3,18 @@ import styled from "styled-components";
 import { FaUser, FaLock} from "react-icons/fa";
 import "./LoginForm.css"
 import { FaGoogle } from 'react-icons/fa';
-import NavbarLogin from "./NavbarLogin";
-
+import { Image } from 'react-bootstrap';
 
 export default function LoginForm() {
     const handleGoogleSignIn = () => {
         console.log("Inicio de sesión con Google");
     };
-    return <Container>
-        <NavbarLogin />
+    return (
+        <>
+            <TopBar>
+                <Logo src="/imagenes/logo-musify.png" alt="Logo de Musify" />
+            </TopBar>
+         <Container>
         <div className='wrapper'>
             <form action="">
                 <h1>Inicie Sesión en Musify</h1>
@@ -43,7 +46,25 @@ export default function LoginForm() {
             </form>
         </div>
     </Container>
+    </>
+    );
 }
+
+const TopBar = styled.div`
+    width: 100%;
+    height: 85px;
+    background-color: #000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;`;
+
+const Logo = styled.img`
+    margin-top: 15px;
+    height: 150px;
+`;
 
 const Container = styled.div`
 .wrapper {
