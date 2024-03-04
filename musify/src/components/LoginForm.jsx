@@ -141,6 +141,13 @@ const Container = styled.div`
     background-size: cover;
 }
 
+.google-icon {
+    color: #54b2e7;
+    vertical-align: middle;
+    margin-right: 8px; /* Agregar un pequeño margen a la derecha del icono */
+    margin-bottom: 4px;
+}
+
 .wrapper .register-link {
     font-size: 14.5 px;
     text-align: center;
