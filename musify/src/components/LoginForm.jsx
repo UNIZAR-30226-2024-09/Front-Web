@@ -5,7 +5,7 @@ import "./LoginForm.css"
 
 export default function LoginForm() {
     return <Container>
-        <div className='wrapper'>
+        <div className='wrappe'>
             <form action="">
                 <h1>Inicie Sesión en Musify</h1>
                 <div className="input-box">
