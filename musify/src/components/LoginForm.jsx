@@ -11,9 +11,7 @@ export default function LoginForm() {
     };
     return (
         <>
-            <TopBar>
-                <Logo src="/imagenes/logo-musify.png" alt="Logo de Musify" />
-            </TopBar>
+        <Logo src="/imagenes/logo-musify.png" alt="Logo de Musify" />
          <Container>
         <div className='wrapper'>
             <form action="">
@@ -50,27 +48,19 @@ export default function LoginForm() {
     );
 }
 
-const TopBar = styled.div`
-    width: 100%;
-    height: 85px;
-    background-color: #000;
-    position: fixed;
+const Logo = styled.img`
+    position: absolute;
     top: 0;
     left: 0;
-    z-index: 1000;
-    display: flex;
-    align-items: center;`;
-
-const Logo = styled.img`
-    margin-top: 15px;
-    height: 150px;
+    height: 200px; /* O el tamaño que prefieras */
+    margin-left: 15px; /* Añade un margen si quieres más espacio del borde */
+    margin-top: 0px; /* Añade un margen si quieres más espacio del borde */
 `;
 
 const Container = styled.div`
 .wrapper {
     width: 800px;
     height: 550px;
-    background: #000000;
     color: #fff;
     border-radius: 40px;
     padding: 30px 40px;
@@ -78,6 +68,7 @@ const Container = styled.div`
     flex-direction: column;
     align-items: center;
     margin-top: 80px;
+    background: rgba(0, 0, 0, 0.25); /* Fondo negro con 25% de opacidad */
 }
 .wrapper h1{
     font-size: 36px;
@@ -158,7 +149,7 @@ const Container = styled.div`
 }
 
 .wrapper .google-signin-button {
-    background: #000;
+    background: transparent;
     color: #fff;
     display: flex;
     justify-content: center;
