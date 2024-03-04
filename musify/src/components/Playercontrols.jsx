@@ -8,21 +8,24 @@ import {
 import { CgPlayTrackNext, CgPlayTrackPrev } from "react-icons/cg" ;
 import { FiRepeat } from "react-icons/fi";
 import { ProgressBar } from "react-bootstrap";
+import Progress from "./Progress";
 
 
 export default function Playercontrols() {
     const [isPlaying, setIsPlaying] = useState(false); // Estado inicial: no se está reproduciendo
-    const [progress, setProgress] = useState(0); // Estado inicial de la barra de progreso
+    const [currentTime, setCurrentTime] = useState(0);
 
     const togglePlayPause = () => {
         setIsPlaying(!isPlaying); // Alternar entre verdadero y falso
     };
 
+    //const currentTime = "00:00"; // Valor de ejemplo
+    const duration = "04:30"; // Valor de ejemplo
+
     // Función para actualizar la barra de progreso
-    const handleProgressChange = (e) => {
-        const newProgress = parseFloat(e.target.value);
-        setProgress(newProgress);
-    };
+    /*const handleTimeUpdate = (e) => {
+        setCurrentTime(newProgress);
+    };*/
 
     return <Container>
         <div className="shuffle">
@@ -40,12 +43,8 @@ export default function Playercontrols() {
         <div className="repeat">
             <FiRepeat />
         </div>
-        <div className="progress">
-            <ProgressBar
-                now={progress}
-                label={`${progress}%`}
-                onChange={handleProgressChange}
-            />
+        <div className="progress-bar">
+            <Progress />
         </div>
     </Container>
 }
@@ -72,12 +71,13 @@ const Container = styled.div`
         font-size: 2rem;
    }
 
-   .progress {
-        position: center;
+   .progress-bar {
+        margin: 0;
+        position: absolute;
         left: 50%;
         transform: translateX(-50%);
-        bottom: 100%;
-        width: 80%;
+        bottom: 10%;
+        width: 45%; /* Tamaño de la barra de progreso */
         z-index: 1;
-   }
+    }
 `;

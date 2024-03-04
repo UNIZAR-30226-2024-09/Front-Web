@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navbar, Image, Button } from 'react-bootstrap';
 import { FaGoogle } from 'react-icons/fa';
-//import './inicio_sesion.css'; // Si necesitas estilos adicionales que no están cubiertos por Bootstrap;
+import './inicio_sesion.css'; // Si necesitas estilos adicionales que no están cubiertos por Bootstrap;
 import LoginForm from '../../components/LoginForm';
 
 function InicioSesion() {
