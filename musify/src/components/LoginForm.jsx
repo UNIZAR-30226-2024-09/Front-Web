@@ -2,10 +2,15 @@ import React from "react";
 import styled from "styled-components";
 import { FaUser, FaLock} from "react-icons/fa";
 import "./LoginForm.css"
+import { FaGoogle } from 'react-icons/fa';
+
 
 export default function LoginForm() {
+    const handleGoogleSignIn = () => {
+        console.log("Inicio de sesión con Google");
+    };
     return <Container>
-        <div className='wrappe'>
+        <div className='wrapper'>
             <form action="">
                 <h1>Inicie Sesión en Musify</h1>
                 <div className="input-box">
@@ -23,6 +28,11 @@ export default function LoginForm() {
                 </div>
 
                 <button type="submit">Iniciar Sesion</button>
+                <button type="button" onClick={handleGoogleSignIn} className="google-signin-button">
+                    <FaGoogle className="google-icon" />
+                    Continuar con Google
+                </button>
+
                 <div className="register-link">
                     <p>¿No tienes cuenta? <a href="#">Regístrate</a></p>
                 </div>
@@ -97,18 +107,38 @@ const Container = styled.div`
     text-decoration: underline;
 }
 
-.wrapper button {
+.wrapper button, .wrapper .google-signin-button {
     width: 100%;
     height: 45px;
-    background: #fff;
     border: none;
     outline: none;
     border-radius: 40px;
-    box-shadow: 0 0 10px rgba(0,0,0, .1);
     cursor: pointer;
     font-size: 16px;
-    color: #333;
     font-weight: 700;
+    margin: 10px 0; /* Añadido para asegurar espacio alrededor de los botones */
+}
+
+.wrapper button {
+    background: #fff;
+    color: #333;
+    box-shadow: 0 0 10px rgba(0,0,0, .1);
+}
+
+.wrapper .google-signin-button {
+    background: #DB4437;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.wrapper .google-signin-button::before 
+    display: inline-block;{
+    height: 24px;
+    width: 24px;
+    background-size: cover;
 }
 
 .wrapper .register-link {
