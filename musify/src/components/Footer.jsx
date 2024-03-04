@@ -3,6 +3,7 @@ import styled from "styled-components";
 import CurrentTrack from "./CurrentTrack"
 import PlayerControls from "./Playercontrols";
 import Volume from "./Volume";
+import { ProgressBar } from "react-bootstrap";
 
 export default function Footer() {
     return <Container>

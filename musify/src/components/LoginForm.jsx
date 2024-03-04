@@ -36,7 +36,7 @@ const Container = styled.div`
     width: 420px;
     background: #000000;
     color: #fff;
-    border-radisu: 10px;
+    border-radius: 10px;
     padding: 30px 40px;
 }
 .wrapper h1{
