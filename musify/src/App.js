@@ -1,6 +1,5 @@
 import React from 'react';
-import InicioSesion from "./paginas/inicio_sesion/inicio_sesion";
-import RegistroCorreo from "./paginas/registro_correo/registro_correo";
+import RegistroCorreo from "./components/register_1";
 import RegistroClave from "./paginas/registro_clave/registro_clave";
 import RegistroInfo from "./paginas/registro_info/registro_info";
 import LoginForm from './components/LoginForm';
@@ -13,7 +12,6 @@ export default class App extends React.Component {
     return (
       <BrowserRouter>
         <Routes>
-          <Route path="/inicio_sesion" element={<InicioSesion />} />
           <Route path="/registro_correo" element={<RegistroCorreo />} />
           <Route path="/registro_clave" element={<RegistroClave />} />
           <Route path="/registro_info" element={<RegistroInfo />} />
