@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { FaUser, FaLock} from "react-icons/fa";
+import { FaUser, FaLock } from "react-icons/fa";
 import "./LoginForm.css"
 import { FaGoogle } from 'react-icons/fa';
 

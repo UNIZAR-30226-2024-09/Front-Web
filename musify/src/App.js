@@ -1,21 +1,21 @@
 import React from 'react';
-import RegistroCorreo from "./components/register_1";
-import Chat from "./MusifyChat";
-import RegistroClave from "./paginas/registro_clave/registro_clave";
-import RegistroInfo from "./paginas/registro_info/registro_info";
 import LoginForm from './components/LoginForm';
+import RegisterMail from "./components/register_1";
+import RegisterPasswd from "./components/register_2";
+import RegisterInfo from "./components/register_3";
+import Chat from "./MusifyChat";
 import PantallaInicio from "./Musify_inicio";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Musify from "./Musify"
+import Musify from "./Musify";
 
 export default class App extends React.Component {
   render() {
     return (
       <BrowserRouter>
         <Routes>
-          <Route path="/registro_correo" element={<RegistroCorreo />} />
-          <Route path="/registro_clave" element={<RegistroClave />} />
-          <Route path="/registro_info" element={<RegistroInfo />} />
+          <Route path="/register_1" element={<RegisterMail />} />
+          <Route path="/register_2" element={<RegisterPasswd />} />
+          <Route path="/register_3" element={<RegisterInfo />} />
           <Route path="/musify" element={<Musify />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/inicio" element={<PantallaInicio />} />
