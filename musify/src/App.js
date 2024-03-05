@@ -1,5 +1,6 @@
 import React from 'react';
 import RegistroCorreo from "./components/register_1";
+import Chat from "./MusifyChat";
 import RegistroClave from "./paginas/registro_clave/registro_clave";
 import RegistroInfo from "./paginas/registro_info/registro_info";
 import LoginForm from './components/LoginForm';
@@ -18,6 +19,7 @@ export default class App extends React.Component {
           <Route path="/musify" element={<Musify />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/inicio" element={<PantallaInicio />} />
+          <Route path="/chat" element={<Chat />} />
         </Routes>
       </BrowserRouter>
     );  

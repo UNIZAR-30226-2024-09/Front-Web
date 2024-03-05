@@ -1,4 +1,5 @@
-import React, { useRef } from "react";
+import { useRef } from 'react';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import styled from "styled-components";
 
 const canciones = [
@@ -120,7 +121,9 @@ const SongRow = ({ canciones }) => {
 
     return (
         <RowContainer>
-            <ArrowButton onClick={() => scroll('left')}>{'<'}</ArrowButton>
+            <ArrowButton onClick={() => scroll('left')}>
+                <FaChevronLeft /> {/* Actualizado para usar ícono */}
+            </ArrowButton>
             <ImagesContainer ref={scrollRef}>
                 {canciones.map((cancion) => (
                     <ImageBox key={cancion.id}>
@@ -128,10 +131,13 @@ const SongRow = ({ canciones }) => {
                     </ImageBox>
                 ))}
             </ImagesContainer>
-            <ArrowButton onClick={() => scroll('right')}>{'>'}</ArrowButton>
+            <ArrowButton onClick={() => scroll('right')}>
+                <FaChevronRight /> {/* Actualizado para usar ícono */}
+            </ArrowButton>
         </RowContainer>
     );
 };
+
 
 const RowContainer = styled.div`
     display: flex;

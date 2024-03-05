@@ -5,7 +5,7 @@ export default function CurrentTrack() {
     return <Container>
        <div className="track">
         <div className="track__image">
-            <img src="/imagenes/prueba.jpg" style={{ width: "50px", height: "auto" }}/>
+            <img src="/imagenes/prueba.jpg" style={{ width: "70px", height: "auto" ,}}/>
         </div>
         <div className="track__info">
             <h4>Outside</h4>
@@ -26,9 +26,14 @@ const Container = styled.div`
             gap: 0.3rem;
             h4 {
                 color: white;
+                font-size: 15x;
+                margin-bottom: 0px;
+                margin-top: 20px;
             }
             h6{
                 color: #b3b3b3;
+                font-size: 10px;
+                margin-bottom: 50px;
             }
         }
     }

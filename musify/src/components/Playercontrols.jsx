@@ -7,7 +7,6 @@ import {
 } from "react-icons/bs";
 import { CgPlayTrackNext, CgPlayTrackPrev } from "react-icons/cg" ;
 import { FiRepeat } from "react-icons/fi";
-import { ProgressBar } from "react-bootstrap";
 import Progress from "./Progress";
 
 
@@ -56,6 +55,11 @@ const Container = styled.div`
    align-items: center;
    justify-content: center;
    gap: 2rem;
+   position: relative;
+   width: 100%;
+   height: 100px;
+   padding-bottom: 25px; 
+
    svg {
     color: #b3b3b3;
     transition: 0.2s ease-in-out;
@@ -77,8 +81,8 @@ const Container = styled.div`
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
-        bottom: 10%;
-        width: 45%; /* Tamaño de la barra de progreso */
+        bottom: 0px;
+        width: 80%;
         z-index: 1;
     }
 `;

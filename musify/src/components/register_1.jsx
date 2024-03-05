@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { FaUser, FaLock} from "react-icons/fa";
 import "./LoginForm.css"
 import { FaGoogle } from 'react-icons/fa';
+import "./scrollbar.css"
 
 export default function register_1() {
     const handleGoogleSignIn = () => {
