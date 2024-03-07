@@ -3,6 +3,8 @@ import LoginForm from './components/LoginForm';
 import RegisterMail from "./components/register_1";
 import RegisterPasswd from "./components/register_2";
 import RegisterInfo from "./components/register_3";
+import Asistencia from "./components/asistencia";
+import Busqueda from "./Musify_busqueda";
 import Chat from "./MusifyChat";
 import PantallaInicio from "./Musify_inicio";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
@@ -20,6 +22,8 @@ export default class App extends React.Component {
           <Route path="/login" element={<LoginForm />} />
           <Route path="/inicio" element={<PantallaInicio />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/asistencia" element={<Asistencia />} />
+          <Route path="/busqueda" element={<Busqueda />} />
         </Routes>
       </BrowserRouter>
     );  

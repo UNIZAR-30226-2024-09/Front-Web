@@ -16,6 +16,10 @@ export default function RegisterPasswd() {
                     <input type="password" placeholder="Contraseña" required />
                     <FaLock className="icon" />
                 </div>
+                <div className="input-box">
+                    <input type="password" placeholder="Confirmar Contraseña" required />
+                    <FaLock className="icon" />
+                </div>
                 <button type="submit">Siguiente</button>
             </form>
         </div>
