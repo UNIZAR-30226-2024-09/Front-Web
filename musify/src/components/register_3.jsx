@@ -1,11 +1,31 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { FaUser } from "react-icons/fa";
 import { MdCalendarMonth } from "react-icons/md";
 import "./LoginForm.css"
 import "./scrollbar.css"
+import { useNavigate } from 'react-router-dom'
 
 export default function RegisterInfo() {
+    const navigate = useNavigate();
+
+    const [name, setName] = useState('');
+    const [date, setDate] = useState('');
+    const [infoValid, setInfoValid] = useState(false);
+
+    useEffect(() => {
+        // Aquí, verifica si todos los campos han sido rellenados
+        if (name.trim() !== '' && date.trim() !== '') {
+          setInfoValid(true);
+        } else {
+          setInfoValid(false);
+        }
+    }, [name, date]);
+
+    const handleClick = () =>{
+        if(infoValid) {navigate('/login');}
+    }
+
     return (
         <>
         <Logo src="/imagenes/logo-musify.png" alt="Logo de Musify" />
@@ -14,18 +34,26 @@ export default function RegisterInfo() {
             <form action="">
                 <h1>Cuéntanos sobre ti</h1>
                 <div className="input-box">
-                    <input type="text" placeholder="Nombre" required />
+                    <input 
+                        type="text" 
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Nombre" required />
                     <FaUser className="icon"/>
                 </div>
                 <div className="input-box">
-                    <input type="text" placeholder="Fecha de nacimiento" required />
+                    <input 
+                        type="text" 
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        placeholder="Fecha de nacimiento" required />
                     <MdCalendarMonth className="icon"/>
                 </div>
                 <div className="text-right mt-4">
                     <p style={{ color: 'white', marginBottom: '10px' }}>Género</p>
                 </div>
                 <p><input type="radio" name="sexo" value="h" /> Hombre <input type="radio" name="sexo" value="m" /> Mujer <input type="radio" name="sexo" value="o" /> Otro <input type="radio" name="sexo" value="p" /> Prefiero no decirlo</p>
-                <button type="submit">Siguiente</button>
+                <button type="button" onClick={handleClick} disabled={!infoValid}>Siguiente</button>
             </form>
         </div>
     </Container>

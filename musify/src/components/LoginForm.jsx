@@ -1,13 +1,37 @@
-import React from "react";
+import React, { useState, useEffect }  from "react";
 import styled from "styled-components";
 import { FaUser, FaLock } from "react-icons/fa";
 import "./LoginForm.css"
 import { FaGoogle } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
 
 export default function LoginForm() {
     const handleGoogleSignIn = () => {
         console.log("Inicio de sesión con Google");
     };
+
+    const navigate = useNavigate();
+
+    const [user, setUser] = useState('');
+    const [passwd, setPasswd] = useState('');
+    const [inicioValido, setInicioValido] = useState(false);
+
+    useEffect(() => {
+        // Aquí, verifica si todos los campos han sido rellenados
+        if (user.trim() !== '' && passwd.trim() !== '') {
+          setInicioValido(true);
+        } else {
+          setInicioValido(false);
+        }
+    }, [user, passwd]);
+
+    const handleClick = () =>{
+        if(inicioValido) {navigate('/inicio');}
+    } 
+
+
+
     return (
         <>
         <Logo src="/imagenes/logo-musify.png" alt="Logo de Musify" />
@@ -22,11 +46,19 @@ export default function LoginForm() {
                 <div className="separator"></div>
 
                 <div className="input-box">
-                    <input type="text" placeholder="Nombre de usuario o correo electrónico" required />
+                    <input 
+                        type="text" 
+                        value={user}
+                        onChange={(e) => setUser(e.target.value)}
+                        placeholder="Nombre de usuario o correo electrónico" required />
                     <FaUser className="icon"/>
                 </div>
                 <div className="input-box">
-                    <input type="password" placeholder="Contraseña" required />
+                    <input 
+                        type="password" 
+                        value={passwd}
+                        onChange={(e)=>setPasswd(e.target.value)}
+                        placeholder="Contraseña" required />
                     <FaLock className="icon" />
                 </div>
 
@@ -35,10 +67,10 @@ export default function LoginForm() {
                     <a href="#">¿Has olvidado tú contraseña?</a>
                 </div>
 
-                <button type="submit">Iniciar Sesion</button>
+                <button type="button" onClick={handleClick} disabled={!inicioValido}>Iniciar Sesion</button>
                 <div className="separator"></div>
                 <div className="register-link">
-                    <p>¿No tienes cuenta? <a href="#">Regístrate</a></p>
+                    <p>¿No tienes cuenta? <Link to="/register_1">Regístrate</Link></p>
                 </div>
             </form>
         </div>
