@@ -7,6 +7,7 @@ import Asistencia from "./components/asistencia";
 import Busqueda from "./Musify_busqueda";
 import Chat from "./MusifyChat";
 import PantallaInicio from "./Musify_inicio";
+import Preguntas from "./components/Preguntas";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Musify from "./Musify";
 
@@ -24,6 +25,7 @@ export default class App extends React.Component {
           <Route path="/chat" element={<Chat />} />
           <Route path="/asistencia" element={<Asistencia />} />
           <Route path="/busqueda" element={<Busqueda />} />
+          <Route path="/faq" element={<Preguntas />} />
         </Routes>
       </BrowserRouter>
     );  
