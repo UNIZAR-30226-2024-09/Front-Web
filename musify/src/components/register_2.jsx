@@ -1,10 +1,30 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { FaLock } from "react-icons/fa";
 import "./LoginForm.css"
 import "./scrollbar.css"
+import { useNavigate } from 'react-router-dom'
 
 export default function RegisterPasswd() {
+    const navigate = useNavigate();
+    
+    const [passwd, setPasswd] = useState('');
+    const [passwd2, setPasswd2] = useState('');
+    const [passwdValid, setPasswdValid] = useState(false);
+
+    useEffect(() => {
+        // Aquí, verifica si todos los campos han sido rellenados
+        if (passwd.trim() !== '' && passwd2.trim() !== '' && passwd == passwd2) {
+          setPasswdValid(true);
+        } else {
+          setPasswdValid(false);
+        }
+    }, [passwd, passwd2]);
+
+    const handleClick = () =>{
+        if(passwdValid) {navigate('/register_3');}
+    }
+
     return (
         <>
         <Logo src="/imagenes/logo-musify.png" alt="Logo de Musify" />
@@ -13,14 +33,22 @@ export default function RegisterPasswd() {
             <form action="">
                 <h1>Crea una contraseña</h1>
                 <div className="input-box">
-                    <input type="password" placeholder="Contraseña" required />
+                    <input 
+                        type="password" 
+                        value={passwd}
+                        onChange={e=>setPasswd(e.target.value)}
+                        placeholder="Contraseña" required />
                     <FaLock className="icon" />
                 </div>
                 <div className="input-box">
-                    <input type="password" placeholder="Confirmar Contraseña" required />
+                    <input 
+                        type="password" 
+                        value={passwd2}
+                        onChange={e=>setPasswd2(e.target.value)}
+                        placeholder="Confirmar Contraseña" required />
                     <FaLock className="icon" />
                 </div>
-                <button type="submit">Siguiente</button>
+                <button type="button" onClick={handleClick} disabled={!passwdValid}>Siguiente</button>
             </form>
         </div>
     </Container>

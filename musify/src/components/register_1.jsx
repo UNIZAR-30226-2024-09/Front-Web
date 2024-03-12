@@ -1,14 +1,34 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { FaUser } from "react-icons/fa";
 import "./LoginForm.css"
 import { FaGoogle } from 'react-icons/fa';
 import "./scrollbar.css"
+import { useNavigate } from 'react-router-dom'
 
 export default function RegisterMail() {
     const handleGoogleSignIn = () => {
         console.log("Inicio de sesión con Google");
     };
+
+    const navigate = useNavigate();
+
+    const [email, setEmail] = useState('');
+    const [emailValid, setEmailValid] = useState(false);
+
+    useEffect(() => {
+        // Aquí, verifica si todos los campos han sido rellenados
+        if (email.trim() !== '') {
+          setEmailValid(true);
+        } else {
+          setEmailValid(false);
+        }
+    }, [email]);
+
+    const handleClick = () =>{
+        if(emailValid) {navigate('/register_2');}
+    } 
+    
     return (
         <>
         <Logo src="/imagenes/logo-musify.png" alt="Logo de Musify" />
@@ -17,11 +37,15 @@ export default function RegisterMail() {
             <form action="">
                 <h1>Regístrate y sumérgete en sonidos exclusivos</h1>
                 <div className="input-box">
-                    <input type="text" placeholder="Dirección de correo electrónico" required />
+                    <input 
+                        type="text" 
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Dirección de correo electrónico" required />
                     <FaUser className="icon"/>
                 </div>
 
-                <button type="submit">Siguiente</button>
+                <button type="button" onClick={handleClick} disabled={!emailValid}>Siguiente</button>
                 <div className="separator"></div>
                 <h6>Otras opciones</h6>
                 <button type="button" onClick={handleGoogleSignIn} className="google-signin-button">
