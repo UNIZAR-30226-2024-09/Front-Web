@@ -1,43 +1,51 @@
-import React, { useState, useEffect }  from "react";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from "styled-components";
 import { FaUser, FaLock } from "react-icons/fa";
 import "./LoginForm.css"
 import { FaGoogle } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom'
 
 export default function LoginForm() {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const navigate = useNavigate();
+
+    const handleLogin = async (event) => {
+        event.preventDefault(); // Previene el comportamiento predeterminado del formulario
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username,
+                    password,
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Inicio de sesión exitoso:', data);
+                navigate('/inicio');
+            } else {
+                console.error('Inicio de sesión fallido.');
+            }
+        } catch (error) {
+            console.error('Error al intentar iniciar sesión:', error);
+        }
+    };
+
     const handleGoogleSignIn = () => {
         console.log("Inicio de sesión con Google");
     };
-
-    const navigate = useNavigate();
-
-    const [user, setUser] = useState('');
-    const [passwd, setPasswd] = useState('');
-    const [inicioValido, setInicioValido] = useState(false);
-
-    useEffect(() => {
-        // Aquí, verifica si todos los campos han sido rellenados
-        if (user.trim() !== '' && passwd.trim() !== '') {
-          setInicioValido(true);
-        } else {
-          setInicioValido(false);
-        }
-    }, [user, passwd]);
-
-    const handleClick = () =>{
-        if(inicioValido) {navigate('/inicio');}
-    } 
-
-
-
     return (
         <>
         <Logo src="/imagenes/logo-musify.png" alt="Logo de Musify" />
          <Container>
         <div className='wrapper'>
-            <form action="">
+            <form onSubmit={handleLogin}>
                 <h1>Inicie Sesión en Musify</h1>
                 <button type="button" onClick={handleGoogleSignIn} className="google-signin-button">
                     <FaGoogle className="google-icon" />
@@ -46,19 +54,11 @@ export default function LoginForm() {
                 <div className="separator"></div>
 
                 <div className="input-box">
-                    <input 
-                        type="text" 
-                        value={user}
-                        onChange={(e) => setUser(e.target.value)}
-                        placeholder="Nombre de usuario o correo electrónico" required />
+                    <input type="text" placeholder="Nombre de usuario o correo electrónico" required />
                     <FaUser className="icon"/>
                 </div>
                 <div className="input-box">
-                    <input 
-                        type="password" 
-                        value={passwd}
-                        onChange={(e)=>setPasswd(e.target.value)}
-                        placeholder="Contraseña" required />
+                    <input type="password" placeholder="Contraseña" required />
                     <FaLock className="icon" />
                 </div>
 
@@ -67,10 +67,10 @@ export default function LoginForm() {
                     <a href="#">¿Has olvidado tú contraseña?</a>
                 </div>
 
-                <button type="button" onClick={handleClick} disabled={!inicioValido}>Iniciar Sesion</button>
+                <button type="submit">Iniciar Sesion</button>
                 <div className="separator"></div>
                 <div className="register-link">
-                    <p>¿No tienes cuenta? <Link to="/register_1">Regístrate</Link></p>
+                    <p>¿No tienes cuenta? <a href="#">Regístrate</a></p>
                 </div>
             </form>
         </div>
