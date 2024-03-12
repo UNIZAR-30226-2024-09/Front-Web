@@ -40,6 +40,11 @@ export default function LoginForm() {
     const handleGoogleSignIn = () => {
         console.log("Inicio de sesión con Google");
     };
+
+    const handleRegisterClick = () => {
+        navigate('/register_1');
+    };
+
     return (
         <>
         <Logo src="/imagenes/logo-musify.png" alt="Logo de Musify" />
@@ -52,31 +57,44 @@ export default function LoginForm() {
                     Continuar con Google
                 </button>
                 <div className="separator"></div>
-
+    
+                {/* Asegúrate de actualizar el estado con el valor del input */}
                 <div className="input-box">
-                    <input type="text" placeholder="Nombre de usuario o correo electrónico" required />
+                    <input 
+                      type="text" 
+                      placeholder="Nombre de usuario o correo electrónico" 
+                      required 
+                      value={username} // Vincula el valor del input al estado
+                      onChange={(e) => setUsername(e.target.value)} // Actualiza el estado al escribir
+                    />
                     <FaUser className="icon"/>
                 </div>
                 <div className="input-box">
-                    <input type="password" placeholder="Contraseña" required />
+                    <input 
+                      type="password" 
+                      placeholder="Contraseña" 
+                      required 
+                      value={password} // Vincula el valor del input al estado
+                      onChange={(e) => setPassword(e.target.value)} // Actualiza el estado al escribir
+                    />
                     <FaLock className="icon" />
                 </div>
-
+    
                 <div className="remember-forgot">
                     <label><input type="checkbox" />Recuérdame</label>
                     <a href="#">¿Has olvidado tú contraseña?</a>
                 </div>
-
+    
                 <button type="submit">Iniciar Sesion</button>
                 <div className="separator"></div>
                 <div className="register-link">
-                    <p>¿No tienes cuenta? <a href="#">Regístrate</a></p>
+                    <p>¿No tienes cuenta? <a href="#" onClick={handleRegisterClick}>Regístrate</a></p>
                 </div>
             </form>
         </div>
     </Container>
     </>
-    );
+    );    
 }
 
 const Logo = styled.img`

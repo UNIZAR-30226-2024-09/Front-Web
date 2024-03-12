@@ -1,62 +1,62 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { FaUser } from "react-icons/fa";
-import "./LoginForm.css"
 import { FaGoogle } from 'react-icons/fa';
-import "./scrollbar.css"
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
+import { useUser } from './UserContext'; // Importa el hook useUser desde el contexto del usuario
 
 export default function RegisterMail() {
-    const handleGoogleSignIn = () => {
-        console.log("Inicio de sesión con Google");
+  const { userDetails, setUserDetails } = useUser(); // Obtiene userDetails y setUserDetails del contexto del usuario
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [emailValid, setEmailValid] = useState(false);
+
+  useEffect(() => {
+    // Aquí, verifica si el campo de correo electrónico está lleno
+    setEmailValid(email.trim() !== '');
+  }, [email]);
+
+  const handleGoogleSignIn = () => {
+    console.log("Inicio de sesión con Google");
     };
 
-    const navigate = useNavigate();
 
-    const [email, setEmail] = useState('');
-    const [emailValid, setEmailValid] = useState(false);
+  const handleClick = () => {
+    if (emailValid) {
+      // Actualiza los detalles del usuario en el contexto
+      setUserDetails(prevDetails => ({ ...prevDetails, email }));
+      navigate('/register_2');
+    }
+  };
 
-    useEffect(() => {
-        // Aquí, verifica si todos los campos han sido rellenados
-        if (email.trim() !== '') {
-          setEmailValid(true);
-        } else {
-          setEmailValid(false);
-        }
-    }, [email]);
-
-    const handleClick = () =>{
-        if(emailValid) {navigate('/register_2');}
-    } 
-    
-    return (
-        <>
-        <Logo src="/imagenes/logo-musify.png" alt="Logo de Musify" />
-         <Container>
+  return (
+    <>
+      <Logo src="/imagenes/logo-musify.png" alt="Logo de Musify" />
+      <Container>
         <div className='wrapper'>
-            <form action="">
-                <h1>Regístrate y sumérgete en sonidos exclusivos</h1>
-                <div className="input-box">
-                    <input 
-                        type="text" 
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Dirección de correo electrónico" required />
-                    <FaUser className="icon"/>
-                </div>
+          <form action="">
+            <h1>Regístrate y sumérgete en sonidos exclusivos</h1>
+            <div className="input-box">
+              <input 
+                type="text" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Dirección de correo electrónico" required />
+              <FaUser className="icon"/>
+            </div>
 
-                <button type="button" onClick={handleClick} disabled={!emailValid}>Siguiente</button>
-                <div className="separator"></div>
-                <h6>Otras opciones</h6>
-                <button type="button" onClick={handleGoogleSignIn} className="google-signin-button">
-                    <FaGoogle className="google-icon" />
-                    Continuar con Google
-                </button>
-            </form>
+            <button type="button" onClick={handleClick} disabled={!emailValid}>Siguiente</button>
+            <div className="separator"></div>
+            <h6>Otras opciones</h6>
+            <button type="button" onClick={handleGoogleSignIn} className="google-signin-button">
+              <FaGoogle className="google-icon" />
+              Continuar con Google
+            </button>
+          </form>
         </div>
-    </Container>
+      </Container>
     </>
-    );
+  );
 }
 
 const Logo = styled.img`
