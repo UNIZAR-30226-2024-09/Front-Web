@@ -4,6 +4,7 @@ import RegisterMail from "./components/register_1";
 import RegisterPasswd from "./components/register_2";
 import RegisterInfo from "./components/register_3";
 import Asistencia from "./components/asistencia";
+import Profile from "./components/Profile";
 import Busqueda from "./Musify_busqueda";
 import Chat from "./MusifyChat";
 import PantallaInicio from "./Musify_inicio";
@@ -24,6 +25,7 @@ export default class App extends React.Component {
           <Route path="/chat" element={<Chat />} />
           <Route path="/asistencia" element={<Asistencia />} />
           <Route path="/busqueda" element={<Busqueda />} />
+          <Route path="/perfil" element={<Profile />} />
         </Routes>
       </BrowserRouter>
     );  

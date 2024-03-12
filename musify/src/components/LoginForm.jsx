@@ -1,10 +1,42 @@
-import React from "react";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from "styled-components";
 import { FaUser, FaLock } from "react-icons/fa";
 import "./LoginForm.css"
 import { FaGoogle } from 'react-icons/fa';
 
 export default function LoginForm() {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const navigate = useNavigate();
+
+    const handleLogin = async (event) => {
+        event.preventDefault(); // Previene el comportamiento predeterminado del formulario
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username,
+                    password,
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Inicio de sesión exitoso:', data);
+                navigate('/inicio');
+            } else {
+                console.error('Inicio de sesión fallido.');
+            }
+        } catch (error) {
+            console.error('Error al intentar iniciar sesión:', error);
+        }
+    };
+
     const handleGoogleSignIn = () => {
         console.log("Inicio de sesión con Google");
     };
@@ -13,7 +45,7 @@ export default function LoginForm() {
         <Logo src="/imagenes/logo-musify.png" alt="Logo de Musify" />
          <Container>
         <div className='wrapper'>
-            <form action="">
+            <form onSubmit={handleLogin}>
                 <h1>Inicie Sesión en Musify</h1>
                 <button type="button" onClick={handleGoogleSignIn} className="google-signin-button">
                     <FaGoogle className="google-icon" />
