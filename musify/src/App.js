@@ -11,6 +11,9 @@ import Busqueda from './Musify_busqueda';
 import Chat from './MusifyChat';
 import PantallaInicio from './Musify_inicio';
 import Musify from './Musify';
+import Preguntas from './components/Preguntas';
+import Desp from './components/desplegable';
+import Ayuda from './components/Ayuda'
 
 export default class App extends React.Component {
   render() {
@@ -28,6 +31,8 @@ export default class App extends React.Component {
             <Route path="/asistencia" element={<Asistencia />} />
             <Route path="/busqueda" element={<Busqueda />} />
             <Route path="/perfil" element={<Profile />} />
+            <Route path="/preguntas" element={<Preguntas />} />
+            <Route path="/ayuda" element={<Ayuda />} />
           </Routes>
         </UserProvider>
       </BrowserRouter>

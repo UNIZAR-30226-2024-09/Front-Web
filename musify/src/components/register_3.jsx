@@ -76,13 +76,12 @@ export default function RegisterInfo() {
                                 placeholder="Nombre" required />
                             <FaUser className="icon"/>
                         </div>
-                        <div className="input-box">
+                        <div className="input-box date-input-box">
                             <input 
-                                type="text" 
+                                type="date" 
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
                                 placeholder="Fecha de nacimiento" required />
-                            <MdCalendarMonth className="icon"/>
                         </div>
                         <div className="text-right mt-4">
                         <p style={{ color: 'white', marginBottom: '10px' }}>Genero</p>
@@ -381,6 +380,10 @@ const Container = styled.div`
     height: 50px;
     margin: 30px auto;
     margin-top: 50px;
+}
+
+.date-input-box {
+    position: relative;
 }
 
 .input-box input {
