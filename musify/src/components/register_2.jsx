@@ -124,7 +124,6 @@ const Container = styled.div`
 }
 
 .wrapper button {
-    width: 100%;
     background: #54b2e7;
     color: #fff;
     width: 100%;

@@ -12,8 +12,8 @@ import Chat from './MusifyChat';
 import PantallaInicio from './Musify_inicio';
 import Musify from './Musify';
 import Preguntas from './components/Preguntas';
-import Desp from './components/desplegable';
 import Ayuda from './components/Ayuda'
+import Reportar from './components/ReportarP'
 
 export default class App extends React.Component {
   render() {
@@ -33,6 +33,7 @@ export default class App extends React.Component {
             <Route path="/perfil" element={<Profile />} />
             <Route path="/preguntas" element={<Preguntas />} />
             <Route path="/ayuda" element={<Ayuda />} />
+            <Route path="/problemas" element={<Reportar />} />
           </Routes>
         </UserProvider>
       </BrowserRouter>
