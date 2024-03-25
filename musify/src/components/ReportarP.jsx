@@ -80,7 +80,7 @@ const Container = styled.div`
     background: #54b2e7;
     color: #fff;
     width: 200px;
-    height: 50px;++
+    height: 50px;
     border: none;
     outline: none;
     border-radius: 20px;
