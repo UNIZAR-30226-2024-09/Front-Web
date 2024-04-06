@@ -3,7 +3,6 @@ import styled from "styled-components";
 import { FaUser } from "react-icons/fa";
 import { MdCalendarMonth } from "react-icons/md";
 import "./LoginForm.css"
-import "./scrollbar.css"
 import { useNavigate } from 'react-router-dom';
 import { useUser } from './UserContext'; // Importa el hook useUser desde el contexto del usuario
 

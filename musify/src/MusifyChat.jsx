@@ -34,7 +34,7 @@ const Container = styled.div`
         display: grid;
         grid-template-columns: 23vw 77vw;
         width: 100%;
-        background-color: #a7bcff;
+        background-color: #1a1616;
         .body {
             display: flex;
             justify-content: center;
@@ -44,9 +44,9 @@ const Container = styled.div`
         
         .body__contents {
             border: 1px solid white;
-            border-radius: 10px;
-            width: 65%;
-            height: 80%; 
+            border-radius: 0px;
+            width: 95%;
+            height: 95%; 
             overflow-y: auto;
             overflow-x: hidden;
             color: #000;
