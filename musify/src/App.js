@@ -10,11 +10,14 @@ import Profile from './components/Profile';
 import Busqueda from './Musify_busqueda';
 import Chat from './MusifyChat';
 import Perfil from './Musify_perfil';
+import PerfilA from './Musify_perfilamigo';
+import Salas from './Musify_salas';
 import PantallaInicio from './Musify_inicio';
 import Musify from './Musify';
 import Preguntas from './components/Preguntas';
 import Ayuda from './components/Ayuda';
 import Reportar from './components/ReportarP';
+import Cola from './Musify_cola';
 
 export default class App extends React.Component {
   render() {
@@ -36,6 +39,10 @@ export default class App extends React.Component {
             <Route path="/ayuda" element={<Ayuda />} />
             <Route path="/problemas" element={<Reportar />} />
             <Route path="/mi_perfil" element={<Perfil />} />
+            <Route path="/perfil_amigo" element={<PerfilA />} />
+            <Route path="/salas" element={<Salas />} />
+            <Route path="/cola" element={<Cola />} />
+
           </Routes>
         </UserProvider>
       </BrowserRouter>
