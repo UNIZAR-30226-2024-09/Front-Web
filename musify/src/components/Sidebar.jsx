@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import {IoLibrary,  IoChatbubblesOutline} from "react-icons/io5";
+import { IoMdSettings } from "react-icons/io";
 import{ MdHomeFilled, MdSearch} from "react-icons/md";
 import Playlists from "./Playlists";
 
@@ -11,6 +12,10 @@ export default function Sidebar() {
            
             </div>
             <ul>
+                <li>
+                    <IoMdSettings />
+                    <span>Configuración</span>
+                </li>
                 <li>
                     <MdHomeFilled />
                     <span>Inicio</span>
