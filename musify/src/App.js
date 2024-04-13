@@ -18,6 +18,7 @@ import Preguntas from './components/Preguntas';
 import Ayuda from './components/Ayuda';
 import Reportar from './components/ReportarP';
 import Cola from './Musify_cola';
+import IniAdmin from './admin/inicio_admin';
 
 export default class App extends React.Component {
   render() {
@@ -42,6 +43,7 @@ export default class App extends React.Component {
             <Route path="/perfil_amigo" element={<PerfilA />} />
             <Route path="/salas" element={<Salas />} />
             <Route path="/cola" element={<Cola />} />
+            <Route path="/ini_admin" element={<IniAdmin />} />
 
           </Routes>
         </UserProvider>
