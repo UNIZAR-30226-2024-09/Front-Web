@@ -1,20 +1,74 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { FaSearch } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
 
-export default function Navbar() {
-    return <Container>
-        <div className="search__bar">
-           <FaSearch />
-           <input type="text" placeholder="Artistas, canciones, o podcasts" />
-        </div>
-        <div className="avatar">
-            <a href="#"></a>
-            <CgProfile />
-        </div>
+export default function Navbar({ onSearch: parentOnSearch }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [artistData, setArtistData] = useState(null); // Estado para almacenar los datos del artista
+  const [loading, setLoading] = useState(false); // Estado para controlar la indicación de carga
+  const [error, setError] = useState(""); // Estado para almacenar un mensaje de error
+
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const handleSearchSubmit = async (event) => {
+    event.preventDefault();
+    setError(""); // Reiniciar mensajes de error
+    setLoading(true); // Iniciar indicación de carga
+    try {
+      const response = await fetch('http://34.175.117.0:8000/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ artist_name: searchQuery }),
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Datos del artista encontrados:", data); // Imprimir los datos en la consola
+        setArtistData(data); // Almacenar los datos del artista
+        if (parentOnSearch) parentOnSearch(data);
+      } else {
+        // Maneja el error
+        setError("Error al buscar el artista. Por favor, intenta de nuevo.");
+      }
+    } catch (error) {
+      setError("Error al conectar con el servicio. Por favor, verifica tu conexión.");
+    } finally {
+      setLoading(false); // Finalizar indicación de carga
+    }
+  };
+
+  return (
+    <Container>
+      <form className="search__bar" onSubmit={handleSearchSubmit}>
+        <FaSearch />
+        <input
+          type="text"
+          placeholder="Artistas, canciones, o podcasts"
+          value={searchQuery}
+          onChange={handleSearchChange}
+        />
+      </form>
+      <div className="avatar">
+        <a href="#">
+          <CgProfile />
+        </a>
+      </div>
+      {/* Sección para mostrar los resultados o mensajes de estado */}
+      {loading && <p>Cargando...</p>}
+      {error && <p>{error}</p>}
+      {artistData && <div> {/* Ajusta esta parte según la estructura de tus datos */}
+        <p>Nombre del Artista: {artistData.artist.name}</p>
+        {/* Agrega más campos si es necesario */}
+      </div>}
     </Container>
+  );
 }
+
 
 
 const Container = styled.div`

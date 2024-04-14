@@ -8,12 +8,12 @@ export function useUser() {
 
 export const UserProvider = ({ children }) => {
     const [userDetails, setUserDetails] = useState({
-      email: '',
-      password: '',
-      name: '',
-      dateOfBirth: '',
-      gender: '',
-      country: '',
+      correo: '',
+      contrasegna: '',
+      nombre: '',
+      nacimiento: '',
+      sexo: '',
+      pais: '',
     });
   
     return (

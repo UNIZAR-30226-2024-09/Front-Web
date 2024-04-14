@@ -1,9 +1,9 @@
 import React from "react";
 import styled from "styled-components";
+import { Link } from 'react-router-dom';
 import {IoLibrary,  IoChatbubblesOutline} from "react-icons/io5";
 import { IoMdSettings } from "react-icons/io";
 import{ MdHomeFilled, MdSearch} from "react-icons/md";
-import Playlists from "./Playlists";
 
 export default function Sidebar() {
     return <Container>
@@ -17,16 +17,22 @@ export default function Sidebar() {
                     <span>Configuración</span>
                 </li>
                 <li>
+                <Link to="/inicio" className="link">
                     <MdHomeFilled />
                     <span>Inicio</span>
+                </Link>
                 </li>
                 <li>
+                <Link to="/busqueda" className="link">
                     <MdSearch />
                     <span>Buscar</span>
+                </Link>
                 </li>
                 <li>
+                <Link to="/salas" className="link">
                     <IoChatbubblesOutline />
                     <span>Chats Grupales</span>
+                </Link>
                 </li>
                 <div className="separator"></div>
                 <li>
@@ -84,6 +90,13 @@ const Container = styled.div`
         width: 300px; 
         margin: 10px auto;
     }
+    .link {
+        display: flex;
+        gap: 1rem;
+        text-decoration: none;
+        color: inherit;
+      }
+      
 `;
 
 const ButtonStyled = styled.button`
