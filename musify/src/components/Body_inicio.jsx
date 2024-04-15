@@ -1,95 +1,55 @@
-import { useRef } from 'react';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from "styled-components";
-
-const canciones = [
-    {
-      id: 1,
-      name: "Canción 1",
-      artists: "Artista 1",
-      album: "Álbum 1",
-      duration: "3:45",
-      imageUrl: "/imagenes/prueba.jpg",
-    },
-    {
-      id: 2,
-      name: "Canción 2",
-      artists: "Artista 2",
-      album: "Álbum 2",
-      duration: "4:05",
-      imageUrl: "/imagenes/prueba.jpg",
-    },
-    {
-        id: 3,
-        name: "Canción 3",
-        artists: "Artista 3",
-        album: "Álbum 3",
-        duration: "4:05",
-        imageUrl: "/imagenes/prueba.jpg",
-      },
-      {
-        id: 4,
-        name: "Canción 4",
-        artists: "Artista 4",
-        album: "Álbum 4",
-        duration: "4:05",
-        imageUrl: "/imagenes/prueba.jpg",
-      },
-      {
-        id: 5,
-        name: "Canción 5",
-        artists: "Artista 5",
-        album: "Álbum 5",
-        duration: "4:05",
-        imageUrl: "/imagenes/prueba.jpg",
-      },
-      {
-        id: 6,
-        name: "Canción 1",
-        artists: "Artista 1",
-        album: "Álbum 1",
-        duration: "3:45",
-        imageUrl: "/imagenes/prueba.jpg",
-      },
-      {
-        id: 7,
-        name: "Canción 2",
-        artists: "Artista 2",
-        album: "Álbum 2",
-        duration: "4:05",
-        imageUrl: "/imagenes/prueba.jpg",
-      },
-      {
-          id: 8,
-          name: "Canción 3",
-          artists: "Artista 3",
-          album: "Álbum 3",
-          duration: "4:05",
-          imageUrl: "/imagenes/prueba.jpg",
-        },
-        {
-          id: 9,
-          name: "Canción 4",
-          artists: "Artista 4",
-          album: "Álbum 4",
-          duration: "4:05",
-          imageUrl: "/imagenes/prueba.jpg",
-        },
-        {
-          id: 10,
-          name: "Canción 5",
-          artists: "Artista 5",
-          album: "Álbum 5",
-          duration: "4:05",
-          imageUrl: "/imagenes/prueba.jpg",
-        },
-  ];
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 export default function Body_inicio() {
-   
-    const recientes = canciones.slice(0, 10);
-    const personalizadas = canciones.slice(0, 10);
-    const topCanciones = canciones.slice(0, 10);
+    const [canciones, setCanciones] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const cleanBase64 = (base64) => base64.replace('caracteres_incorrectos', '');  // Ajusta esta función según sea necesario.
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch('http://34.175.117.0:8000/listarCanciones/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({})
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Datos recibidos:", data);
+                    const updatedCanciones = data.canciones.map(cancion => ({
+                        ...cancion,
+                        // Asegúrate de que el tipo MIME es correcto según el tipo de imágenes que esperas.
+                        foto: `data:image/jpeg;base64,${cleanBase64(cancion.foto)}`
+                    }));
+                    setCanciones(updatedCanciones);
+                } else {
+                    const errorData = await response.text();  // Cambio aquí para capturar la respuesta no-JSON
+                    throw new Error(errorData || "Error al recibir datos");
+                }
+            } catch (error) {
+                setError(error.message);
+                console.error("Error fetching data: ", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+    
+        fetchData();
+    }, []);
+    
+    if (loading) return <p>Cargando...</p>;
+    if (error) return <p>Error: {error}</p>;
+    if (!canciones || canciones.length === 0) return <p>No hay canciones disponibles</p>;
+    
+    const recientes = canciones.slice(0, 5);
+    const personalizadas = canciones.slice(5, 10);
+    const topCanciones = canciones.slice(10, 15);
 
     return (
         <Container>
@@ -122,22 +82,21 @@ const SongRow = ({ canciones }) => {
     return (
         <RowContainer>
             <ArrowButton onClick={() => scroll('left')}>
-                <FaChevronLeft /> {/* Actualizado para usar ícono */}
+                <FaChevronLeft />
             </ArrowButton>
             <ImagesContainer ref={scrollRef}>
-                {canciones.map((cancion) => (
-                    <ImageBox key={cancion.id}>
-                        <img src={cancion.imageUrl} alt={cancion.name} />
+                {canciones.map((cancion, index) => (
+                    <ImageBox key={index}>
+                        <img src={cancion.foto} alt={cancion.nombre || 'Desconocido'} />
                     </ImageBox>
                 ))}
             </ImagesContainer>
             <ArrowButton onClick={() => scroll('right')}>
-                <FaChevronRight /> {/* Actualizado para usar ícono */}
+                <FaChevronRight />
             </ArrowButton>
         </RowContainer>
     );
 };
-
 
 const RowContainer = styled.div`
     display: flex;

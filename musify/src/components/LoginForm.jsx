@@ -6,25 +6,30 @@ import "./LoginForm.css"
 import { FaGoogle } from 'react-icons/fa';
 
 export default function LoginForm() {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const [correo, setUsername] = useState('');
+    const [contrasegna, setPassword] = useState('');
     const navigate = useNavigate();
 
     const handleLogin = async (event) => {
         event.preventDefault(); // Previene el comportamiento predeterminado del formulario
-
+    
         try {
-            const response = await fetch('http://127.0.0.1:8000/login/', {
+            const requestBody = JSON.stringify({
+                correo,
+                contrasegna,
+            });
+    
+            // Imprime en consola el cuerpo de la petición para depuración
+            console.log("Enviando petición de inicio de sesión con el cuerpo:", requestBody);
+    
+            const response = await fetch('http://34.175.117.0:8000/iniciarSesion/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    username,
-                    password,
-                }),
+                body: requestBody, // Usa directamente la variable ya definida
             });
-
+    
             if (response.ok) {
                 const data = await response.json();
                 console.log('Inicio de sesión exitoso:', data);
@@ -36,6 +41,7 @@ export default function LoginForm() {
             console.error('Error al intentar iniciar sesión:', error);
         }
     };
+    
 
     const handleGoogleSignIn = () => {
         console.log("Inicio de sesión con Google");
@@ -64,7 +70,7 @@ export default function LoginForm() {
                       type="text" 
                       placeholder="Nombre de usuario o correo electrónico" 
                       required 
-                      value={username} // Vincula el valor del input al estado
+                      value={correo} // Vincula el valor del input al estado
                       onChange={(e) => setUsername(e.target.value)} // Actualiza el estado al escribir
                     />
                     <FaUser className="icon"/>
@@ -74,7 +80,7 @@ export default function LoginForm() {
                       type="password" 
                       placeholder="Contraseña" 
                       required 
-                      value={password} // Vincula el valor del input al estado
+                      value={contrasegna} // Vincula el valor del input al estado
                       onChange={(e) => setPassword(e.target.value)} // Actualiza el estado al escribir
                     />
                     <FaLock className="icon" />

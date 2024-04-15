@@ -1,36 +1,30 @@
-import React, { useState } from "react";
+import React from "react";
 import styled from "styled-components";
 
-
-export default function Progress() {
-    const [currentTime, setCurrentTime] = useState(0);
-
-    const handleTimeUpdate = (e) => {
-        setCurrentTime(e.target.value);
-    };
-
+const Progress = ({ currentTime, duration, onTimeUpdate }) => {
     const formatTime = (time) => {
+        const minutes = Math.floor(time / 60);
+        const seconds = Math.floor(time % 60);
+        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     };
-
-    const duration = 60;
 
     return (
         <Container>
-            <span className="time">00:00</span>
-            <input 
-                type="range" 
-                value={currentTime} 
-                onChange={handleTimeUpdate} 
-                min={0} 
-                max={duration} 
+            <span className="time">{formatTime(currentTime)}</span>
+            <input
+                type="range"
+                value={currentTime}
+                onChange={onTimeUpdate} // Aquí usamos la prop para manejar cambios
+                min="0"
+                max={duration}
                 step="1"
             />
-            <span className="time">04:30</span>
+            <span className="time">{formatTime(duration)}</span>
         </Container>
     );
-}
+};
 
-
+export default Progress;
 
 const Container = styled.div`
     display: flex;
@@ -39,7 +33,7 @@ const Container = styled.div`
     gap: 10px;
     padding-bottom: 10px;
     input {
-        width: 40rem;
+        width: 100%; // Ajustado para tomar el ancho completo del contenedor
         border-radius: 2rem;
         height: 0.5rem;
     }
