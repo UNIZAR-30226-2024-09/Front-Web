@@ -1,98 +1,71 @@
-import React, { useState, useRef, useEffect} from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
-import {
-    BsFillPlayCircleFill,
-    BsFillPauseCircleFill,
-    BsShuffle,
-} from "react-icons/bs";
+import { BsFillPlayCircleFill, BsFillPauseCircleFill, BsShuffle } from "react-icons/bs";
 import { CgPlayTrackNext, CgPlayTrackPrev } from "react-icons/cg";
 import { FiRepeat } from "react-icons/fi";
-import Progress from "./Progress";
-import LyricsWindow from './LyricsWindow'; // Asegúrate de que la ruta de importación es correcta
-import { songLyrics } from './Lyrics'; // Asume que aquí es donde tienes las letras de tus canciones
-import cancion from "./assets/Homecoming.mp3";
 import { PiMicrophoneStageFill } from "react-icons/pi";
+import Progress from "./Progress";
+import { useTrack } from './TrackContext';  // Ensure this correctly imports the context
 
 export default function PlayerControls() {
-    const [isPlaying, setIsPlaying] = useState(false);
-    const audioRef = useRef(new Audio(cancion));
+    const { isPlaying, play, pause, audioRef} = useTrack();
+
+
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
-    const [currentLyric, setCurrentLyric] = useState(null); // Añade este nuevo estado para la letra actual
-    const [showLyricsModal, setShowLyricsModal] = useState(false);
-
 
     useEffect(() => {
-        // Event listener para cargar metadata
-        audioRef.current.addEventListener('loadedmetadata', () => {
-            setDuration(audioRef.current.duration);
-        });
+        const audio = audioRef.current;
 
-        // Event listener para actualizar el tiempo actual
-        const updateTime = () => {
-            setCurrentTime(audioRef.current.currentTime);
-
-            // Mueve la lógica para encontrar la letra actual aquí, dentro de updateTime
-            const lyric = songLyrics.filter(lyric => lyric.time <= audioRef.current.currentTime).pop(); // Encuentra la última línea relevante
-            setCurrentLyric(lyric); // Actualiza el estado con la nueva letra actual
+        const onLoadedMetadata = () => {
+            setDuration(audio.duration);
         };
-        audioRef.current.addEventListener('timeupdate', updateTime);
+        const onTimeUpdate = () => {
+            setCurrentTime(audio.currentTime);
+        };
 
-        // Limpieza de los event listeners al desmontar
+        audio.addEventListener('loadedmetadata', onLoadedMetadata);
+        audio.addEventListener('timeupdate', onTimeUpdate);
+
         return () => {
-            audioRef.current.removeEventListener('loadedmetadata', updateTime);
-            audioRef.current.removeEventListener('timeupdate', updateTime);
+            audio.removeEventListener('loadedmetadata', onLoadedMetadata);
+            audio.removeEventListener('timeupdate', onTimeUpdate);
         };
-    }, [songLyrics]); // Añade songLyrics a las dependencias si tus letras podrían cambiar
-
-    const handleTimeUpdate = (e) => {
-        const newTime = e.target.value;
-        audioRef.current.currentTime = newTime;
-        setCurrentTime(newTime);
-    };
+    }, [audioRef]);
 
     const togglePlayPause = () => {
-        setIsPlaying(!isPlaying);
-        if (!isPlaying) {
-            audioRef.current.play();
+        if (isPlaying) {
+            pause();
         } else {
-            audioRef.current.pause();
+            play();
         }
     };
 
-    const formatTime = (time) => {
-        const minutes = Math.floor(time / 60);
-        const seconds = Math.floor(time % 60);
-        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-    };
 
+    const formatTime = (time) => `${Math.floor(time / 60)}:${Math.floor(time % 60).toString().padStart(2, '0')}`;
 
-    return <Container>
-        <div className="shuffle">
-            <BsShuffle />
-        </div>
-        <div className="previous">
-            <CgPlayTrackPrev />
-        </div>
-        <div className="state"onClick={togglePlayPause}>
-            {isPlaying ? <BsFillPauseCircleFill /> : <BsFillPlayCircleFill />}
-        </div>
-        <div className="next">
-            <CgPlayTrackNext />
-        </div>
-        <div className="repeat">
-            <FiRepeat />
-        </div>
-        <div className="progress-bar">
-            <Progress 
-                currentTime={currentTime} 
-                duration={duration} 
-                onTimeUpdate={handleTimeUpdate}
-            />
-        </div>
-        <PiMicrophoneStageFill onClick={() => setShowLyricsModal(true)} style={{ cursor: 'pointer' }} />
-        {showLyricsModal && <LyricsWindow lyrics={currentLyric ? [currentLyric] : []} onClose={() => setShowLyricsModal(false)} />}
-    </Container>
+    return (
+        <Container>
+            <div className="shuffle"><BsShuffle /></div>
+            <div className="previous"><CgPlayTrackPrev /></div>
+            <div className="state" onClick={togglePlayPause}>
+                {isPlaying ? <BsFillPauseCircleFill /> : <BsFillPlayCircleFill />}
+            </div>
+            <div className="next"><CgPlayTrackNext /></div>
+            <div className="repeat"><FiRepeat /></div>
+            <div className="progress-bar">
+                <Progress 
+                    currentTime={currentTime} 
+                    duration={duration} 
+                    onTimeUpdate={(e) => {
+                        audioRef.current.currentTime = parseFloat(e.target.value);
+                        setCurrentTime(parseFloat(e.target.value));
+                    }} 
+                />
+            </div>
+            <PiMicrophoneStageFill onClick={() => alert("Lyrics feature coming soon!")} style={{ cursor: 'pointer' }} />
+        </Container>
+    );
 }
 
 

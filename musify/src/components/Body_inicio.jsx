@@ -1,18 +1,44 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from "styled-components";
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaPlay, FaPause } from 'react-icons/fa';
+import { useTrack } from "./TrackContext";
+
+const base64ToImageSrc = (base64) => {
+    console.log("Base64 original:", base64); // Imprimir la base64 original
+
+    // Eliminar el prefijo de la cadena base64 si está presente
+    const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
+    console.log("Base64 sin prefijo:", base64WithoutPrefix); // Imprimir la base64 sin prefijo
+
+    // Decodificar la cadena base64
+    const byteCharacters = atob(base64WithoutPrefix);
+    console.log("Caracteres de bytes:", byteCharacters); // Opcional: Imprimir los caracteres después de atob
+    const imageSrc = `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
+    console.log("Imagen transformada:", imageSrc); // Imprimir el src de la imagen transformada
+    return imageSrc;
+};
+
+const base64ToAudioSrc = (base64) => {
+    console.log("Base64 original:", base64); // Imprimir la base64 original
+
+    // Eliminar cualquier prefijo incorrecto y asegurar que es el correcto para audio/mp3
+    const base64WithoutPrefix = base64.replace(/^data:audio\/mp3;base64,/, '').replace(/^data:[^;]+;base64,/, '');
+    const audioSrc = `data:audio/mp3;base64,${atob(base64WithoutPrefix)}`;
+    console.log("Audio transformado:", audioSrc); // Imprimir el src del audio transformado
+
+    return audioSrc;
+};
 
 export default function Body_inicio() {
     const [canciones, setCanciones] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const cleanBase64 = (base64) => base64.replace('caracteres_incorrectos', '');  // Ajusta esta función según sea necesario.
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const response = await fetch('http://34.175.117.0:8000/listarCanciones/', {
+                const response = await fetch('http://127.0.0.1:8000/listarCanciones/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -21,35 +47,31 @@ export default function Body_inicio() {
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    console.log("Datos recibidos:", data);
-                    const updatedCanciones = data.canciones.map(cancion => ({
-                        ...cancion,
-                        // Asegúrate de que el tipo MIME es correcto según el tipo de imágenes que esperas.
-                        foto: `data:image/jpeg;base64,${cleanBase64(cancion.foto)}`
-                    }));
+                    const updatedCanciones = data.canciones.map(cancion => {
+                        return {
+                            ...cancion,
+                            foto: base64ToImageSrc(cancion.foto),
+                            archivo_mp3: base64ToAudioSrc(cancion.archivo_mp3)
+                        };
+                    });
                     setCanciones(updatedCanciones);
                 } else {
-                    const errorData = await response.text();  // Cambio aquí para capturar la respuesta no-JSON
+                    const errorData = await response.text();
                     throw new Error(errorData || "Error al recibir datos");
                 }
             } catch (error) {
                 setError(error.message);
-                console.error("Error fetching data: ", error);
             } finally {
                 setLoading(false);
             }
         };
-    
         fetchData();
     }, []);
-    
+
+
     if (loading) return <p>Cargando...</p>;
     if (error) return <p>Error: {error}</p>;
-    if (!canciones || canciones.length === 0) return <p>No hay canciones disponibles</p>;
-    
-    const recientes = canciones.slice(0, 5);
-    const personalizadas = canciones.slice(5, 10);
-    const topCanciones = canciones.slice(10, 15);
+    if (!canciones.length) return <p>No hay canciones disponibles</p>;
 
     return (
         <Container>
@@ -59,80 +81,141 @@ export default function Body_inicio() {
                 <ButtonStyled>Podcasts</ButtonStyled>
             </ButtonContainer>
             <SectionTitle>Has escuchado recientemente</SectionTitle>
-            <SongRow canciones={recientes} />
+            <SongRow canciones={canciones.slice(3, 7)} />
             <SectionTitle>Hecho para Usuario</SectionTitle>
-            <SongRow canciones={personalizadas} />
+            <SongRow canciones={canciones.slice(3, 7)} />
             <SectionTitle>Top Canciones</SectionTitle>
-            <SongRow canciones={topCanciones} />
+            <SongRow canciones={canciones.slice(3, 7)} />
         </Container>
     );
 }
 
 const SongRow = ({ canciones }) => {
+    const { updateTrack, play, pause, isPlaying, audioRef } = useTrack();
     const scrollRef = useRef(null);
+    const [playingIndex, setPlayingIndex] = useState(-1); // Índice de la canción actualmente en reproducción
+    const [hoverIndex, setHoverIndex] = useState(-1); // Índice de la canción sobre la que se encuentra el mouse
+    const audioRefs = useRef([]);
 
-    const scroll = (direction) => {
-        if (direction === 'left') {
-            scrollRef.current.scrollBy({ left: -100, behavior: 'smooth' });
+    const handleScroll = (direction) => {
+        const distance = direction === 'left' ? -100 : 100;
+        scrollSmoothly(scrollRef, distance);
+    };
+
+    const togglePlayPause = (index) => {
+        const selectedSong = canciones[index];
+        updateTrack({
+            src: selectedSong.archivo_mp3,
+            nombre: selectedSong.nombre,
+            artista: selectedSong.artista,
+            imagen: selectedSong.foto
+        });
+    
+        if (audioRef.current.src && isPlaying) {
+            pause();
         } else {
-            scrollRef.current.scrollBy({ left: 100, behavior: 'smooth' });
+            play();
         }
     };
 
     return (
         <RowContainer>
-            <ArrowButton onClick={() => scroll('left')}>
+            <ArrowButton onClick={() => handleScroll('left')}>
                 <FaChevronLeft />
             </ArrowButton>
             <ImagesContainer ref={scrollRef}>
                 {canciones.map((cancion, index) => (
-                    <ImageBox key={index}>
-                        <img src={cancion.foto} alt={cancion.nombre || 'Desconocido'} />
+                    <ImageBox key={index}
+                              onMouseEnter={() => setHoverIndex(index)}
+                              onMouseLeave={() => setHoverIndex(-1)}
+                              onClick={() => togglePlayPause(index)}>
+                        <ImgContainer>
+                            <img src={cancion.foto} alt={cancion.nombre || 'Desconocido'} />
+                            {hoverIndex === index && (
+                                <PlayIconContainer isVisible={true}>
+                                    {/* Mostrar el ícono de pausa solo si el índice coincide y está en reproducción */}
+                                    {playingIndex === index && isPlaying ? <FaPause size="3em" /> : <FaPlay size="3em" />}
+                                </PlayIconContainer>
+                            )}
+                            <audio ref={(el) => audioRefs.current[index] = el} src={cancion.archivo_mp3} />
+                        </ImgContainer>
+                        <p>{cancion.nombre}</p>
                     </ImageBox>
                 ))}
             </ImagesContainer>
-            <ArrowButton onClick={() => scroll('right')}>
+            <ArrowButton onClick={() => handleScroll('right')}>
                 <FaChevronRight />
             </ArrowButton>
         </RowContainer>
     );
 };
 
+
 const RowContainer = styled.div`
     display: flex;
     align-items: center;
+    position: relative;
 `;
+
+const scrollSmoothly = (ref, distance) => {
+    ref.current.scrollBy({
+        left: distance,
+        behavior: 'smooth'
+    });
+}
 
 const ImagesContainer = styled.div`
     display: flex;
     flex-direction: row;
     gap: 20px;
-    overflow-x: hidden; // Cambio importante aquí
+    overflow-x: auto;
+    overflow-y: hidden;
     scroll-behavior: smooth;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+        display: none; 
+    }
+    -ms-overflow-style: none;
 `;
+
 
 const ImageBox = styled.div`
     flex: 0 0 auto;
-    width: 100px;
-    height: 100px;
+    width: 200px; 
+    height: 200px; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
     img {
-        width: 100%;
-        height: 100%;
+        width: 70%;
+        height: 70%;
         object-fit: cover;
-        border-radius: 10px;
+        border-radius:none;
+        cursor: pointer; // Agregar cursor pointer para indicar que es interactivo
+    }
+
+    p {
+        margin-top: 10px;
+        font-size: 16px;
+        color: #fff;
+        text-align: center;
     }
 `;
 
+
 const ArrowButton = styled.button`
-    background: none;
+    background: #575151;
     border: none;
     color: #fff;
     cursor: pointer;
     font-size: 24px;
-    padding: 0 10px;
+    padding: 10px 15px;
     user-select: none;
+    transition: background-color 0.3s ease;
     &:hover {
-        background-color: #ddd; // Estilo opcional para hover
+        background-color: #54b2e7; // Color de fondo al pasar el mouse
     }
 `;
 
@@ -157,7 +240,6 @@ const SectionTitle = styled.h2`
     margin-bottom: none; /* Ajusta este valor para reducir el espacio */
     flex-direction: row;
 `;
-
 
 const ButtonStyled = styled.button`
     width: 90px;
@@ -184,3 +266,25 @@ const ButtonStyled = styled.button`
     }
 `;
 
+const ImgContainer = styled.div`
+    position: relative;
+    img {
+        width: 90px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: none;
+        cursor: pointer;
+        transition: filter 0.3s ease;
+    }
+    &:hover img {
+        filter: grayscale(70%);
+    }
+`;
+
+const PlayIconContainer = styled.div`
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: ${({ isVisible }) => isVisible ? 'block' : 'none'}; // Esto controla la visibilidad del ícono
+`;

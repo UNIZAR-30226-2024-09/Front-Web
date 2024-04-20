@@ -1,42 +1,26 @@
-import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import axios from "axios"; // Asegúrate de tener axios instalado
+import { useTrack } from "./TrackContext"; // Asegúrate de que la ruta de importación sea correcta
 
 export default function CurrentTrack() {
-    const [track, setTrack] = useState({
-        nombre: "",
-        artista: "", // Asumiendo que agregarás el campo 'artista' en tu backend
-        imagen: "/imagenes/prueba.jpg", // Valor predeterminado
-    });
+    const { currentTrack } = useTrack();
 
-    useEffect(() => {
-        axios.get("//cancion-actual")
-            .then(response => {
-                const data = response.data;
-                setTrack({
-                    nombre: data.nombre,
-                    imagen: data.nombre_foto, // Asumiendo que esto es un URL directo
-                });
-            })
-            .catch(error => {
-                console.log("Error al obtener la canción actual:", error);
-            });
-    }, []);
-    
+    if (!currentTrack) return <div>No track selected</div>;
 
     return (
         <Container>
             <div className="track">
                 <div className="track__image">
-                    <img src={track.imagen} alt="Portada de la Canción" style={{ width: "70px", height: "auto" }}/>
+                    <img src={currentTrack.imagen} alt="Portada de la Canción" style={{ width: "70px", height: "auto" }}/>
                 </div>
                 <div className="track__info">
-                    <h4>{track.nombre}</h4>
+                    <h4>{currentTrack.nombre}</h4>
+                    <h6>{currentTrack.artista}</h6> {/* Asegúrate de que `artista` esté siendo proporcionado correctamente */}
                 </div>
             </div>
         </Container>
     );
 }
+
 
 const Container = styled.div`
     .track {

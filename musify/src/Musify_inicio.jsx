@@ -1,25 +1,27 @@
 import React from "react";
 import styled from "styled-components";
+import { TrackProvider } from "./components/TrackContext"; // Asegúrate de tener esta importación
 import Sidebar from "./components/Sidebar";
 import Footer from "./components/Footer";
-import Body_inicio from "./components/Body_inicio"
+import Body_inicio from "./components/Body_inicio";
 
-
-export default function Musify_inicio(){
+export default function Musify_inicio() {
     return (
-    <Container>
-        <div className="musify__body">
-            <Sidebar />
-            <div className="body">
-                <div className="body__contents">
-                    <Body_inicio />
+        <TrackProvider> {/* Añade el TrackProvider aquí */}
+            <Container>
+                <div className="musify__body">
+                    <Sidebar />
+                    <div className="body">
+                        <div className="body__contents">
+                            <Body_inicio />
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div className="musify__footer">
-            <Footer />
-        </div>
-    </Container>
+                <div className="musify__footer">
+                    <Footer />
+                </div>
+            </Container>
+        </TrackProvider>
     );
 }
 
@@ -41,4 +43,5 @@ const Container = styled.div`
             width: 100%; 
             overflow: auto;
         }
-    } `;
+    }
+`;
