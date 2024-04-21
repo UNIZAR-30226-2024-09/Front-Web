@@ -6,13 +6,45 @@ import { FiRepeat } from "react-icons/fi";
 import { PiMicrophoneStageFill } from "react-icons/pi";
 import Progress from "./Progress";
 import { useTrack } from './TrackContext';  // Ensure this correctly imports the context
+import LyricsWindow from './LyricsWindow';
 
 export default function PlayerControls() {
-    const { isPlaying, play, pause, audioRef} = useTrack();
+    const { isPlaying, play, pause, audioRef, currentTrackId, changeTrack } = useTrack();  // Asumiendo que currentTrackId tiene el ID de la canción actual
+    const [lyrics, setLyrics] = useState([]);
+    const [showLyrics, setShowLyrics] = useState(false);
 
 
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
+
+    // Este useEffect se encargará de imprimir currentTrackId cada vez que cambie
+    useEffect(() => {
+        console.log("Current Track ID:", currentTrackId);  // Imprimir el ID de la pista actual
+    }, [currentTrackId]);
+
+    useEffect(() => {
+        if (currentTrackId) {
+            import(`../Lyrics/${currentTrackId}.js`)
+                .then(songLyrics => {
+                    console.log("Letras cargadas:", songLyrics.default);  // Accediendo al default export
+                    if (Array.isArray(songLyrics.default)) {
+                        setLyrics(songLyrics.default);
+                    } else {
+                        console.error('The lyrics are not an array:', songLyrics.default);
+                        setLyrics([]);
+                    }
+                })
+                .catch(err => {
+                    console.error("No se pudo cargar las letras", err);
+                    setLyrics([]);
+                });
+        }
+    }, [currentTrackId]);
+    
+
+    const handleShowLyrics = () => setShowLyrics(true);
+    const handleCloseLyrics = () => setShowLyrics(false);
+
 
     useEffect(() => {
         const audio = audioRef.current;
@@ -47,11 +79,11 @@ export default function PlayerControls() {
     return (
         <Container>
             <div className="shuffle"><BsShuffle /></div>
-            <div className="previous"><CgPlayTrackPrev /></div>
+            <div className="previous" onClick={() => changeTrack(false)}><CgPlayTrackPrev /></div>
             <div className="state" onClick={togglePlayPause}>
                 {isPlaying ? <BsFillPauseCircleFill /> : <BsFillPlayCircleFill />}
             </div>
-            <div className="next"><CgPlayTrackNext /></div>
+            <div className="next" onClick={() => changeTrack(true)}><CgPlayTrackNext /></div>
             <div className="repeat"><FiRepeat /></div>
             <div className="progress-bar">
                 <Progress 
@@ -63,7 +95,8 @@ export default function PlayerControls() {
                     }} 
                 />
             </div>
-            <PiMicrophoneStageFill onClick={() => alert("Lyrics feature coming soon!")} style={{ cursor: 'pointer' }} />
+            <PiMicrophoneStageFill onClick={handleShowLyrics} style={{ cursor: 'pointer' }} />
+            {showLyrics && <LyricsWindow lyrics={lyrics} currentTime={currentTime} onClose={handleCloseLyrics} />}
         </Container>
     );
 }

@@ -1,25 +1,27 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const LyricsWindow = ({ lyrics, onClose }) => {
-    // Detiene la propagación del evento de clic para evitar que el modal se cierre al hacer clic en su contenido
-    const handleContentClick = (e) => {
-        e.stopPropagation();
-    };
+const LyricsWindow = ({ lyrics, currentTime, onClose }) => {
+  if (!Array.isArray(lyrics)) {
+    console.error('Expected lyrics to be an array but received:', lyrics);
+    return <div>No lyrics available</div>;
+  }
 
-    return (
-        <Backdrop onClick={onClose}>
-            <ModalContent onClick={handleContentClick}>
-                <CloseButton onClick={onClose}>&times;</CloseButton>
-                {lyrics.map((line, index) => (
-                    <p key={index} style={{ color: 'white' }}>{line.text}</p>
-                ))}
-            </ModalContent>
-        </Backdrop>
-    );
+  // Filtra la línea actual de las letras basada en el tiempo actual
+  const currentLine = lyrics.find(line => currentTime >= line.time && (!lyrics[lyrics.indexOf(line) + 1] || currentTime < lyrics[lyrics.indexOf(line) + 1].time));
+
+  return (
+      <Backdrop onClick={onClose}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+              <CloseButton onClick={onClose}>&times;</CloseButton>
+              {currentLine ? <p style={{ color: 'white' }}>{currentLine.text}</p> : <p style={{ color: 'white' }}>No lyrics to display</p>}
+          </ModalContent>
+      </Backdrop>
+  );
 };
 
 export default LyricsWindow;
+
 
 
 const Backdrop = styled.div`

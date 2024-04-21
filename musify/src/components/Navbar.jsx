@@ -5,9 +5,10 @@ import { CgProfile } from "react-icons/cg";
 
 export default function Navbar({ onSearch: parentOnSearch }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [artistData, setArtistData] = useState(null); // Estado para almacenar los datos del artista
-  const [loading, setLoading] = useState(false); // Estado para controlar la indicación de carga
-  const [error, setError] = useState(""); // Estado para almacenar un mensaje de error
+  const [artistData, setArtistData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showResults, setShowResults] = useState(false); // Nuevo estado para controlar la visibilidad de los resultados
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -15,30 +16,30 @@ export default function Navbar({ onSearch: parentOnSearch }) {
 
   const handleSearchSubmit = async (event) => {
     event.preventDefault();
-    setError(""); // Reiniciar mensajes de error
-    setLoading(true); // Iniciar indicación de carga
+    setError("");
+    setLoading(true);
+    setShowResults(false); // Ocultar resultados antes de la nueva búsqueda
     try {
-      const response = await fetch('http://34.175.117.0:8000/', {
+      const response = await fetch('http://127.0.0.1:8000/buscar/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ artist_name: searchQuery }),
+        body: JSON.stringify({ nombre: searchQuery }),
       });
   
       if (response.ok) {
         const data = await response.json();
-        console.log("Datos del artista encontrados:", data); // Imprimir los datos en la consola
-        setArtistData(data); // Almacenar los datos del artista
+        setArtistData(data);
+        setShowResults(true); // Mostrar resultados solo si la búsqueda fue exitosa
         if (parentOnSearch) parentOnSearch(data);
       } else {
-        // Maneja el error
-        setError("Error al buscar el artista. Por favor, intenta de nuevo.");
+        setError("Error al buscar. Por favor, intenta de nuevo.");
       }
     } catch (error) {
       setError("Error al conectar con el servicio. Por favor, verifica tu conexión.");
     } finally {
-      setLoading(false); // Finalizar indicación de carga
+      setLoading(false);
     }
   };
 
@@ -58,16 +59,22 @@ export default function Navbar({ onSearch: parentOnSearch }) {
           <CgProfile />
         </a>
       </div>
-      {/* Sección para mostrar los resultados o mensajes de estado */}
       {loading && <p>Cargando...</p>}
       {error && <p>{error}</p>}
-      {artistData && <div> {/* Ajusta esta parte según la estructura de tus datos */}
-        <p>Nombre del Artista: {artistData.artist.name}</p>
-        {/* Agrega más campos si es necesario */}
-      </div>}
+      {showResults && artistData.map((item, index) => (
+        <div key={index}>
+          {item.cancion && <p>Canción: {item.cancion.nombre}</p>}
+          {item.capitulo && <p>Capítulo: {item.capitulo.nombre}</p>}
+          {item.podcast && <p>Podcast: {item.podcast.nombre}</p>}
+          {item.artista && <p>Artista: {item.artista.nombre}</p>}
+          {item.album && <p>Álbum: {item.album.nombre}</p>}
+          {item.playlist && <p>Playlist: {item.playlist.nombre}</p>}
+        </div>
+      ))}
     </Container>
   );
 }
+
 
 
 

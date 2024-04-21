@@ -8,13 +8,13 @@ import { useUser } from './UserContext'; // Importa el hook useUser desde el con
 export default function RegisterMail() {
   const { userDetails, setUserDetails } = useUser(); // Obtiene userDetails y setUserDetails del contexto del usuario
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [correo, setEmail] = useState('');
   const [emailValid, setEmailValid] = useState(false);
 
   useEffect(() => {
     // Aquí, verifica si el campo de correo electrónico está lleno
-    setEmailValid(email.trim() !== '');
-  }, [email]);
+    setEmailValid(correo.trim() !== '');
+  }, [correo]);
 
   const handleGoogleSignIn = () => {
     console.log("Inicio de sesión con Google");
@@ -24,7 +24,7 @@ export default function RegisterMail() {
   const handleClick = () => {
     if (emailValid) {
       // Actualiza los detalles del usuario en el contexto
-      setUserDetails(prevDetails => ({ ...prevDetails, email }));
+      setUserDetails(prevDetails => ({ ...prevDetails, correo }));
       navigate('/register_2');
     }
   };
@@ -39,7 +39,7 @@ export default function RegisterMail() {
             <div className="input-box">
               <input 
                 type="text" 
-                value={email}
+                value={correo}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Dirección de correo electrónico" required />
               <FaUser className="icon"/>

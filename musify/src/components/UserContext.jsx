@@ -9,10 +9,10 @@ export function useUser() {
 export const UserProvider = ({ children }) => {
     const [userDetails, setUserDetails] = useState({
       correo: '',
-      contrasegna: '',
       nombre: '',
-      nacimiento: '',
       sexo: '',
+      nacimiento: '',
+      contrasegna: '',
       pais: '',
     });
   

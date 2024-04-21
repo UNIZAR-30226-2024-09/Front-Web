@@ -10,7 +10,7 @@ export default function Preguntas() {
         <>
             <Container>
                 <Header>
-                    <h1>Preguntas FQA</h1>
+                    <h1>Preguntas FAQ</h1>
                     <StyledCgProfile />
                 </Header>
                 <FlexContainer>

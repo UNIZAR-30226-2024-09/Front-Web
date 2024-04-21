@@ -23,7 +23,7 @@ export default function RegisterPasswd() {
 
     const handleClick = () => {
         if (passwdValid) {
-            setUserDetails(prevDetails => ({ ...prevDetails, password: passwd }));
+            setUserDetails(prevDetails => ({ ...prevDetails, contrasegna: passwd }));
             navigate('/register_3');
         }
     };

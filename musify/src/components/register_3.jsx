@@ -36,11 +36,11 @@ export default function RegisterInfo() {
 
     const handleClick = async () => {
         if (infoValid) {
-            const updatedUserDetails = { ...userDetails, name: name, dateOfBirth: date, gender: gender, country: country};
+            const updatedUserDetails = { ...userDetails, nombre: name, nacimiento: date, sexo: gender, pais: country};
             setUserDetails(updatedUserDetails);
             console.log(userDetails);
             try {
-                const response = await fetch('http://34.175.117.0:8000/registro/', {
+                const response = await fetch('http://127.0.0.1:8000/registro/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

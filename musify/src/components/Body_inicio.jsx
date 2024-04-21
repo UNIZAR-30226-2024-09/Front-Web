@@ -47,9 +47,10 @@ export default function Body_inicio() {
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    const updatedCanciones = data.canciones.map(cancion => {
+                    const updatedCanciones = data.canciones.slice(0, 3).map(cancion => {
                         return {
                             ...cancion,
+                            id: cancion.id,
                             foto: base64ToImageSrc(cancion.foto),
                             archivo_mp3: base64ToAudioSrc(cancion.archivo_mp3)
                         };
@@ -68,6 +69,9 @@ export default function Body_inicio() {
         fetchData();
     }, []);
 
+    const { setTrackList } = useTrack();
+
+
 
     if (loading) return <p>Cargando...</p>;
     if (error) return <p>Error: {error}</p>;
@@ -81,7 +85,7 @@ export default function Body_inicio() {
                 <ButtonStyled>Podcasts</ButtonStyled>
             </ButtonContainer>
             <SectionTitle>Has escuchado recientemente</SectionTitle>
-            <SongRow canciones={canciones.slice(3, 7)} />
+            <SongRow canciones={canciones.slice(0, 7)} />
             <SectionTitle>Hecho para Usuario</SectionTitle>
             <SongRow canciones={canciones.slice(3, 7)} />
             <SectionTitle>Top Canciones</SectionTitle>
@@ -104,13 +108,17 @@ const SongRow = ({ canciones }) => {
 
     const togglePlayPause = (index) => {
         const selectedSong = canciones[index];
+        if (!audioRefs.current[index].src) {
+            audioRefs.current[index].src = selectedSong.archivo_mp3; // Solo establece el src cuando es necesario
+        }
         updateTrack({
+            id: selectedSong.id,
             src: selectedSong.archivo_mp3,
             nombre: selectedSong.nombre,
             artista: selectedSong.artista,
             imagen: selectedSong.foto
         });
-    
+        
         if (audioRef.current.src && isPlaying) {
             pause();
         } else {
@@ -149,7 +157,6 @@ const SongRow = ({ canciones }) => {
         </RowContainer>
     );
 };
-
 
 const RowContainer = styled.div`
     display: flex;

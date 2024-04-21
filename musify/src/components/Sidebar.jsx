@@ -1,44 +1,73 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Link } from 'react-router-dom';
-import {IoLibrary,  IoChatbubblesOutline} from "react-icons/io5";
+import { IoLibrary, IoChatbubblesOutline } from "react-icons/io5";
 import { IoMdSettings } from "react-icons/io";
-import{ MdHomeFilled, MdSearch} from "react-icons/md";
+import { MdHomeFilled, MdSearch, MdAdd } from "react-icons/md";
 
 export default function Sidebar() {
-    return <Container>
-        <div className="top__links">
-            <div className="logo">
-           
-            </div>
-            <ul>
-                <li>
-                    <IoMdSettings />
-                    <span>Configuración</span>
-                </li>
-                <li>
-                <Link to="/inicio" className="link">
-                    <MdHomeFilled />
-                    <span>Inicio</span>
-                </Link>
-                </li>
-                <li>
-                <Link to="/busqueda" className="link">
-                    <MdSearch />
-                    <span>Buscar</span>
-                </Link>
-                </li>
-                <li>
-                <Link to="/salas" className="link">
-                    <IoChatbubblesOutline />
-                    <span>Chats Grupales</span>
-                </Link>
-                </li>
-                <div className="separator"></div>
-                <li>
+    const [playlists, setPlaylists] = useState([]);
+
+    useEffect(() => {
+        const fetchPlaylists = async () => {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/listarPlaylistsUsuario');
+                if (response.ok) {
+                    const data = await response.json();
+                    setPlaylists(data);  // Suponiendo que la respuesta es un array de playlists
+                } else {
+                    console.error('Failed to fetch playlists');
+                }
+            } catch (error) {
+                console.error('Error fetching playlists:', error);
+            }
+        };
+
+        fetchPlaylists();
+    }, []);
+
+    return (
+        <Container>
+            <div className="top__links">
+                <div className="logo">
+                    {/* Aquí puede ir el logo si tienes uno */}
+                </div>
+                <ul>
+                    <li>
+                        <IoMdSettings />
+                        <span>Configuración</span>
+                    </li>
+                    <li>
+                        <Link to="/inicio" className="link">
+                            <MdHomeFilled />
+                            <span>Inicio</span>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/busqueda" className="link">
+                            <MdSearch />
+                            <span>Buscar</span>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/salas" className="link">
+                            <IoChatbubblesOutline />
+                            <span>Chats Grupales</span>
+                        </Link>
+                    </li>
+                    <div className="separator"></div>
+                    <li>
                     <IoLibrary />
                     <span>Biblioteca</span>
+                    <Link to="/añadir-playlist" className="link">
+                        <MdAdd />
+                    </Link>
                 </li>
+                    {playlists.map((playlist) => (
+                        <li key={playlist.id}>
+                            {playlist.nombre}
+                        </li>
+                    ))}
                 <ButtonContainer>
                     <ButtonStyled>Listas</ButtonStyled>
                     <ButtonStyled>Álbumes</ButtonStyled>
@@ -47,6 +76,7 @@ export default function Sidebar() {
             </ul>
         </div>
     </Container>
+);
 }
 
 const ButtonContainer = styled.div`
@@ -60,7 +90,7 @@ const Container = styled.div`
     background-color: black;
     color: #b3b3b3;
     display: flex;
-    flex-diirection: row;
+    flex-direction: column;
     height: 100%;
     width: 350px;
     .top__links {
@@ -96,7 +126,6 @@ const Container = styled.div`
         text-decoration: none;
         color: inherit;
       }
-      
 `;
 
 const ButtonStyled = styled.button`

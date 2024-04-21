@@ -22,7 +22,7 @@ export default function LoginForm() {
             // Imprime en consola el cuerpo de la petición para depuración
             console.log("Enviando petición de inicio de sesión con el cuerpo:", requestBody);
     
-            const response = await fetch('http://34.175.117.0:8000/iniciarSesion/', {
+            const response = await fetch('http://127.0.0.1:8000/iniciarSesion/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
