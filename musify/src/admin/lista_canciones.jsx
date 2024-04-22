@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { FaSearch, FaCog, FaClock } from "react-icons/fa";
+import EditarCancion from "./editar_cancion";
 
 const canciones = [
     {
@@ -54,6 +55,11 @@ export default function ListaCancionesAdmin() {
         cancion.name.toLowerCase().includes(busqueda.toLowerCase()) ||
         cancion.artist.toLowerCase().includes(busqueda.toLowerCase())
     );
+
+    const handleEdicion = () => {
+        navigate(`/editar_?titulo=${cancion.name}&artista=${cancion.artist}&album=${cancion.album}&duracion=${cancion.duration}`);
+    };
+
     return(
         <>
             <Container>
@@ -91,7 +97,10 @@ export default function ListaCancionesAdmin() {
                                 </td>
                                 <td>{cancion.album}</td>
                                 <td>{cancion.duration}</td>
-                                <FaCog className="cancion__settings" />
+                                <FaCog 
+                                    className="cancion__settings" 
+                                    onClick={handleEdicion}
+                                />
                             </tr>
                         ))}
                     </tbody>

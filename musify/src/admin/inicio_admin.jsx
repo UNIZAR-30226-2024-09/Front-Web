@@ -1,11 +1,14 @@
 import React from "react";
 import styled, { keyframes } from "styled-components";
+import { useNavigate } from 'react-router-dom';
 import { CgProfile } from "react-icons/cg";
 import { LuListMusic } from "react-icons/lu";
 import { IoIosAdd } from "react-icons/io";
 import { RiPlayList2Fill } from "react-icons/ri";
 
 export default function InicioAdmin() {
+    const navigate = useNavigate();
+
     return (
         <>
             <Container>
