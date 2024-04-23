@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from 'react-router-dom';
-import Modal from "react-modal";
-
-Modal.setAppElement("#root");
+import AniadirWindow from "./salir_sin_guardar";
 
 export default function EditarCancionesAdmin() {
     const navigate = useNavigate();
@@ -27,12 +25,6 @@ export default function EditarCancionesAdmin() {
         }
     }, [titulo, artista, album, duracion, genero]);
 
-    const handleClick = () => {
-        if (cancionValid) {
-            navigate('/lista_canciones_admin');
-        }
-    };
-
     const handleExitWithoutSave = () => {
         setShowModal(true); // Muestra el modal al hacer clic en "Salir sin guardar"
     };
@@ -40,11 +32,15 @@ export default function EditarCancionesAdmin() {
     const handleCloseModal = () => {
         setShowModal(false); // Cierra el modal al hacer clic en "Cancelar" o fuera del modal
     };
+
+    const handleCloseModalNoSave = () => {
+        navigate('/lista_canciones_admin'); //Vuelve a la lista de canciones
+    };
     
-    const handleConfirmExit = () => {
-    // Lógica para salir sin guardar
-        console.log("Salir sin guardar");
-        setShowModal(false); // Cierra el modal después de realizar la acción
+    const handleCancionAniadida = () => {
+        if(cancionValid) {
+            navigate('/lista_canciones_admin');
+        }
     };
 
     return (
@@ -99,18 +95,12 @@ export default function EditarCancionesAdmin() {
                     </div>
                     <div className="buttons-container">
                         <button type="button" className="cancel-button" onClick={handleExitWithoutSave}>Salir sin guardar</button>
-                        <button type="submit" className="save-button">Guardar</button>
+                        {showModal && <AniadirWindow onClose={handleCloseModal} ruta={handleCloseModalNoSave} />}
+                        <button type="submit" className="save-button" onClick={handleCancionAniadida}>Guardar</button>
                     </div>
                 </form>
             </div>
         </Container>
-        <Modal isOpen={showModal} onRequestClose={handleCloseModal} className="modal">
-            <h2>¿Está seguro de que quiere salir sin gurdar la información sobre la canción?</h2>
-            <div className="modal-buttons">
-                <button onClick={handleCloseModal}>No</button>
-                <button onClick={handleConfirmExit}>Sí</button>
-            </div>
-        </Modal>
         </>
       );
 }
