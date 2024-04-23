@@ -27,12 +27,18 @@ export default function LoginForm() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: requestBody, // Usa directamente la variable ya definida
+                body: requestBody,
             });
     
             if (response.ok) {
                 const data = await response.json();
                 console.log('Inicio de sesión exitoso:', data);
+
+                // Almacenar el token en LocalStorage
+                localStorage.setItem('userToken', data.token);
+                console.log('Token guardado en LocalStorage.');
+
+                // Navegar a la página de inicio tras el inicio de sesión exitoso
                 navigate('/inicio');
             } else {
                 console.error('Inicio de sesión fallido.');

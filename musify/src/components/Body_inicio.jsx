@@ -47,16 +47,16 @@ export default function Body_inicio() {
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    const updatedCanciones = data.canciones.slice(0, 3).map(cancion => {
-                        return {
-                            ...cancion,
-                            id: cancion.id,
-                            foto: base64ToImageSrc(cancion.foto),
-                            archivo_mp3: base64ToAudioSrc(cancion.archivo_mp3)
-                        };
-                    });
+                    const updatedCanciones = data.canciones.slice(0, 3).map(cancion => ({
+                        id: cancion.id,
+                        foto: base64ToImageSrc(cancion.foto),
+                        archivo_mp3: base64ToAudioSrc(cancion.archivoMp3),
+                        nombre: cancion.nombre,
+                        artista: cancion.artista
+                    }));
                     setCanciones(updatedCanciones);
-                } else {
+                    setTrackList(updatedCanciones);
+                }else {
                     const errorData = await response.text();
                     throw new Error(errorData || "Error al recibir datos");
                 }

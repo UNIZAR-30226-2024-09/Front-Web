@@ -24,6 +24,7 @@ export const TrackProvider = ({ children }) => {
     };
 
     const setTrackList = (list) => {
+        console.log("Setting track list:", list);  // Imprimir el listado de pistas
         setTracks(list);
         if (list.length > 0 && trackIndex === -1) {
             setTrackIndex(0);
@@ -31,13 +32,16 @@ export const TrackProvider = ({ children }) => {
     };
 
     const changeTrack = (next) => {
+        console.log('Current track index:', trackIndex); // Muestra el índice actual
         const newIndex = next ? trackIndex + 1 : trackIndex - 1;
+        console.log('New track index:', newIndex); // Muestra el nuevo índice
         if (newIndex < 0 || newIndex >= tracks.length) return;
         setTrackIndex(newIndex);
-        audioRef.current.src = tracks[newIndex].src;
+        audioRef.current.src = tracks[newIndex].archivo_mp3;
+        console.log('New track src:', tracks[newIndex].archivo_mp3); // Muestra la nueva fuente
         play();
     };
-
+    
     const updateTrack = (track) => {
         if (currentTrack.src !== track.src) {
             audioRef.current.src = track.src;

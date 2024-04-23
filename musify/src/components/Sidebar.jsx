@@ -7,19 +7,34 @@ import { MdHomeFilled, MdSearch, MdAdd } from "react-icons/md";
 
 export default function Sidebar() {
     const [playlists, setPlaylists] = useState([]);
+    const [message, setMessage] = useState("");  // State to store message if no playlists
 
     useEffect(() => {
         const fetchPlaylists = async () => {
             try {
-                const response = await fetch('http://127.0.0.1:8000/listarPlaylistsUsuario');
+                const response = await fetch('http://127.0.0.1:8000/listarPlaylistsUsuario/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ correo: 'zineb@gmail.com' })
+                });
+                const data = await response.json();
                 if (response.ok) {
-                    const data = await response.json();
-                    setPlaylists(data);  // Suponiendo que la respuesta es un array de playlists
+                    if (data.playlists) {
+                        setPlaylists(data.playlists);
+                        setMessage("");
+                    } else {
+                        setMessage(data.message || "No playlists available.");
+                        setPlaylists([]);
+                    }
                 } else {
                     console.error('Failed to fetch playlists');
+                    setMessage("Failed to fetch playlists.");
                 }
             } catch (error) {
                 console.error('Error fetching playlists:', error);
+                setMessage("Error fetching playlists.");
             }
         };
 
@@ -30,7 +45,7 @@ export default function Sidebar() {
         <Container>
             <div className="top__links">
                 <div className="logo">
-                    {/* Aquí puede ir el logo si tienes uno */}
+                    {}
                 </div>
                 <ul>
                     <li>
@@ -52,32 +67,37 @@ export default function Sidebar() {
                     <li>
                         <Link to="/salas" className="link">
                             <IoChatbubblesOutline />
-                            <span>Chats Grupales</span>
+                            <span>Salas</span>
                         </Link>
                     </li>
                     <div className="separator"></div>
                     <li>
-                    <IoLibrary />
-                    <span>Biblioteca</span>
-                    <Link to="/añadir-playlist" className="link">
-                        <MdAdd />
-                    </Link>
-                </li>
-                    {playlists.map((playlist) => (
-                        <li key={playlist.id}>
-                            {playlist.nombre}
-                        </li>
-                    ))}
-                <ButtonContainer>
-                    <ButtonStyled>Listas</ButtonStyled>
-                    <ButtonStyled>Álbumes</ButtonStyled>
-                    <ButtonStyled>Artistas</ButtonStyled>
+                        <IoLibrary />
+                        <span>Biblioteca</span>
+                        <Link to="/añadir-playlist" className="link">
+                            <MdAdd />
+                        </Link>
+                    </li>
+                    <ButtonContainer>
+                    <ButtonStyled>Playlists</ButtonStyled>
+                    <ButtonStyled>Album</ButtonStyled>
+                    <ButtonStyled>Artista</ButtonStyled>
                 </ButtonContainer>
-            </ul>
-        </div>
-    </Container>
-);
+                {playlists.length > 0 ? (
+                    playlists.map((playlist) => (
+                        <StyledListItem key={playlist.id}>
+                            <Link to={`/musify/${playlist.id}`}>{playlist.nombre}</Link>
+                        </StyledListItem>
+                    ))
+                ) : (
+                        <li>{message}</li>
+                    )}
+                </ul>
+            </div>
+        </Container>
+    );
 }
+
 
 const ButtonContainer = styled.div`
     display: flex;
@@ -150,5 +170,18 @@ const ButtonStyled = styled.button`
     &:hover {
         background: #54b2e7;
         color: #fff;
+    }
+`;
+
+const StyledListItem = styled.li`
+    background-color: none; 
+    padding: 8px 16px;
+    margin: 5px 0;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    color: #ffffff; 
+
+    &:hover {
+        background-color: #54b2e7; 
     }
 `;

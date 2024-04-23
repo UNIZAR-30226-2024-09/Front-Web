@@ -4,9 +4,12 @@ import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
 import Body from "./components/Body";
 import Footer from "./components/Footer";
+import { useParams } from 'react-router-dom';
+
 
 
 export default function Musify(){
+    const { playlistId } = useParams();
     return (
     <Container>
         <div className="musify__body">

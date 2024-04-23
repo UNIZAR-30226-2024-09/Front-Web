@@ -73,17 +73,25 @@ export default function PlayerControls() {
         }
     };
 
+    const handlePrevTrack = () => {
+        changeTrack(false);
+    };
+
+    const handleNextTrack = () => {
+        changeTrack(true);
+    };
+
 
     const formatTime = (time) => `${Math.floor(time / 60)}:${Math.floor(time % 60).toString().padStart(2, '0')}`;
 
     return (
         <Container>
             <div className="shuffle"><BsShuffle /></div>
-            <div className="previous" onClick={() => changeTrack(false)}><CgPlayTrackPrev /></div>
+            <div className="previous" onClick={handlePrevTrack}><CgPlayTrackPrev /></div>
             <div className="state" onClick={togglePlayPause}>
                 {isPlaying ? <BsFillPauseCircleFill /> : <BsFillPlayCircleFill />}
             </div>
-            <div className="next" onClick={() => changeTrack(true)}><CgPlayTrackNext /></div>
+            <div className="next" onClick={handleNextTrack}><CgPlayTrackNext /></div>
             <div className="repeat"><FiRepeat /></div>
             <div className="progress-bar">
                 <Progress 
