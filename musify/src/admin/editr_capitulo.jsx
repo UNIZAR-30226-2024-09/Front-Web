@@ -1,9 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const EditCapWindow = ({titulo, fecha, duracion}) => {
+const EditCapWindow = ({idCap}) => {
   return (
-      <Backdrop onClick={onClose}>
+      <Backdrop>
           <ModalContent onClick={(e) => e.stopPropagation()}>
             <ButtonContainer>
                 <input
@@ -18,7 +18,7 @@ const EditCapWindow = ({titulo, fecha, duracion}) => {
                 <input
                     type="descripcion"
                 />
-                <CloseButton onClick={onClose}>&times;</CloseButton>
+                <CloseButton>&times;</CloseButton>
                 <AddButton>Guardar</AddButton>
             </ButtonContainer>
           </ModalContent>

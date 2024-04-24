@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from 'react-router-dom';
 import AniadirWindow from "./salir_sin_guardar";
-import EditCapWindow from "./ventana_cap";
+import EditCapWindow from "./editr_capitulo";
 import { FaCog, FaClock } from "react-icons/fa";
 
 const capitulos = [
