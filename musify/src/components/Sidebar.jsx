@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Link } from 'react-router-dom';
 import { IoLibrary, IoChatbubblesOutline } from "react-icons/io5";
-import { IoMdSettings } from "react-icons/io";
-import { MdHomeFilled, MdSearch, MdAdd } from "react-icons/md";
+import { IoMdSettings, IoIosAddCircleOutline } from "react-icons/io";
+import { MdHomeFilled, MdSearch, MdFavorite } from "react-icons/md"; // Assume MdFavorite is the star icon
 
 export default function Sidebar() {
     const [playlists, setPlaylists] = useState([]);
@@ -44,9 +44,6 @@ export default function Sidebar() {
     return (
         <Container>
             <div className="top__links">
-                <div className="logo">
-                    {}
-                </div>
                 <ul>
                     <li>
                         <IoMdSettings />
@@ -74,22 +71,22 @@ export default function Sidebar() {
                     <li>
                         <IoLibrary />
                         <span>Biblioteca</span>
-                        <Link to="/añadir-playlist" className="link">
-                            <MdAdd />
-                        </Link>
+                        <div className="icon-container">
+                            <Link to="/añadir-playlist" className="icon-link">
+                                <IoIosAddCircleOutline />
+                            </Link>
+                        </div>
                     </li>
-                    <ButtonContainer>
-                    <ButtonStyled>Playlists</ButtonStyled>
-                    <ButtonStyled>Album</ButtonStyled>
-                    <ButtonStyled>Artista</ButtonStyled>
-                </ButtonContainer>
-                {playlists.length > 0 ? (
-                    playlists.map((playlist) => (
-                        <StyledListItem key={playlist.id}>
-                            <Link to={`/musify/${playlist.id}`}>{playlist.nombre}</Link>
-                        </StyledListItem>
-                    ))
-                ) : (
+                    {playlists.length > 0 ? (
+                        playlists.map((playlist, index) => (
+                            <StyledListItem key={playlist.id}>
+                                <Link to={`/musify/${playlist.id}`} className="link">
+                                    {index === 0 ? <MdFavorite color="#b3b3b3" /> : <IoLibrary />}
+                                    <span>{playlist.nombre}</span>
+                                </Link>
+                            </StyledListItem>
+                        ))
+                    ) : (
                         <li>{message}</li>
                     )}
                 </ul>
@@ -98,12 +95,24 @@ export default function Sidebar() {
     );
 }
 
-
-const ButtonContainer = styled.div`
+const StyledListItem = styled.li`
     display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    margin-top: none;
+    align-items: center;
+    padding: 3px 0px;
+    margin:0;
+    border-radius: 4px;
+    color: #b3b3b3;
+    &:hover {
+        background-color: #54b2e7;
+    }
+    .link {
+        display: flex;
+        align-items: center;
+        gap: 10px
+        color: inherit;
+        text-decoration: none;
+        width: 100%;
+    }
 `;
 
 const Container = styled.div`
@@ -125,63 +134,37 @@ const Container = styled.div`
         padding: 1rem;
         li {
             display: flex;
+            align-items: center;
             gap: 1rem;
             cursor: pointer;
             transition: 0.3s ease-in-out;
             &:hover {
                 color: white;
             }
-
+        }
+        .icon-container {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+        }
+        .icon-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: inherit;
         }
     }
     .separator {
-        height: 1px; 
+        height: 1px;
         background-color: #fff;
-        width: 300px; 
+        width: 300px;
         margin: 10px auto;
     }
     .link {
         display: flex;
+        align-items: center;
         gap: 1rem;
         text-decoration: none;
         color: inherit;
-      }
-`;
-
-const ButtonStyled = styled.button`
-    width: 90px;
-    height: 40px;
-    border: none;
-    outline: none;
-    border-radius: 40px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 700;
-    background: #575151;
-    color: #fff;
-    box-shadow: 0 0 10px rgba(0,0,0, .1);
-    border-radius: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    border: #575151;
-
-    &:hover {
-        background: #54b2e7;
-        color: #fff;
-    }
-`;
-
-const StyledListItem = styled.li`
-    background-color: none; 
-    padding: 8px 16px;
-    margin: 5px 0;
-    border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    color: #ffffff; 
-
-    &:hover {
-        background-color: #54b2e7; 
     }
 `;

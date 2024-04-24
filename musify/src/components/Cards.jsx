@@ -72,7 +72,7 @@ export default function Cards() {
                     [genre]: data.canciones.slice(0, 2).map(song => ({ // Solo tomar las primeras dos canciones
                         ...song,
                         foto: base64ToImageSrc(song.foto),
-                        archivo_mp3: base64ToAudioSrc(song.archivo_mp3)
+                        archivoMp3: base64ToAudioSrc(song.archivoMp3)
                     }))
                 }));
             };
@@ -85,9 +85,9 @@ export default function Cards() {
         const selectedSong = songs[genre][index];
     
         if (!audioElement.src) {
-            audioElement.src = selectedSong.archivo_mp3;  // Set src only if it's not already set
+            audioElement.src = selectedSong.archivoMp3;  // Set src only if it's not already set
             updateTrack({
-                src: selectedSong.archivo_mp3,
+                src: selectedSong.archivoMp3,
                 id: selectedSong.id,
                 imagen: selectedSong.foto,
                 nombre: selectedSong.nombre,

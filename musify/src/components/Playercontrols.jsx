@@ -7,17 +7,52 @@ import { PiMicrophoneStageFill } from "react-icons/pi";
 import Progress from "./Progress";
 import { useTrack } from './TrackContext';  // Ensure this correctly imports the context
 import LyricsWindow from './LyricsWindow';
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 export default function PlayerControls() {
-    const { isPlaying, play, pause, audioRef, currentTrackId, changeTrack } = useTrack();  // Asumiendo que currentTrackId tiene el ID de la canción actual
+    const {
+        isPlaying,
+        play,
+        pause,
+        audioRef,
+        currentTrackId,
+        changeTrack,
+        trackIndex,
+        tracks, 
+        setTrackIndex,
+        updateTrack 
+    } = useTrack();
+
     const [lyrics, setLyrics] = useState([]);
     const [showLyrics, setShowLyrics] = useState(false);
-
-
+    const [isRepeating, setIsRepeating] = useState(false);
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
+    const [isFavorited, setIsFavorited] = useState(false);
 
-    // Este useEffect se encargará de imprimir currentTrackId cada vez que cambie
+    const handleFavorite = () => {
+        setIsFavorited(!isFavorited);
+    };
+    
+    const togglePlayPause = () => {
+        if (isPlaying) {
+            pause();
+        } else {
+            play();
+        }
+    };
+
+    const handlePrevTrack = () => {
+        changeTrack(false);
+    };
+
+    const handleNextTrack = () => {
+        const newIndex = (trackIndex + 1) % tracks.length;
+        setTrackIndex(newIndex);
+        updateTrack(tracks[newIndex]);
+    };
+    
+
     useEffect(() => {
         console.log("Current Track ID:", currentTrackId);  // Imprimir el ID de la pista actual
     }, [currentTrackId]);
@@ -40,8 +75,27 @@ export default function PlayerControls() {
                 });
         }
     }, [currentTrackId]);
-    
 
+    useEffect(() => {
+        const audio = audioRef.current;
+    
+        const onEnded = () => {
+            if (isRepeating) {
+                play();  // Reproduce la misma canción de nuevo
+            } else {
+                changeTrack(true);  // Pasa a la siguiente pista
+            }
+        };
+    
+        audio.addEventListener('ended', onEnded);
+    
+        return () => {
+            audio.removeEventListener('ended', onEnded);
+        };
+    }, [audioRef, isRepeating, play, changeTrack]); // Añade changeTrack a la lista de dependencias
+    
+    
+    
     const handleShowLyrics = () => setShowLyrics(true);
     const handleCloseLyrics = () => setShowLyrics(false);
 
@@ -65,34 +119,48 @@ export default function PlayerControls() {
         };
     }, [audioRef]);
 
-    const togglePlayPause = () => {
-        if (isPlaying) {
-            pause();
-        } else {
-            play();
-        }
+    useEffect(() => {
+        const audio = audioRef.current;
+    
+        const onEnded = () => {
+            if (isRepeating) {
+                play();
+            }
+        };
+    
+        audio.addEventListener('ended', onEnded);
+    
+        return () => {
+            audio.removeEventListener('ended', onEnded);
+        };
+    }, [audioRef, isRepeating, play]);
+
+    const toggleRepeat = () => {
+        setIsRepeating(!isRepeating);
     };
+    
+    const repeatIconStyle = isRepeating ? { color: 'red' } : { color: 'grey' };
 
-    const handlePrevTrack = () => {
-        changeTrack(false);
-    };
+    
 
-    const handleNextTrack = () => {
-        changeTrack(true);
-    };
-
-
-    const formatTime = (time) => `${Math.floor(time / 60)}:${Math.floor(time % 60).toString().padStart(2, '0')}`;
+     const formatTime = (time) => `${Math.floor(time / 60)}:${Math.floor(time % 60).toString().padStart(2, '0')}`;
 
     return (
         <Container>
-            <div className="shuffle"><BsShuffle /></div>
+            <div className="track__actions">
+                    <div onClick={handleFavorite}>
+                        {isFavorited ? <FaHeart color="red" /> : <FaHeart color="white" />}
+                    </div>
+                </div>
             <div className="previous" onClick={handlePrevTrack}><CgPlayTrackPrev /></div>
             <div className="state" onClick={togglePlayPause}>
                 {isPlaying ? <BsFillPauseCircleFill /> : <BsFillPlayCircleFill />}
             </div>
             <div className="next" onClick={handleNextTrack}><CgPlayTrackNext /></div>
-            <div className="repeat"><FiRepeat /></div>
+            <div className="repeat" onClick={toggleRepeat}>
+                <FiRepeat style={repeatIconStyle} />
+            </div>
+
             <div className="progress-bar">
                 <Progress 
                     currentTime={currentTime} 

@@ -42,8 +42,8 @@ const Container = styled.div`
         background: linear-gradient(transparent, rgba(0,0,0,1));
         background-color: rgb(32, 87, 100);
         .body{
-            height: 90%;
-            width: 90%; 
+            height: 100%;
+            width: 100%; 
             overflow: auto;
         }
     } `;
