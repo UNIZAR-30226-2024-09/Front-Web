@@ -2,27 +2,44 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from 'react-router-dom';
 import AniadirWindow from "./salir_sin_guardar";
+import { FaCog, FaClock } from "react-icons/fa";
 
-export default function AniadirCancionesAdmin() {
+const capitulos = [
+    {
+      id: 1,
+      name: "Capitulo 1",
+      fecha: "Fecha 1",
+      duration: "3:45",
+    },
+    {
+      id: 2,
+      name: "Capitulo 2",
+      fecha: "Fecha 2",
+      duration: "4:05",
+    },
+];
+
+export default function AniadirPodcasrAdmin() {
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
+    const [showModalCap, setShowModalCap] = useState(false);
+    const [podcastValid, setPodcastValid] = useState(false);
 
     const [titulo, setTitulo] = useState('');
-    const [artista, setArtista] = useState('');
-    const [album, setAlbum] = useState('');
+    const [presentador, setPresentador] = useState('');
+    const [fecha, setFecha] = useState('');
     const [duracion, setDuracion] = useState('');
     const [genero, setGenero] = useState('');
     const [imagen, setImagen] = useState(null);
     const [audio, setAudio] = useState(null);
-    const [cancionValid, setCancionValid] = useState(false);
 
     useEffect(() => {
-        if (titulo.trim() !== '' && artista.trim() !== '' && album.trim() !== '' && duracion.trim() !== '') {
-          setCancionValid(true);
+        if (titulo.trim() !== '' && fecha.trim() !== '' && duracion.trim() !== '' ) {
+          setPodcastValid(true);
         } else {
-          setCancionValid(false);
+          setPodcastValid(false);
         }
-    }, [titulo, artista, album, duracion, genero]);
+    }, [titulo, presentador, fecha]);
 
     const handleExitWithoutSave = () => {
         setShowModal(true); // Muestra el modal al hacer clic en "Salir sin guardar"
@@ -33,13 +50,17 @@ export default function AniadirCancionesAdmin() {
     };
 
     const handleCloseModalNoSave = () => {
-        navigate('/lista_canciones_admin'); //Vuelve a la lista de canciones
+        navigate('/lista_podcast_admin'); //Vuelve a la lista de canciones
     };
     
     const handleCancionAniadida = () => {
-        if(cancionValid) {
-            navigate('/lista_canciones_admin');
+        if(podcastValid) {
+            navigate('/lista_podcast_admin');
         }
+    };
+
+    const handleEditarCap = () => {
+        setShowModalCap(true)
     };
 
     return (
@@ -57,24 +78,17 @@ export default function AniadirCancionesAdmin() {
                         </div>
                         <div className="input-box">
                             <input 
-                                type="artista" 
-                                value={artista}
-                                onChange={e=>setArtista(e.target.value)}
-                                placeholder="Artista" required />
+                                type="presentador" 
+                                value={presentador}
+                                onChange={e=>setPresentador(e.target.value)}
+                                placeholder="Presentador" required />
                         </div>
                         <div className="input-box">
                             <input 
-                                type="album" 
-                                value={album}
-                                onChange={e=>setAlbum(e.target.value)}
-                                placeholder="Album" required />
-                        </div>
-                        <div className="input-box">
-                            <input 
-                                type="duracion" 
-                                value={duracion}
-                                onChange={e=>setDuracion(e.target.value)}
-                                placeholder="Duración" required />
+                                type="año" 
+                                value={fecha}
+                                onChange={e=>setFecha(e.target.value)}
+                                placeholder="Año" required />
                         </div>
                         <select value={genero} onChange={e=>setGenero(e.target.value)} required>
                             <option value="">Selecciona un género</option>
@@ -92,6 +106,27 @@ export default function AniadirCancionesAdmin() {
                         <h7>Imagen:</h7>
                         <input type="file" accept="image/*" onChange={e=>setImagen(e.target.value)} required />
                     </div>
+                    <div className="chapter-list-container">
+                        <div className="chapter-list-header">
+                            <div className="chapter-list-item">Capítulo</div>
+                            <div className="chapter-list-item">Título</div>
+                            <div className="chapter-list-item">Fecha</div>
+                            <div className="chapter-list-item"><FaClock /></div>
+                            <div className="chapter-list-item">Editar</div>
+                        </div>
+                        <div className="chapter-list-body">
+                            {capitulos.map(capitulo => (
+                                <div key={capitulo.id} className="chapter-list-row">
+                                    <div className="chapter-list-item">{capitulo.id}</div>
+                                    <div className="chapter-list-item">{capitulo.name}</div>
+                                    <div className="chapter-list-item">{capitulo.fecha}</div>
+                                    <div className="chapter-list-item">{capitulo.duration}</div>
+                                    <div className="chapter-list-item"><FaCog className="capitulos__settings"/></div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
                     <div className="buttons-container">
                         <button type="button" className="cancel-button" onClick={handleExitWithoutSave}>Salir sin guardar</button>
                         {showModal && <AniadirWindow onClose={handleCloseModal} ruta={handleCloseModalNoSave} />}
@@ -122,7 +157,7 @@ const Container = styled.div`
 
 .info {
     width: 100%;
-    height: 500px;
+    height: 380px;
     padding: 30px;
     .titulo {
         width: 400px;
@@ -153,7 +188,7 @@ const Container = styled.div`
 
 .audio{
     position: absolute;
-    bottom: 180px;
+    bottom: 260px;
     right: 40px;
     width: 300px;
     height: 50px;
@@ -188,16 +223,16 @@ const Container = styled.div`
   .buttons-container {
     display: flex;
     justify-content: space-between;
-    padding: 0 20px;
+    padding: 30px 20px;
   }
 
   .cancel-button, .save-button {
     padding: 10px 20px;
-    border: none;
+    border: 20px;
     border-radius: 20px;
     cursor: pointer;
     font-weight: bold;
-    bottom: 100px;
+    bottom: 1px;
   }
 
   .cancel-button {
@@ -209,4 +244,37 @@ const Container = styled.div`
     background-color: #4CAF50; /* Verde */
     color: #fff;
   }
+
+
+
+  .chapter-list-container {
+    overflow-y: auto; 
+    scroll-behavior: smooth;
+        .capitulos__settings {
+            cursor: pointer;
+        }
+        .chapter-list-header {
+            display: flex;
+            justify-content: space-between;
+            background-color: none;
+            padding: 8px;
+            font-weight: bold;
+        }
+        .chapter-list-body {
+            overflow-y: auto; 
+        }
+    
+        .chapter-list-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #ccc;
+            padding: 8px;
+        }
+    
+        .chapter-list-item {
+            flex: 1;
+            text-align: center;
+        }
+    }
+
 `;

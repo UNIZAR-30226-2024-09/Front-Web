@@ -22,6 +22,9 @@ import IniAdmin from './admin/inicio_admin';
 import ListaCancionesAdmin from './admin/lista_canciones';
 import EditarCancionAdmin from './admin/editar_cancion';
 import AniadirCancionAdmin from './admin/aniadir_cancion';
+import ListaPodcastAdmin from './admin/lista_podcasts';
+import AniadirPodcastAdmin from './admin/aniadir_podcast';
+import EditarPodcastAdmin from './admin/editar_podcast';
 
 export default class App extends React.Component {
   render() {
@@ -50,6 +53,9 @@ export default class App extends React.Component {
             <Route path="/lista_canciones_admin" element={<ListaCancionesAdmin />} />
             <Route path="/editar_cancion" element={<EditarCancionAdmin />} />
             <Route path="/aniadir_cancion" element={<AniadirCancionAdmin />} />
+            <Route path="/lista_podcast_admin" element={<ListaPodcastAdmin />} />
+            <Route path="/aniadir_podcast" element={<AniadirPodcastAdmin />} />
+            <Route path="/editar_podcast" element={<EditarPodcastAdmin />} />
 
           </Routes>
         </UserProvider>

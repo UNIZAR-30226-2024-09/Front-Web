@@ -2,60 +2,35 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { FaSearch, FaCog, FaClock } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
-import EditarCancion from "./editar_cancion";
 
-const canciones = [
+const podcast = [
     {
       id: 1,
-      name: "Canción 1",
-      artist: "Artista 1",
-      album: "Álbum 1",
-      duration: "3:45",
+      name: "Podcast 1",
+      presentador: "Presentador 1",
+      fecha: "Fecha 1",
+      cap: "2",
       imageUrl: "/imagenes/prueba.jpg",
     },
     {
-      id: 2,
-      name: "Canción 2",
-      artist: "Artista 2",
-      album: "Álbum 2",
-      duration: "4:05",
-      imageUrl: "/imagenes/prueba.jpg",
-    },
-    {
-        id: 3,
-        name: "Canción 3",
-        artist: "Artista 3",
-        album: "Álbum 3",
-        duration: "4:05",
-        imageUrl: "/imagenes/prueba.jpg",
-    },
-    {
-        id: 4,
-        name: "Canción 5",
-        artist: "Artista 4",
-        album: "Álbum 4",
-        duration: "4:05",
-        imageUrl: "/imagenes/prueba.jpg",
-    },
-    {
-        id: 5,
-        name: "Canción 5",
-        artist: "Artista 5",
-        album: "Álbum 5",
-        duration: "4:05",
+        id: 2,
+        name: "Podcast 2",
+        presentador: "Presentador 2",
+        fecha: "Fecha 2",
+        cap: "3",
         imageUrl: "/imagenes/prueba.jpg",
     },
 ];
 
 
-export default function ListaCancionesAdmin() {
+export default function ListaPodcastsAdmin() {
     const navigate = useNavigate();
     const [busqueda, setBusqueda] = useState("");
 
     // Función para filtrar las canciones
-    const cancionesFiltradas = canciones.filter(cancion =>
-        cancion.name.toLowerCase().includes(busqueda.toLowerCase()) ||
-        cancion.artist.toLowerCase().includes(busqueda.toLowerCase())
+    const podcastFiltrados = podcast.filter(podcast =>
+        podcast.name.toLowerCase().includes(busqueda.toLowerCase()) ||
+        podcast.presentador.toLowerCase().includes(busqueda.toLowerCase())
     );
 
     const handleEdicion = () => {
@@ -69,7 +44,7 @@ export default function ListaCancionesAdmin() {
                     <FaSearch />
                     <input 
                         type="text" 
-                        placeholder="Buscar canciones por nombre, artista..."
+                        placeholder="Buscar podcast por nombre, autor..."
                         value={busqueda}
                         onChange={(e) => setBusqueda(e.target.value)}
                     />
@@ -79,29 +54,29 @@ export default function ListaCancionesAdmin() {
                         <tr>
                             <th>#</th>
                             <th>Título</th>
-                            <th>Álbum</th>
-                            <th><FaClock /></th>
+                            <th>Fecha</th>
+                            <th>Capítulos</th>
                             <th>Editar</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {cancionesFiltradas.map(cancion => (
-                            <tr key={cancion.id}>
-                                <td>{cancion.id}</td>
+                        {podcastFiltrados.map(podcast => (
+                            <tr key={podcast.id}>
+                                <td>{podcast.id}</td>
                                 <td>
-                                    <div className="cancion__details">
-                                        <img src={cancion.imageUrl} alt={cancion.name} />
+                                    <div className="podcast__details">
+                                        <img src={podcast.imageUrl} alt={podcast.name} />
                                         <div>
-                                            <div className="cancion__title">{cancion.name}</div>
-                                            <div className="cancion__artist">{cancion.artist}</div>
+                                            <div className="podcast__title">{podcast.name}</div>
+                                            <div className="podcast__author">{podcast.presentador}</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td>{cancion.album}</td>
-                                <td>{cancion.duration}</td>
+                                <td>{podcast.fecha}</td>
+                                <td>{podcast.cap}</td>
                                 <FaCog 
-                                    className="cancion__settings" 
-                                    onClick={handleEdicion}
+                                    className="podcast__settings" 
+                                    
                                 />
                             </tr>
                         ))}
@@ -153,17 +128,17 @@ const Table = styled.table`
     color: #fff;
     font-weight: bold;
   }
-  .cancion__title {
+  .podcast__title {
     font-weight: bold;
   }
-  .cancion__artist {
+  .podcast__author {
     color: #555;
     font-style: italic;
   }
-  .cancion__settings {
+  .podcast__settings {
     cursor: pointer;
   }
-  .cancion__details {
+  .podcast__details {
     display: flex;
     align-items: center;
     img {
