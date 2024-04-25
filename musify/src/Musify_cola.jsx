@@ -2,7 +2,7 @@ import React from "react";
 import styled, { createGlobalStyle } from "styled-components";
 import Sidebar from "./components/Sidebar";
 import Footer from "./components/Footer";
-import Cola from "./components/cola";
+import Cola from "./components/Cola";
 
 export default function Musify(){
     return (
