@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useRef, useEffect } from 'react';
 import styled from "styled-components";
 import { FaUser, FaLock, FaCaretDown, FaCalendarAlt } from "react-icons/fa"; // Importa FaCaretDown para el ícono de la flecha
 import "./LoginForm.css";
@@ -20,6 +20,7 @@ const FormSchema = z.object({
 });
 
 export default function Profile() {
+    const dateInputRef = useRef(null);
     const { control, handleSubmit, reset } = useForm({
       resolver: zodResolver(FormSchema),
       defaultValues: {
@@ -62,38 +63,16 @@ export default function Profile() {
                 />
                 <FaLock className="icon" />
               </div>
-  
-                {/* Fecha de Nacimiento */}
-                <div className="input-box date-input-box">
-                  <Controller
-                    name="dob"
-                    control={control}
-                    render={({ field }) => <input {...field} type="date" />}
-                  />
-                  <FaCalendarAlt className="icon"/>
-                </div>
-  
-                {/* Sexo */}
-                <div className="input-box">
-                  <Controller
-                    name="gender"
-                    control={control}
-                    render={({ field }) => (
-                      <div className="select-container">
-                           <select {...field}>
-                                <option value="">Seleccione su sexo</option>
-                                <option value="Mujer">Mujer</option>
-                                <option value="Hombre">Hombre</option>
-                                <option value="Otro">Otro</option>
-                                <option value="Prefiero no decirlo">Prefiero no decirlo</option>
-                            </select>
-                        <FaCaretDown className="select-icon"/>
-                      </div>
-                    )}
-                  />
-                </div>
-  
-                {/* País */}
+              <div className="input-box date-input-box">
+                <Controller
+                  name="dob"
+                  control={control}
+                  render={({ field }) => (
+                    <input {...field} type="date" ref={dateInputRef} />
+                  )}
+                />
+                <FaCalendarAlt className="date-icon" onClick={() => dateInputRef.current && dateInputRef.current.click()} />
+              </div>
                 <div className="select-wrapper">
                   {<select name="country" id="country">
                     <option value="">Seleccione un país</option>
@@ -323,11 +302,26 @@ export default function Profile() {
                     <option value="ZM">Zambia</option>
                     <option value="ZW">Zimbabue</option>
                     </select>
-
                     }
                 </div>
-  
-                {/* Botones */}
+                <div className="input-box">
+                  <Controller
+                    name="gender"
+                    control={control}
+                    render={({ field }) => (
+                      <div className="select-container">
+                           <select {...field}>
+                                <option value="">Seleccione su sexo</option>
+                                <option value="Mujer">Mujer</option>
+                                <option value="Hombre">Hombre</option>
+                                <option value="Otro">Otro</option>
+                                <option value="Prefiero no decirlo">Prefiero no decirlo</option>
+                            </select>
+                        <FaCaretDown className="select-icon"/>
+                      </div>
+                    )}
+                  />
+                </div>
                 <div className="buttons-container">
                   <button type="button" className="cancel-button">Cancelar</button>
                   <button type="submit" className="save-button">Guardar Cambios</button>
@@ -342,45 +336,54 @@ export default function Profile() {
 const Container = styled.div`
 .wrapper {
     width: 800px;
-    height: 550px;
+    height: 570px;
     color: #fff;
     border-radius: 40px;
     padding: 30px 40px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 80px;
+    margin-top: 50px;
     background: rgba(0, 0, 0, 0.25);
 }
   
 .input-box, .date-input-box, .select-wrapper, .select-container {
-    position: relative;
-    width: 100%;
-    margin: 30px 0;
-  }
+  position: relative;
+  width: 100%;
+  margin: 30px 0;
+}
 
-  input, select {
-    width: 100%;
-    height: 50px;
-    background: transparent;
-    outline: none;
-    border: 2px solid #fff;
-    border-radius: 20px;
-    font-size: 16px;
-    color: #fff;
-    padding-left: 20px;
-    padding-right: 45px; /* Espacio para el ícono */
-    appearance: none; /* Remueve la flecha predeterminada de select */
-  }
+input, select {
+  width: 100%;
+  height: 50px;
+  background: transparent;
+  outline: none;
+  border: 2px solid #fff;
+  border-radius: 20px;
+  font-size: 16px;
+  color: #000;
+  padding-left: 20px;
+  padding-right: 45px;
+  appearance: none;
+}
 
-  .icon, .select-icon {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #fff;
-    pointer-events: none;
-  }
+.icon, .select-icon, .date-icon {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #fff;
+  pointer-events: none;
+}
+
+.date-icon {
+  cursor: pointer;
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #fff;
+}
 
   .buttons-container {
     display: flex;

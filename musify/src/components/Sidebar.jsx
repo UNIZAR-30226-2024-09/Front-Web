@@ -1,53 +1,87 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Link } from 'react-router-dom';
-import { IoLibrary, IoChatbubblesOutline } from "react-icons/io5";
+import { IoLibrary, IoChatbubblesOutline} from "react-icons/io5";
+import { FaPowerOff } from "react-icons/fa";
 import { IoMdSettings, IoIosAddCircleOutline } from "react-icons/io";
 import { MdHomeFilled, MdSearch, MdFavorite } from "react-icons/md"; // Assume MdFavorite is the star icon
 
 export default function Sidebar() {
     const [playlists, setPlaylists] = useState([]);
-    const [message, setMessage] = useState("");  // State to store message if no playlists
+    const [message, setMessage] = useState("");
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
-        const fetchPlaylists = async () => {
+        const fetchUserDetails = async () => {
+            const token = localStorage.getItem('userToken');
             try {
-                const response = await fetch('http://127.0.0.1:8000/listarPlaylistsUsuario/', {
+                const response = await fetch('http://127.0.0.1:8000/obtenerUsuarioSesionAPI/', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ correo: 'zineb@gmail.com' })
+                    body: JSON.stringify({
+                        token: token,
+                    }),
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    if (data.playlists) {
-                        setPlaylists(data.playlists);
-                        setMessage("");
-                    } else {
-                        setMessage(data.message || "No playlists available.");
-                        setPlaylists([]);
-                    }
+                    setUser(data);
                 } else {
-                    console.error('Failed to fetch playlists');
-                    setMessage("Failed to fetch playlists.");
+                    console.error('Failed to fetch user details:', data);
                 }
             } catch (error) {
-                console.error('Error fetching playlists:', error);
-                setMessage("Error fetching playlists.");
+                console.error('Error fetching user details:', error);
             }
         };
-
-        fetchPlaylists();
+    
+        if(localStorage.getItem('userToken')) {
+            fetchUserDetails();
+        }
     }, []);
+    
+
+    useEffect(() => {
+        if (user && user.correo) {
+            const fetchPlaylists = async () => {
+                try {
+                    const response = await fetch('http://127.0.0.1:8000/listarPlaylistsUsuario/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ correo: user.correo })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        if (data.playlists) {
+                            setPlaylists(data.playlists);
+                        }
+                    } else {
+                        console.error('Failed to fetch playlists');
+                    }
+                } catch (error) {
+                    console.error('Error fetching playlists:', error);
+                }
+            };
+
+            fetchPlaylists();
+        }
+    }, [user]);
 
     return (
         <Container>
             <div className="top__links">
                 <ul>
                     <li>
+                        <FaPowerOff />
+                        <span>Cerrar Sesión</span>
+                    </li>
+                    <li>
+                    <Link to="/asistencia" className="link">
                         <IoMdSettings />
                         <span>Configuración</span>
+                    </Link>
                     </li>
                     <li>
                         <Link to="/inicio" className="link">
