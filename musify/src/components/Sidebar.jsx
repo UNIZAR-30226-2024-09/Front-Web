@@ -1,16 +1,44 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { IoLibrary, IoChatbubblesOutline} from "react-icons/io5";
 import { FaPowerOff } from "react-icons/fa";
 import { IoMdSettings, IoIosAddCircleOutline } from "react-icons/io";
-import { MdHomeFilled, MdSearch, MdFavorite } from "react-icons/md"; // Assume MdFavorite is the star icon
+import { MdHomeFilled, MdSearch, MdFavorite } from "react-icons/md";
+
 
 export default function Sidebar() {
     const [playlists, setPlaylists] = useState([]);
     const [message, setMessage] = useState("");
     const [user, setUser] = useState(null);
+    const navigate = useNavigate();
 
+    const handleLogout = async () => {
+        const token = localStorage.getItem('userToken');
+    
+        if (token) {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/cerrarSesionAPI/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    console.log('Cierre de sesión correcto:', data.message);
+                    localStorage.removeItem('userToken');
+                    navigate('/login')
+                } else {
+                    console.error('Error al cerrar sesión:', data.message);
+                }
+            } catch (error) {
+                console.error('Error al realizar la petición de cierre de sesión:', error);
+            }
+        }
+    };
+    
     useEffect(() => {
         const fetchUserDetails = async () => {
             const token = localStorage.getItem('userToken');
@@ -73,7 +101,7 @@ export default function Sidebar() {
         <Container>
             <div className="top__links">
                 <ul>
-                    <li>
+                    <li onClick={handleLogout}>
                         <FaPowerOff />
                         <span>Cerrar Sesión</span>
                     </li>

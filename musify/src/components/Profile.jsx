@@ -1,80 +1,151 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import styled from "styled-components";
-import { FaUser, FaLock, FaCaretDown, FaCalendarAlt } from "react-icons/fa"; // Importa FaCaretDown para el ícono de la flecha
+import { FaUser, FaLock, FaCalendarAlt } from "react-icons/fa";
 import "./LoginForm.css";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-const getUserData = () => ({
-  email: "daniel@gmail.com",
-  dob: "2002-01-01",
-  country: "ES",
-  gender: "Hombre"
-});
-
 const FormSchema = z.object({
   email: z.string().email().nonempty(),
+  nombre: z.string().min(1, "El nombre es requerido"),
   dob: z.string(),
   country: z.string().min(1),
+  gender: z.string().nonempty(),
+  password: z.string().min(1),
 });
 
 export default function Profile() {
-    const dateInputRef = useRef(null);
-    const { control, handleSubmit, reset } = useForm({
+  const dateInputRef = useRef(null);
+  const [userEmail, setUserEmail] = useState("");
+  const { control, handleSubmit, reset } = useForm({
       resolver: zodResolver(FormSchema),
       defaultValues: {
-        email: "",
-        password: "",
-        dob: "",
-        country: "",
-        gender: "", // Valor predeterminado vacío para género.
+          email: "",
+          nombre: "",
+          password: "",
+          dob: "",
+          country: "",
+          gender: "",
       }
-    });
+  });
+
+  useEffect(() => {
+      const token = localStorage.getItem('userToken');
+      if (token) {
+          const fetchUserData = async () => {
+              const response = await fetch('http://127.0.0.1:8000/obtenerUsuarioSesionAPI/', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ token })
+              });
+              const data = await response.json();
+              if (response.ok) {
+                  setUserEmail(data.correo);
+                  reset({
+                      email: data.correo,
+                      nombre: data.nombre,
+                      dob: data.nacimiento,
+                      country: data.pais,
+                      gender: data.sexo === 'Hombre' ? 'hombre' : data.sexo === 'Mujer' ? 'mujer' : 'Otro',
+                      password: "", // Asume que no recuperas contraseñas
+                  });
+              }
+          };
+          fetchUserData();
+      }
+  }, [reset]);
+
+  const onSubmit = async (data) => {
+    const requestBody = {
+      correo: userEmail,
+      nombre: data.nombre,
+      sexo: data.gender === 'Hombre' ? 'hombre' : data.gender === 'Mujer' ? 'mujer' : 'otro',
+      nacimiento: data.dob,
+      contrasegna: data.password,
+      pais: data.country,
+    };
   
-    useEffect(() => {
-      const userData = getUserData();
-      reset(userData);
-    }, [reset]);
+    console.log('Enviando estos datos al servidor:', requestBody);
   
-    const onSubmit = data => console.log(data);
+    try {
+      const response = await fetch('http://localhost:8000/actualizarUsuario/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
   
-    return (
-        <>
-          <Container>
-            <div className='wrapper'>
-              <form onSubmit={handleSubmit(onSubmit)}>
-                <h1>Editar Perfil</h1>
-                
-                {/* Email */}
-                <div className="input-box">
+      const responseData = await response.json();
+      if (response.ok) {
+        console.log('Respuesta del servidor:', responseData); // Aquí se muestra la respuesta del servidor
+        alert('Usuario actualizado con éxito: ' + responseData.message); // Opcional: Mostrar en un alert
+      } else {
+        console.error('Error al actualizar los datos del usuario:', responseData);
+        alert('Error al actualizar: ' + responseData.message); // Opcional: Mostrar error en un alert
+      }
+    } catch (error) {
+      console.error('Error al realizar la petición de actualización:', error);
+      alert('Error en la petición: ' + error.message); // Opcional: Mostrar error en un alert
+    }
+  };
+  
+
+  return (
+    <>
+      <Container>
+        <div className='wrapper'>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <h1>Editar Perfil</h1>
+            {/* Email */}
+            <div className="input-box">
+              <Controller
+                name="email"
+                control={control}
+                render={({ field }) => <input {...field} type="email" placeholder="Correo electrónico" />}
+              />
+              <FaUser className="icon"/>
+            </div>
+
+            {/* Contraseña */}
+            <div className="input-box">
+              <Controller
+                name="password"
+                control={control}
+                render={({ field }) => <input {...field} type="password" placeholder="Contraseña" />}
+              />
+              <FaLock className="icon" />
+            </div>
+            <div className="input-box">
                 <Controller
-                  name="email"
+                  name="nombre"
                   control={control}
-                  render={({ field }) => <input {...field} type="email" placeholder="Correo electrónico" />}
+                  render={({ field }) => <input {...field} type="text" placeholder="Nombre" />}
                 />
                 <FaUser className="icon"/>
               </div>
-              <div className="input-box">
-                <Controller
-                  name="password"
-                  control={control}
-                  render={({ field }) => <input {...field} type="password" placeholder="Contraseña" />}
-                />
-                <FaLock className="icon" />
-              </div>
-              <div className="input-box date-input-box">
-                <Controller
-                  name="dob"
-                  control={control}
-                  render={({ field }) => (
-                    <input {...field} type="date" ref={dateInputRef} />
-                  )}
-                />
-                <FaCalendarAlt className="date-icon" onClick={() => dateInputRef.current && dateInputRef.current.click()} />
-              </div>
-                <div className="select-wrapper">
-                  {<select name="country" id="country">
+
+            {/* Fecha de Nacimiento */}
+            <div className="input-box date-input-box">
+              <Controller
+                name="dob"
+                control={control}
+                render={({ field }) => (
+                  <input {...field} type="date" ref={dateInputRef} />
+                )}
+              />
+              <FaCalendarAlt className="date-icon" onClick={() => dateInputRef.current && dateInputRef.current.click()} />
+            </div>
+            {/* País */}
+            <div className="input-box">
+              <Controller
+                name="country"
+                control={control}
+                render={({ field }) => (
+                  <select {...field}>
                     <option value="">Seleccione un país</option>
                     <option value="AF">Afganistán</option>
                     <option value="AL">Albania</option>
@@ -302,48 +373,47 @@ export default function Profile() {
                     <option value="ZM">Zambia</option>
                     <option value="ZW">Zimbabue</option>
                     </select>
-                    }
-                </div>
-                <div className="input-box">
-                  <Controller
-                    name="gender"
-                    control={control}
-                    render={({ field }) => (
-                      <div className="select-container">
-                           <select {...field}>
-                                <option value="">Seleccione su sexo</option>
-                                <option value="Mujer">Mujer</option>
-                                <option value="Hombre">Hombre</option>
-                                <option value="Otro">Otro</option>
-                                <option value="Prefiero no decirlo">Prefiero no decirlo</option>
-                            </select>
-                        <FaCaretDown className="select-icon"/>
-                      </div>
-                    )}
-                  />
-                </div>
-                <div className="buttons-container">
-                  <button type="button" className="cancel-button">Cancelar</button>
-                  <button type="submit" className="save-button">Guardar Cambios</button>
-                </div>
-              </form>
+                )}
+              />
             </div>
-          </Container>
-        </>
-      );
+                {/* Sexo */}
+            <div className="input-box">
+              <Controller
+                name="gender"
+                control={control}
+                render={({ field }) => (
+                  <select {...field}>
+                    <option value="">Seleccione su sexo</option>
+                    <option value="Hombre">Hombre</option>
+                    <option value="Mujer">Mujer</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                )}
+              />
+            </div>
+
+            <div className="buttons-container">
+              <button type="button" className="cancel-button">Cancelar</button>
+              <button type="submit" className="save-button">Guardar Cambios</button>
+            </div>
+         </form>
+        </div>
+      </Container>
+    </>
+  );
 }
 
 const Container = styled.div`
 .wrapper {
     width: 800px;
-    height: 570px;
+    height: 655px;
     color: #fff;
     border-radius: 40px;
     padding: 30px 40px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 50px;
+    margin-top: 5px;
     background: rgba(0, 0, 0, 0.25);
 }
   
