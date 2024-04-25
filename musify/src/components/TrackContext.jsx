@@ -11,7 +11,12 @@ export const TrackProvider = ({ children }) => {
     const [currentTrackId, setCurrentTrackId] = useState(null);
     const [volume, setVolume] = useState(0.5);
     const [trackIndex, setTrackIndex] = useState(-1);
-    const [tracks, setTracks] = useState([]); // Definición correcta de tracks y setTracks
+    const [tracks, setTracks] = useState([]);
+    const [isShuffling, setIsShuffling] = useState(false);
+
+    const toggleShuffle = () => {
+        setIsShuffling(!isShuffling);
+    };
 
     useEffect(() => {
         if (trackIndex >= 0 && trackIndex < tracks.length) {
@@ -47,8 +52,13 @@ export const TrackProvider = ({ children }) => {
     };
 
     const changeTrack = (forward = true) => {
-        const indexIncrement = forward ? 1 : -1;
-        const newIndex = (trackIndex + indexIncrement + tracks.length) % tracks.length;
+        let newIndex;
+        if (isShuffling) {
+            newIndex = Math.floor(Math.random() * tracks.length);
+        } else {
+            const indexIncrement = forward ? 1 : -1;
+            newIndex = (trackIndex + indexIncrement + tracks.length) % tracks.length;
+        }
         setTrackIndex(newIndex);
         updateTrack(tracks[newIndex]);
         play();
@@ -75,8 +85,10 @@ export const TrackProvider = ({ children }) => {
         volume,
         adjustVolume,
         tracks,
-        setTracks
-    };
+        setTracks,
+        toggleShuffle,
+        isShuffling
+}   ;
 
     return <TrackContext.Provider value={value}>{children}</TrackContext.Provider>;
 };

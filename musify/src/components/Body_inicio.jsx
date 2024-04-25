@@ -5,29 +5,13 @@ import { useTrack } from "./TrackContext";
 import { useNavigate } from 'react-router-dom';
 
 const base64ToImageSrc = (base64) => {
-    console.log("Base64 original:", base64); // Imprimir la base64 original
-
-    // Eliminar el prefijo de la cadena base64 si está presente
     const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
-    console.log("Base64 sin prefijo:", base64WithoutPrefix); // Imprimir la base64 sin prefijo
-
-    // Decodificar la cadena base64
-    const byteCharacters = atob(base64WithoutPrefix);
-    console.log("Caracteres de bytes:", byteCharacters); // Opcional: Imprimir los caracteres después de atob
-    const imageSrc = `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
-    console.log("Imagen transformada:", imageSrc); // Imprimir el src de la imagen transformada
-    return imageSrc;
+    return `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
 };
 
 const base64ToAudioSrc = (base64) => {
-  console.log("Base64 original:", base64); // Imprimir la base64 original
-
-    // Eliminar cualquier prefijo incorrecto y asegurar que es el correcto para audio/mp3
     const base64WithoutPrefix = base64.replace(/^data:audio\/mp3;base64,/, '').replace(/^data:[^;]+;base64,/, '');
-    const audioSrc = `data:audio/mp3;base64,${atob(base64WithoutPrefix)}`;
-    console.log("Audio transformado:", audioSrc); // Imprimir el src del audio transformado
-
-    return audioSrc;
+    return `data:audio/mp3;base64,${atob(base64WithoutPrefix)}`;
 };
 
 export default function Body_inicio() {
@@ -132,11 +116,6 @@ export default function Body_inicio() {
     
     return (
         <Container>
-            <ButtonContainer>
-                <ButtonStyled>Todo</ButtonStyled>
-                <ButtonStyled>Música</ButtonStyled>
-                <ButtonStyled>Podcasts</ButtonStyled>
-            </ButtonContainer>
             <SectionTitle>Has escuchado recientemente</SectionTitle>
             <SongRow canciones={canciones.slice(0, 7)} />
             <PodcastRow podcasts={podcasts} onSelectPodcast={onSelectPodcast} />

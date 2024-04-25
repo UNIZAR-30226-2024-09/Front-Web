@@ -10,10 +10,14 @@ export default function Asistencia() {
         <>
             <Container>
                 <Header>
-                    <h1>Servicio de Asistencia Musify</h1>
+                    <h1>Configuración</h1>
                     <StyledCgProfile />
                 </Header>
                 <FlexContainer>
+                <IconWrapper className='wrapper1'>
+                        <h2>Editar Perfil</h2>
+                        <StyledFaQuestionCircle />
+                    </IconWrapper>
                     <IconWrapper className='wrapper1'>
                         <h2>Preguntas FAQ</h2>
                         <StyledFaQuestionCircle />

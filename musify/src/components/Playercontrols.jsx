@@ -1,13 +1,13 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { BsFillPlayCircleFill, BsFillPauseCircleFill, BsShuffle } from "react-icons/bs";
+import { BsFillPlayCircleFill, BsFillPauseCircleFill, BsShuffle} from "react-icons/bs";
 import { CgPlayTrackNext, CgPlayTrackPrev } from "react-icons/cg";
 import { FiRepeat } from "react-icons/fi";
 import { PiMicrophoneStageFill } from "react-icons/pi";
 import Progress from "./Progress";
-import { useTrack } from './TrackContext';  // Ensure this correctly imports the context
+import { useTrack } from './TrackContext'; 
 import LyricsWindow from './LyricsWindow';
-import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { FaHeart } from "react-icons/fa";
 
 export default function PlayerControls() {
     const {
@@ -20,8 +20,11 @@ export default function PlayerControls() {
         trackIndex,
         tracks, 
         setTrackIndex,
-        updateTrack 
+        updateTrack,
+        isShuffling,
+        toggleShuffle,
     } = useTrack();
+
 
     const [lyrics, setLyrics] = useState([]);
     const [showLyrics, setShowLyrics] = useState(false);
@@ -31,8 +34,44 @@ export default function PlayerControls() {
     const [isFavorited, setIsFavorited] = useState(false);
 
     const handleFavorite = () => {
-        setIsFavorited(!isFavorited);
+        const email = "zineb@gmail.com";
+        const cancionId = currentTrackId;
+        const shouldBeFavorited = !isFavorited;
+    
+        setIsFavorited(shouldBeFavorited);
+    
+        const url = 'http://localhost:8000/editarCancionFavoritos/';
+        const body = {
+            correo: email,
+            cancionId: cancionId,
+            favorito: shouldBeFavorited ? "True" : "False"
+        };
+    
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRFToken': 'xsxNP3cl2YT0BaNA3CcZXs9baPGpgJR4Ba9NBLXWreieGa1d78TWoh9ufCrzPiYC'
+            },
+            body: JSON.stringify(body)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.message.includes("éxito")) {
+                // Si hay un problema, revertir el estado visual
+                setIsFavorited(!shouldBeFavorited);
+                console.error('Error de la API:', data.message);
+            }
+        })
+        .catch(error => {
+            // Revertir el estado en caso de error de red
+            setIsFavorited(!shouldBeFavorited);
+            console.error('Error al comunicarse con la API:', error);
+        });
     };
+    
+    
     
     const togglePlayPause = () => {
         if (isPlaying) {
@@ -141,17 +180,16 @@ export default function PlayerControls() {
     
     const repeatIconStyle = isRepeating ? { color: 'red' } : { color: 'grey' };
 
-    
-
-     const formatTime = (time) => `${Math.floor(time / 60)}:${Math.floor(time % 60).toString().padStart(2, '0')}`;
-
     return (
         <Container>
+            <div className="shuffle" onClick={toggleShuffle}>
+                <BsShuffle style={{ color: isShuffling ? 'red' : 'grey' }} />
+            </div>
             <div className="track__actions">
                     <div onClick={handleFavorite}>
                         {isFavorited ? <FaHeart color="red" /> : <FaHeart color="white" />}
                     </div>
-                </div>
+            </div>
             <div className="previous" onClick={handlePrevTrack}><CgPlayTrackPrev /></div>
             <div className="state" onClick={togglePlayPause}>
                 {isPlaying ? <BsFillPauseCircleFill /> : <BsFillPlayCircleFill />}
@@ -176,7 +214,6 @@ export default function PlayerControls() {
         </Container>
     );
 }
-
 
 const Container = styled.div`
    display: flex;
