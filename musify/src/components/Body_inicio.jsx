@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import styled from "styled-components";
 import { FaChevronLeft, FaChevronRight, FaPlay, FaPause } from 'react-icons/fa';
 import { useTrack } from "./TrackContext";
+import { useNavigate } from 'react-router-dom';
 
 const base64ToImageSrc = (base64) => {
     console.log("Base64 original:", base64); // Imprimir la base64 original
@@ -34,37 +35,51 @@ export default function Body_inicio() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
+    const [podcasts, setPodcasts] = useState([]);
     const { updateTrack, play, pause, isPlaying, currentTrack, audioRef } = useTrack();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const response = await fetch('http://127.0.0.1:8000/listarCanciones/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({})
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    const songsWithArtists = await Promise.all(data.canciones.slice(0, 3).map(async cancion => {
-                        // Aquí asumimos que cada canción tiene un ID único y lo utilizamos para obtener los artistas.
-                        const artistas = await fetchArtistsForSong(cancion.id);
-                        return {
-                            id: cancion.id,
-                            foto: base64ToImageSrc(cancion.foto),
-                            nombre: cancion.nombre,
-                            artista: artistas // Aquí asignamos la cadena de nombres de artistas devuelta por fetchArtistsForSong
-                        };
-                    }));
-                    setCanciones(songsWithArtists);
-                    setTrackList(songsWithArtists);
-                } else {
-                    const errorData = await response.text();
-                    throw new Error(errorData || "Error al recibir datos");
+                const [songsResponse, podcastsResponse] = await Promise.all([
+                    fetch('http://127.0.0.1:8000/listarCanciones/', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'}
+                    }),
+                    fetch('http://127.0.0.1:8000/listarPodcasts/', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'}
+                    })
+                ]);
+    
+                if (!songsResponse.ok || !podcastsResponse.ok) {
+                    throw new Error("Failed to fetch data");
                 }
+    
+                const songsData = await songsResponse.json();
+                const podcastsData = await podcastsResponse.json();
+    
+                const songsWithArtists = await Promise.all(songsData.canciones.slice(0, 3).map(async cancion => {
+                    const artistas = await fetchArtistsForSong(cancion.id);
+                    return {
+                        id: cancion.id,
+                        foto: base64ToImageSrc(cancion.foto),
+                        nombre: cancion.nombre,
+                        artista: artistas
+                    };
+                }));
+    
+                const podcasts = podcastsData.podcasts.map(podcast => ({
+                    id: podcast.id,
+                    nombre: podcast.nombre,
+                    foto: base64ToImageSrc(podcast.foto)
+                }));
+    
+                setCanciones(songsWithArtists);
+                setPodcasts(podcasts);  // Asumiendo que tienes un estado para podcasts
+                setTrackList(songsWithArtists);
             } catch (error) {
                 setError(error.message);
             } finally {
@@ -93,6 +108,28 @@ export default function Body_inicio() {
     if (error) return <p>Error: {error}</p>;
     if (!canciones.length) return <p>No hay canciones disponibles</p>;
 
+    const PodcastRow = ({ podcasts, onSelectPodcast }) => {
+        return (
+            <div>
+                <SectionTitle>Podcasts</SectionTitle>
+                <ImagesContainer>
+                    {podcasts.map((podcast, index) => (
+                        <ImageBox key={index} onClick={() => onSelectPodcast(podcast.id)}>
+                            <ImgContainer>
+                                <img src={podcast.foto} alt={podcast.nombre} />
+                            </ImgContainer>
+                            <p>{podcast.nombre}</p>
+                        </ImageBox>
+                    ))}
+                </ImagesContainer>
+            </div>
+        );
+    };  
+
+    const onSelectPodcast = (podcastId) => {
+        navigate(`/musifyp/${podcastId}`);
+    };
+    
     return (
         <Container>
             <ButtonContainer>
@@ -102,12 +139,13 @@ export default function Body_inicio() {
             </ButtonContainer>
             <SectionTitle>Has escuchado recientemente</SectionTitle>
             <SongRow canciones={canciones.slice(0, 7)} />
+            <PodcastRow podcasts={podcasts} onSelectPodcast={onSelectPodcast} />
             <SectionTitle>Hecho para Usuario</SectionTitle>
             <SongRow canciones={canciones.slice(3, 7)} />
             <SectionTitle>Top Canciones</SectionTitle>
             <SongRow canciones={canciones.slice(3, 7)} />
         </Container>
-    );
+    );    
 }
 
 const SongRow = ({ canciones }) => {
@@ -147,7 +185,7 @@ const SongRow = ({ canciones }) => {
                     artista: selectedSong.artista,
                     imagen: selectedSong.foto
                 });
-                audioRef.current.src = audioUrl;  // Asegúrate de actualizar el src del elemento audio
+                audioRef.current.src = audioUrl; 
                 setPlayingIndex(index);
                 play();
             } catch (error) {
@@ -158,7 +196,6 @@ const SongRow = ({ canciones }) => {
             pause();
         }
     };
-    
     
     return (
         <RowContainer>

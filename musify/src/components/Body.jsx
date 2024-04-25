@@ -161,7 +161,6 @@ export default function Body() {
         fetchPlaylistName(playlistId);
     }, [playlistId]);
     
-    
 
     useEffect(() => {
         if (songs.length > 0) {
