@@ -54,15 +54,12 @@ export default function Body() {
         fetchPlaylistSongs();
     }, [playlistId]);
 
-    
-
     const formatDuration = (duration) => {
         if (!duration) return '0:00';
         const minutes = Math.floor(duration / 60);
         const seconds = Math.floor(duration % 60);
         return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     };
-      
 
     const fetchArtistsForSong = async (songId) => {
         const response = await fetch(`http://localhost:8000/listarArtistasCancion/`, {

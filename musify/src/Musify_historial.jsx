@@ -33,7 +33,7 @@ const Container = styled.div`
     grid-template-rows: 85vh 15vh;
     .musify__body {
         display: grid;
-        grid-template-columns: 15vw 85vw;
+        grid-template-columns: 23vw 77vw;
         height: 100%;
         width: 100%;
         background: linear-gradient(transparent, rgba(0,0,0,1));
@@ -43,5 +43,4 @@ const Container = styled.div`
             width: 100%; 
             overflow: auto;
         }
-    }
-`;
+    } `;
