@@ -26,6 +26,7 @@ import AniadirCancionAdmin from './admin/aniadir_cancion';
 import ListaPodcastAdmin from './admin/lista_podcasts';
 import AniadirPodcastAdmin from './admin/aniadir_podcast';
 import EditarPodcastAdmin from './admin/editar_podcast';
+import Historial from './Musify_historial';
 
 export default class App extends React.Component {
   render() {
@@ -58,6 +59,7 @@ export default class App extends React.Component {
             <Route path="/lista_podcast_admin" element={<ListaPodcastAdmin />} />
             <Route path="/aniadir_podcast" element={<AniadirPodcastAdmin />} />
             <Route path="/editar_podcast" element={<EditarPodcastAdmin />} />
+            <Route path="/historial" element={<Historial />} />
 
           </Routes>
         </UserProvider>
