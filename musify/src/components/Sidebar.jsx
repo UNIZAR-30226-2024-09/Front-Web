@@ -5,6 +5,7 @@ import { IoLibrary, IoChatbubblesOutline} from "react-icons/io5";
 import { FaPowerOff } from "react-icons/fa";
 import { IoMdSettings, IoIosAddCircleOutline } from "react-icons/io";
 import { MdHomeFilled, MdSearch, MdFavorite } from "react-icons/md";
+import PlaylistForm from "./PlaylistForm";
 
 
 export default function Sidebar() {
@@ -12,6 +13,8 @@ export default function Sidebar() {
     const [message, setMessage] = useState("");
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
+    const [showForm, setShowForm] = useState(false);
+
 
     const handleLogout = async () => {
         const token = localStorage.getItem('userToken');
@@ -133,11 +136,19 @@ export default function Sidebar() {
                     <li>
                         <IoLibrary />
                         <span>Biblioteca</span>
-                        <div className="icon-container">
-                            <Link to="/añadir-playlist" className="icon-link">
-                                <IoIosAddCircleOutline />
-                            </Link>
-                        </div>
+                        <div className="icon-container" onClick={() => setShowForm(true)}>
+                <IoIosAddCircleOutline />
+            </div>
+            {showForm && (
+                <PlaylistForm
+                    userEmail={user.correo}  // Asegurarse que user tiene un correo
+                    onClose={() => setShowForm(false)}
+                    onCreate={() => {
+                        console.log("Playlist creada exitosamente");
+                        // Aquí puedes implementar la recarga de las playlists
+                    }}
+                />
+            )}
                     </li>
                     {playlists.length > 0 ? (
                         playlists.map((playlist, index) => (

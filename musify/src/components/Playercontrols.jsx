@@ -33,6 +33,38 @@ export default function PlayerControls() {
     const [currentTime, setCurrentTime] = useState(0);
     const [isFavorited, setIsFavorited] = useState(false);
 
+    // Función para verificar si la canción actual es favorita
+    const checkIfFavorited = async () => {
+        const email = "zineb@gmail.com";
+        const cancionId = currentTrackId;
+        const url = 'http://localhost:8000/esFavorita';  // Asegúrate de que la URL sea correcta
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': 'xsxNP3cl2YT0BaNA3CcZXs9baPGpgJR4Ba9NBLXWreieGa1d78TWoh9ufCrzPiYC'
+                },
+                body: JSON.stringify({ correo: email, cancionId: cancionId })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setIsFavorited(data.esFavorita);  // Asumiendo que la API responde con un campo booleano `esFavorita`
+            }
+        } catch (error) {
+            console.error('Error al verificar si la canción es favorita:', error);
+        }
+    };
+
+    // Efecto para verificar el estado favorito cada vez que cambia currentTrackId
+    useEffect(() => {
+        if (currentTrackId) {
+            checkIfFavorited();
+        }
+    }, [currentTrackId]);
+
     const handleFavorite = () => {
         const email = "zineb@gmail.com";
         const cancionId = currentTrackId;
