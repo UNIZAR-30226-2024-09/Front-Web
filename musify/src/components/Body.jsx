@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { AiFillClockCircle } from 'react-icons/ai';
-import { FaPlay, FaPause, FaLock, FaUnlock } from 'react-icons/fa';
+import { FaPlay, FaPause, FaLock, FaUnlock, FaUserPlus } from 'react-icons/fa';
 import { useTrack } from "./TrackContext";
+import Modal from './agnadir_colaborador';
 
 const base64ToImageSrc = (base64) => {
     const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
@@ -23,6 +24,28 @@ export default function Body() {
     const { updateTrack, play, pause, isPlaying, currentTrack, audioRef, setTrackList } = useTrack();
     const [playlistName, setPlaylistName] = useState('');
     const [isPublic, setIsPublic] = useState(true);
+    const [collaboratorEmail, setCollaboratorEmail] = useState('');
+    const [isAddingCollaborator, setIsAddingCollaborator] = useState(false);
+
+    const handleAddCollaborator = async () => {
+        if (!collaboratorEmail) {
+            alert("Por favor, introduce un correo válido.");
+            return;
+        }
+        const response = await fetch('http://localhost:8000/agnadirColaboradorAPI/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ correo: collaboratorEmail, playlistId })
+        });
+        const data = await response.json();
+        if (response.ok) {
+            setMessage('Colaborador añadido con éxito');
+            setIsAddingCollaborator(false);  // Cierra modal si estás usando uno
+        } else {
+            setMessage(data.error || 'Error al añadir colaborador');
+        }
+        setIsAddingCollaborator(false);
+    };
 
     useEffect(() => {
         const fetchPlaylistSongs = async () => {
@@ -191,8 +214,22 @@ export default function Body() {
             <div className="details">
                 <span className="type">PLAYLIST</span>
                 <h1 className="title">{playlistName || 'Loading...'}</h1>  {/* Mostrar el nombre de la playlist */}
-                <div onClick={togglePublic}>
-                    {isPublic ? <FaUnlock size="2em" /> : <FaLock size="2em" />}
+                <div className='iconos'>
+                    <IconButton onClick={() => setIsAddingCollaborator(true)}>
+                        <FaUserPlus size="1.3em" />  
+                    </IconButton>
+                    <Modal show={isAddingCollaborator} onClose={() => setIsAddingCollaborator(false)}>
+                        <input
+                        type="email"
+                        value={collaboratorEmail}
+                        onChange={e => setCollaboratorEmail(e.target.value)}
+                        placeholder="Correo del colaborador"
+                        />
+                        <button onClick={handleAddCollaborator}>Confirmar</button>
+                    </Modal>
+                    <div onClick={togglePublic}>
+                        {isPublic ? <FaUnlock size="2em" /> : <FaLock size="2em" />}
+                    </div>
                 </div>
             </div>
         </div>
@@ -270,9 +307,16 @@ const Container = styled.div`
         flex-direction: column;
         gap: 2rem;
         color: #e0dede;
-        .title{
+        .title {
             color: white;
             font-size: 4rem;
+        }
+        .iconos {
+            display: flex;
+            align-items: center;
+            gap: 1rem; 
+            color: #dddcdc;
+            margin-left: 10px;
         }
     }
 }
@@ -317,4 +361,23 @@ const Container = styled.div`
     }
 }
 }
+`;
+
+const IconButton = styled.button`
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2em;
+
+  &:hover {
+    color: #ccc;
+  }
+
+  &:focus {
+    outline: none;
+  }
 `;
