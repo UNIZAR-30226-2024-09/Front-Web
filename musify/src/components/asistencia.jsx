@@ -1,6 +1,6 @@
 import React from "react";
 import styled, { keyframes } from "styled-components";
-import { FaQuestionCircle } from "react-icons/fa";
+import { FaQuestionCircle, FaHistory } from "react-icons/fa";
 import { IoPersonSharp } from "react-icons/io5";
 import { Link } from 'react-router-dom';
 import { MdReportProblem } from "react-icons/md";
@@ -17,16 +17,22 @@ export default function Asistencia() {
                 </Header>
                 <FlexContainer>
                 <IconWrapper className='wrapper1'>
+                    <h2>Ver historial</h2>
+                    <Link to="/historial" className="link">
+                    <StyledFaHistory />
+                    </Link>
+                </IconWrapper>
+                <IconWrapper className='wrapper2'>
                     <h2>Editar Perfil</h2>
                     <Link to="/perfil" className="link">
                     <StyledIoPersonSharp />
                     </Link>
                 </IconWrapper>
-                    <IconWrapper className='wrapper2'>
+                    <IconWrapper className='wrapper3'>
                         <h2>Preguntas FAQ</h2>
                         <StyledFaQuestionCircle />
                     </IconWrapper>
-                    <IconWrapper className='wrapper3'>
+                    <IconWrapper className='wrapper4'>
                         <h2>Reportar Problema</h2>
                         <StyledMdReportProblem />
                     </IconWrapper>
@@ -118,6 +124,10 @@ const StyledMdReportProblem = styled(MdReportProblem)`
     ${iconStyle}
 `;
 const StyledIoPersonSharp = styled(IoPersonSharp)`
+    ${iconStyle}
+`;
+
+const StyledFaHistory = styled(FaHistory)`
     ${iconStyle}
 `;
 
