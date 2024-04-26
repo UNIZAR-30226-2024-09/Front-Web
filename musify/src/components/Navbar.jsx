@@ -3,12 +3,24 @@ import styled from "styled-components";
 import { FaSearch } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
 
+
+const base64ToAudioSrc = (base64) => {
+  console.log("Base64 original:", base64); // Imprimir la base64 original
+
+    // Eliminar cualquier prefijo incorrecto y asegurar que es el correcto para audio/mp3
+    const base64WithoutPrefix = base64.replace(/^data:audio\/mp3;base64,/, '').replace(/^data:[^;]+;base64,/, '');
+    const audioSrc = `data:audio/mp3;base64,${atob(base64WithoutPrefix)}`;
+    console.log("Audio transformado:", audioSrc); // Imprimir el src del audio transformado
+
+    return audioSrc;
+};
+
 export default function Navbar({ onSearch: parentOnSearch }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [artistData, setArtistData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showResults, setShowResults] = useState(false); // Nuevo estado para controlar la visibilidad de los resultados
+  const [showResults, setShowResults] = useState(false); 
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -18,7 +30,7 @@ export default function Navbar({ onSearch: parentOnSearch }) {
     event.preventDefault();
     setError("");
     setLoading(true);
-    setShowResults(false); // Ocultar resultados antes de la nueva búsqueda
+    setShowResults(false);
     try {
       const response = await fetch('http://127.0.0.1:8000/buscar/', {
         method: 'POST',
@@ -30,12 +42,11 @@ export default function Navbar({ onSearch: parentOnSearch }) {
   
       if (response.ok) {
         const data = await response.json();
-        setArtistData(data);
-        setShowResults(true); // Mostrar resultados solo si la búsqueda fue exitosa
-        if (parentOnSearch) parentOnSearch(data);
-      } else {
+        console.log("Data from search:", data);  // Agrega esta línea para ver los datos
+        if (parentOnSearch) parentOnSearch(data);  
+    } else {
         setError("Error al buscar. Por favor, intenta de nuevo.");
-      }
+    }
     } catch (error) {
       setError("Error al conectar con el servicio. Por favor, verifica tu conexión.");
     } finally {
@@ -74,9 +85,6 @@ export default function Navbar({ onSearch: parentOnSearch }) {
     </Container>
   );
 }
-
-
-
 
 const Container = styled.div`
     display: flex;

@@ -2,64 +2,68 @@ import React, { useState, useEffect, useRef } from 'react';
 import styled from "styled-components";
 import { FaChevronLeft, FaChevronRight, FaPlay, FaPause } from 'react-icons/fa';
 import { useTrack } from "./TrackContext";
+import { useNavigate } from 'react-router-dom';
 
 const base64ToImageSrc = (base64) => {
-    console.log("Base64 original:", base64); // Imprimir la base64 original
-
-    // Eliminar el prefijo de la cadena base64 si está presente
     const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
-    console.log("Base64 sin prefijo:", base64WithoutPrefix); // Imprimir la base64 sin prefijo
-
-    // Decodificar la cadena base64
-    const byteCharacters = atob(base64WithoutPrefix);
-    console.log("Caracteres de bytes:", byteCharacters); // Opcional: Imprimir los caracteres después de atob
-    const imageSrc = `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
-    console.log("Imagen transformada:", imageSrc); // Imprimir el src de la imagen transformada
-    return imageSrc;
+    return `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
 };
 
 const base64ToAudioSrc = (base64) => {
-    console.log("Base64 original:", base64); // Imprimir la base64 original
-
-    // Eliminar cualquier prefijo incorrecto y asegurar que es el correcto para audio/mp3
     const base64WithoutPrefix = base64.replace(/^data:audio\/mp3;base64,/, '').replace(/^data:[^;]+;base64,/, '');
-    const audioSrc = `data:audio/mp3;base64,${atob(base64WithoutPrefix)}`;
-    console.log("Audio transformado:", audioSrc); // Imprimir el src del audio transformado
-
-    return audioSrc;
+    return `data:audio/mp3;base64,${atob(base64WithoutPrefix)}`;
 };
 
 export default function Body_inicio() {
     const [canciones, setCanciones] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [message, setMessage] = useState('');
+    const [podcasts, setPodcasts] = useState([]);
+    const { updateTrack, play, pause, isPlaying, currentTrack, audioRef } = useTrack();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const response = await fetch('http://127.0.0.1:8000/listarCanciones/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({})
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    const updatedCanciones = data.canciones.slice(0, 3).map(cancion => ({
+                const [songsResponse, podcastsResponse] = await Promise.all([
+                    fetch('http://127.0.0.1:8000/listarCanciones/', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'}
+                    }),
+                    fetch('http://127.0.0.1:8000/listarPodcasts/', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'}
+                    })
+                ]);
+    
+                if (!songsResponse.ok || !podcastsResponse.ok) {
+                    throw new Error("Failed to fetch data");
+                }
+    
+                const songsData = await songsResponse.json();
+                const podcastsData = await podcastsResponse.json();
+    
+                const songsWithArtists = await Promise.all(songsData.canciones.slice(0, 3).map(async cancion => {
+                    const artistas = await fetchArtistsForSong(cancion.id);
+                    return {
                         id: cancion.id,
                         foto: base64ToImageSrc(cancion.foto),
-                        archivo_mp3: base64ToAudioSrc(cancion.archivoMp3),
                         nombre: cancion.nombre,
-                        artista: cancion.artista
-                    }));
-                    setCanciones(updatedCanciones);
-                    setTrackList(updatedCanciones);
-                }else {
-                    const errorData = await response.text();
-                    throw new Error(errorData || "Error al recibir datos");
-                }
+                        artista: artistas
+                    };
+                }));
+    
+                const podcasts = podcastsData.podcasts.map(podcast => ({
+                    id: podcast.id,
+                    nombre: podcast.nombre,
+                    foto: base64ToImageSrc(podcast.foto)
+                }));
+    
+                setCanciones(songsWithArtists);
+                setPodcasts(podcasts);  // Asumiendo que tienes un estado para podcasts
+                setTrackList(songsWithArtists);
             } catch (error) {
                 setError(error.message);
             } finally {
@@ -69,29 +73,58 @@ export default function Body_inicio() {
         fetchData();
     }, []);
 
+    const fetchArtistsForSong = async (songId) => {
+        const response = await fetch(`http://localhost:8000/listarArtistasCancion/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': 'tu_token_csrf'
+            },
+            body: JSON.stringify({ cancionId: songId })
+        });
+        const data = await response.json();
+        return response.ok ? data.artistas.map(artista => artista.nombre).join(', ') : 'Artista Desconocido';
+    };
+
     const { setTrackList } = useTrack();
-
-
 
     if (loading) return <p>Cargando...</p>;
     if (error) return <p>Error: {error}</p>;
     if (!canciones.length) return <p>No hay canciones disponibles</p>;
 
+    const PodcastRow = ({ podcasts, onSelectPodcast }) => {
+        return (
+            <div>
+                <SectionTitle>Podcasts</SectionTitle>
+                <ImagesContainer>
+                    {podcasts.map((podcast, index) => (
+                        <ImageBox key={index} onClick={() => onSelectPodcast(podcast.id)}>
+                            <ImgContainer>
+                                <img src={podcast.foto} alt={podcast.nombre} />
+                            </ImgContainer>
+                            <p>{podcast.nombre}</p>
+                        </ImageBox>
+                    ))}
+                </ImagesContainer>
+            </div>
+        );
+    };  
+
+    const onSelectPodcast = (podcastId) => {
+        navigate(`/musifyp/${podcastId}`);
+    };
+    
     return (
         <Container>
-            <ButtonContainer>
-                <ButtonStyled>Todo</ButtonStyled>
-                <ButtonStyled>Música</ButtonStyled>
-                <ButtonStyled>Podcasts</ButtonStyled>
-            </ButtonContainer>
             <SectionTitle>Has escuchado recientemente</SectionTitle>
             <SongRow canciones={canciones.slice(0, 7)} />
+            <PodcastRow podcasts={podcasts} onSelectPodcast={onSelectPodcast} />
             <SectionTitle>Hecho para Usuario</SectionTitle>
             <SongRow canciones={canciones.slice(3, 7)} />
             <SectionTitle>Top Canciones</SectionTitle>
             <SongRow canciones={canciones.slice(3, 7)} />
         </Container>
-    );
+    );    
 }
 
 const SongRow = ({ canciones }) => {
@@ -106,26 +139,43 @@ const SongRow = ({ canciones }) => {
         scrollSmoothly(scrollRef, distance);
     };
 
-    const togglePlayPause = (index) => {
+    const togglePlayPause = async (index) => {
         const selectedSong = canciones[index];
-        if (!audioRefs.current[index].src) {
-            audioRefs.current[index].src = selectedSong.archivo_mp3; // Solo establece el src cuando es necesario
-        }
-        updateTrack({
-            id: selectedSong.id,
-            src: selectedSong.archivo_mp3,
-            nombre: selectedSong.nombre,
-            artista: selectedSong.artista,
-            imagen: selectedSong.foto
-        });
-        
-        if (audioRef.current.src && isPlaying) {
+        // Verifica si la canción a reproducir es diferente o si el reproductor está pausado
+        if (playingIndex !== index || !isPlaying) {
+            try {
+                // Solicitar el archivo de audio solo si es necesario
+                const response = await fetch('http://127.0.0.1:8000/devolverCancion/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cancionId: selectedSong.id })
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to load the song audio');
+                }
+                const data = await response.json();
+                const audioUrl = base64ToAudioSrc(data.cancion.archivoMp3);
+                
+                // Actualiza el track actual con la nueva información, incluido el URL del audio
+                updateTrack({
+                    id: selectedSong.id,
+                    src: audioUrl,
+                    nombre: selectedSong.nombre,
+                    artista: selectedSong.artista,
+                    imagen: selectedSong.foto
+                });
+                audioRef.current.src = audioUrl; 
+                setPlayingIndex(index);
+                play();
+            } catch (error) {
+                console.error("Error loading audio:", error.message);
+            }
+        } else if (playingIndex === index && isPlaying) {
+            // Si se hace clic en el mismo índice y la música está reproduciendo, pausa
             pause();
-        } else {
-            play();
         }
     };
-
+    
     return (
         <RowContainer>
             <ArrowButton onClick={() => handleScroll('left')}>
@@ -145,7 +195,7 @@ const SongRow = ({ canciones }) => {
                                     {playingIndex === index && isPlaying ? <FaPause size="3em" /> : <FaPlay size="3em" />}
                                 </PlayIconContainer>
                             )}
-                            <audio ref={(el) => audioRefs.current[index] = el} src={cancion.archivo_mp3} />
+                            <audio ref={(el) => audioRefs.current[index] = el} src={cancion.archivoMp3} />
                         </ImgContainer>
                         <p>{cancion.nombre}</p>
                     </ImageBox>

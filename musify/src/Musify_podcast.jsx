@@ -2,11 +2,9 @@ import React from "react";
 import styled from "styled-components";
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
-import Body from "./components/Body";
 import Footer from "./components/Footer";
 import { useParams } from 'react-router-dom';
-
-
+import PodcastDetails from "./components/Body_podcast";
 
 export default function Musify(){
     const { playlistId } = useParams();
@@ -17,7 +15,7 @@ export default function Musify(){
             <div className="body">
             <Navbar />
                 <div className="body__contents">
-                <Body />
+                <PodcastDetails />
                 </div>
             </div>
         </div>

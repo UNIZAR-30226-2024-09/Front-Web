@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef} from 'react';
 import styled from 'styled-components';
-import { createGlobalStyle } from 'styled-components';
 import { FaMusic, FaGuitar, FaHeadphones, FaRegSmileBeam, FaRocketchat, FaRegGrinStars, FaPlay, FaPause } from 'react-icons/fa';
 import { useTrack } from './TrackContext';  // Ensure this context is properly set up to manage audio playback
 
@@ -64,59 +63,65 @@ export default function Cards() {
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ genero: genre })
+                    body: JSON.stringify({ genero: genre })  // Asegúrate de que la propiedad se llama "genero"
                 });
                 const data = await response.json();
-                setSongs(prev => ({
-                    ...prev,
-                    [genre]: data.canciones.slice(0, 2).map(song => ({ // Solo tomar las primeras dos canciones
-                        ...song,
-                        foto: base64ToImageSrc(song.foto),
-                        archivo_mp3: base64ToAudioSrc(song.archivo_mp3)
-                    }))
-                }));
+                if (response.ok) {
+                    const songsWithArtists = await Promise.all(data.canciones.map(async (song) => {
+                        const artistNames = await fetchArtistsForSong(song.id);
+                        return {
+                            ...song,
+                            foto: base64ToImageSrc(song.foto),
+                            archivoMp3: base64ToAudioSrc(song.archivoMp3),
+                            artistas: artistNames  // Agrega los artistas a la información de la canción
+                        };
+                    }));
+                    setSongs(prev => ({
+                        ...prev,
+                        [genre]: songsWithArtists
+                    }));
+                } else {
+                    console.error('Failed to fetch songs for genre:', genre);
+                }
             };
             fetchSongs(activeGenre);
         }
-    }, [activeGenre, view, songs]);
+    }, [activeGenre, view, songs]);      
+
+    const fetchArtistsForSong = async (songId) => {
+        const response = await fetch(`http://localhost:8000/listarArtistasCancion/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': 'tu_token_csrf'  // Asegura que el token CSRF es correcto
+            },
+            body: JSON.stringify({ cancionId: songId })
+        });
+        const data = await response.json();
+        return response.ok ? data.artistas.map(artista => artista.nombre).join(', ') : 'Artista Desconocido';
+    };
 
     const togglePlayPause = (index, genre) => {
-        const audioElement = audioRefs.current[index];
         const selectedSong = songs[genre][index];
+        const isCurrentPlaying = audioRef.current && audioRef.current.src === selectedSong.archivoMp3;
     
-        if (!audioElement.src) {
-            audioElement.src = selectedSong.archivo_mp3;  // Set src only if it's not already set
-            updateTrack({
-                src: selectedSong.archivo_mp3,
-                id: selectedSong.id,
-                imagen: selectedSong.foto,
-                nombre: selectedSong.nombre,
-                artista: selectedSong.artista  // Make sure artist data is included in your song data
-            });
-        }
+        console.log("Artistas de la canción seleccionada:", selectedSong.artistas);  // Verifica el log de los artistas
     
-        if (audioRef.current && audioRef.current.src === audioElement.src) {
-            // Toggle play/pause if the same track is played
-            if (isPlaying) {
-                pause();
-            } else {
-                play();
-            }
+        if (isPlaying && isCurrentPlaying) {
+            pause();
         } else {
-            // If another track is playing, do nothing or pause the current track before switching
-            if (isPlaying) {
-                // Comment out this line if you don't want to switch to a new song while another is playing
-                // pause();
-                // play new song after pausing the current one
-                audioRef.current = audioElement;  // Update the current playing audio element in context
-                play();
-            } else {
-                audioRef.current = audioElement;  // Update the current playing audio element in context
-                play();
+            if (!isCurrentPlaying) {
+                updateTrack({
+                    src: selectedSong.archivoMp3,
+                    id: selectedSong.id,
+                    imagen: selectedSong.foto,
+                    nombre: selectedSong.nombre,
+                    artista: selectedSong.artistas  // Usa la propiedad correcta que actualizaste
+                });
             }
+            play();
         }
-    };
-    
+    };    
 
     return (
         <CardsContainer>
@@ -173,39 +178,42 @@ const PlayIcon = styled.div`
   z-index: 10;
 `;
 
-// Agregar estilos para SongCard y SongsWrapper
 const SongCard = styled.div`
     position: relative;
     cursor: pointer;
-    flex: 0 0 calc(33.33% - 20px);
+    flex: 0 0 calc(20% - 20px);
     margin: 10px;
     text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+
+    &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+`;
+
+
+const SongImage = styled.img`
+    width: 30%;
+    height: auto;
+    transition: opacity 0.3s; // Suavizar la transición de la opacidad
+`;
+
+const SongName = styled.h4`
+    margin-top: 8px;
+    font-weight: 700;
+    color: #fff;
 `;
 
 const SongsWrapper = styled.div`
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 20px;
-`;
-
-const SongImage = styled.img`
-    width: 50%;
-    height: auto;
-    border-radius: 8px;
-`;
-
-const SongName = styled.h4`
-    margin-top: 8px;
-`;
-
-
-const GlobalStyle = createGlobalStyle`
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
-
-  body {
-    font-family: 'Montserrat', sans-serif;
-  }
+    margin-top: 30px;
+    gap: 50px;
 `;
 
 const CardsContainer = styled.div`

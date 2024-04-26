@@ -9,20 +9,17 @@ export default function Ayuda() {
                 <Header>
                         <h1>Ayuda con la cuenta</h1>
                 </Header>
-                <Desplegable title='Inicio de Sesion'>
-                        contenido1
+                <Desplegable title='¿Problemas al iniciar sesión?'>
+                        <p>Si tienes problemas para iniciar sesión, asegúrate de utilizar las credenciales correctas. También puedes intentar restablecer tu contraseña si la has olvidado.</p>
                 </Desplegable>
-                <Desplegable title='Imagen de Perfil'>
-                        contenido2
+                <Desplegable title='¿Cómo cambiar la foto de perfil?'>
+                        <p>Para cambiar tu imagen de perfil, ve a la configuración de tu cuenta y selecciona la opción para editar tu perfil. Desde allí, podrás subir una nueva imagen.</p>
                 </Desplegable>
-                <Desplegable title='Nombre de Usuario'>
-                        contenido3
+                <Desplegable title='¿Se puede cambiar el nombre de usuario?'>
+                        <p>Puedes cambiar tu nombre de usuario en la configuración de tu cuenta. Simplemente haz clic en la opción para editar tu perfil y sigue las instrucciones para cambiar tu nombre de usuario.</p>
                 </Desplegable>
-                <Desplegable title='Cambiar Correo'>
-                        contenido4
-                </Desplegable>
-                <Desplegable title='No me acuerdo de mis datos de inicio de sesion'>
-                        contenido5
+                <Desplegable title='¿Es posible cambiar el correo asociado a la cuenta?'>
+                        <p> No es posible cambiar el correo asociado a la cuenta. Si necesitas cambiar tu correo electrónico, deberás crear una nueva cuenta con la dirección de correo electrónico deseada.</p>
                 </Desplegable>
                 </div>
         </Container>

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useRef, useState } from 'react';
+import React, { createContext, useContext, useRef, useState, useEffect} from 'react';
 
 const TrackContext = createContext();
 
@@ -11,7 +11,19 @@ export const TrackProvider = ({ children }) => {
     const [currentTrackId, setCurrentTrackId] = useState(null);
     const [volume, setVolume] = useState(0.5);
     const [trackIndex, setTrackIndex] = useState(-1);
-    const [tracks, setTracks] = useState([]); // Definición correcta de tracks y setTracks
+    const [tracks, setTracks] = useState([]);
+    const [isShuffling, setIsShuffling] = useState(false);
+
+    const toggleShuffle = () => {
+        setIsShuffling(!isShuffling);
+    };
+
+    useEffect(() => {
+        if (trackIndex >= 0 && trackIndex < tracks.length) {
+            updateTrack(tracks[trackIndex]);
+        }
+    }, [trackIndex, tracks]);
+    
 
     const play = () => {
         audioRef.current.play();
@@ -31,24 +43,27 @@ export const TrackProvider = ({ children }) => {
         }
     };
 
-    const changeTrack = (next) => {
-        console.log('Current track index:', trackIndex); // Muestra el índice actual
-        const newIndex = next ? trackIndex + 1 : trackIndex - 1;
-        console.log('New track index:', newIndex); // Muestra el nuevo índice
-        if (newIndex < 0 || newIndex >= tracks.length) return;
-        setTrackIndex(newIndex);
-        audioRef.current.src = tracks[newIndex].archivo_mp3;
-        console.log('New track src:', tracks[newIndex].archivo_mp3); // Muestra la nueva fuente
-        play();
-    };
-    
     const updateTrack = (track) => {
-        if (currentTrack.src !== track.src) {
+        if (!currentTrack || currentTrack.src !== track.src) {
             audioRef.current.src = track.src;
             setCurrentTrack(track);
             setCurrentTrackId(track.id);
         }
     };
+
+    const changeTrack = (forward = true) => {
+        let newIndex;
+        if (isShuffling) {
+            newIndex = Math.floor(Math.random() * tracks.length);
+        } else {
+            const indexIncrement = forward ? 1 : -1;
+            newIndex = (trackIndex + indexIncrement + tracks.length) % tracks.length;
+        }
+        setTrackIndex(newIndex);
+        updateTrack(tracks[newIndex]);
+        play();
+    };
+
 
     const adjustVolume = (newVolume) => {
         audioRef.current.volume = newVolume; // Ajusta el volumen del elemento audio
@@ -62,14 +77,18 @@ export const TrackProvider = ({ children }) => {
         pause,
         audioRef,
         trackIndex,
+        setTrackIndex, // Ensure this is correctly passed
         currentTrackId,
         updateTrack,
-        volume,
-        adjustVolume,  
-        tracks,
+        changeTrack,
         setTrackList,
-        changeTrack
-    };
+        volume,
+        adjustVolume,
+        tracks,
+        setTracks,
+        toggleShuffle,
+        isShuffling
+}   ;
 
     return <TrackContext.Provider value={value}>{children}</TrackContext.Provider>;
 };

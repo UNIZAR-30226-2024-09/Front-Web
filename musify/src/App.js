@@ -14,6 +14,7 @@ import PerfilA from './Musify_perfilamigo';
 import Salas from './Musify_salas';
 import PantallaInicio from './Musify_inicio';
 import Musify from './Musify';
+import MusifyP from './Musify_podcast';
 import Preguntas from './components/Preguntas';
 import Ayuda from './components/Ayuda';
 import Reportar from './components/ReportarP';
@@ -25,6 +26,7 @@ import AniadirCancionAdmin from './admin/aniadir_cancion';
 import ListaPodcastAdmin from './admin/lista_podcasts';
 import AniadirPodcastAdmin from './admin/aniadir_podcast';
 import EditarPodcastAdmin from './admin/editar_podcast';
+import Historial from './Musify_historial';
 
 export default class App extends React.Component {
   render() {
@@ -36,6 +38,7 @@ export default class App extends React.Component {
             <Route path="/register_2" element={<RegisterPasswd />} />
             <Route path="/register_3" element={<RegisterInfo />} />
             <Route path="/musify/:playlistId" element={<Musify />} />
+            <Route path="/musifyp/:podcastId" element={<MusifyP />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path="/inicio" element={<PantallaInicio />} />
             <Route path="/chat" element={<Chat />} />
@@ -56,6 +59,8 @@ export default class App extends React.Component {
             <Route path="/lista_podcast_admin" element={<ListaPodcastAdmin />} />
             <Route path="/aniadir_podcast" element={<AniadirPodcastAdmin />} />
             <Route path="/editar_podcast/:podcastId" element={<EditarPodcastAdmin />} />
+            <Route path="/editar_podcast" element={<EditarPodcastAdmin />} />
+            <Route path="/historial" element={<Historial />} />
 
           </Routes>
         </UserProvider>

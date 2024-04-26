@@ -1,23 +1,129 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { BsFillPlayCircleFill, BsFillPauseCircleFill, BsShuffle } from "react-icons/bs";
+import { BsFillPlayCircleFill, BsFillPauseCircleFill, BsShuffle} from "react-icons/bs";
 import { CgPlayTrackNext, CgPlayTrackPrev } from "react-icons/cg";
 import { FiRepeat } from "react-icons/fi";
 import { PiMicrophoneStageFill } from "react-icons/pi";
 import Progress from "./Progress";
-import { useTrack } from './TrackContext';  // Ensure this correctly imports the context
+import { useTrack } from './TrackContext'; 
 import LyricsWindow from './LyricsWindow';
+import { FaHeart } from "react-icons/fa";
 
 export default function PlayerControls() {
-    const { isPlaying, play, pause, audioRef, currentTrackId, changeTrack } = useTrack();  // Asumiendo que currentTrackId tiene el ID de la canción actual
+    const {
+        isPlaying,
+        play,
+        pause,
+        audioRef,
+        currentTrackId,
+        changeTrack,
+        trackIndex,
+        tracks, 
+        setTrackIndex,
+        updateTrack,
+        isShuffling,
+        toggleShuffle,
+    } = useTrack();
+
+
     const [lyrics, setLyrics] = useState([]);
     const [showLyrics, setShowLyrics] = useState(false);
-
-
+    const [isRepeating, setIsRepeating] = useState(false);
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
+    const [isFavorited, setIsFavorited] = useState(false);
 
-    // Este useEffect se encargará de imprimir currentTrackId cada vez que cambie
+    // Función para verificar si la canción actual es favorita
+    const checkIfFavorited = async () => {
+        const email = "zineb@gmail.com";
+        const cancionId = currentTrackId;
+        const url = 'http://localhost:8000/esFavorita';  // Asegúrate de que la URL sea correcta
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': 'xsxNP3cl2YT0BaNA3CcZXs9baPGpgJR4Ba9NBLXWreieGa1d78TWoh9ufCrzPiYC'
+                },
+                body: JSON.stringify({ correo: email, cancionId: cancionId })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setIsFavorited(data.esFavorita);  // Asumiendo que la API responde con un campo booleano `esFavorita`
+            }
+        } catch (error) {
+            console.error('Error al verificar si la canción es favorita:', error);
+        }
+    };
+
+    // Efecto para verificar el estado favorito cada vez que cambia currentTrackId
+    useEffect(() => {
+        if (currentTrackId) {
+            checkIfFavorited();
+        }
+    }, [currentTrackId]);
+
+    const handleFavorite = () => {
+        const email = "zineb@gmail.com";
+        const cancionId = currentTrackId;
+        const shouldBeFavorited = !isFavorited;
+    
+        setIsFavorited(shouldBeFavorited);
+    
+        const url = 'http://localhost:8000/editarCancionFavoritos/';
+        const body = {
+            correo: email,
+            cancionId: cancionId,
+            favorito: shouldBeFavorited ? "True" : "False"
+        };
+    
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRFToken': 'xsxNP3cl2YT0BaNA3CcZXs9baPGpgJR4Ba9NBLXWreieGa1d78TWoh9ufCrzPiYC'
+            },
+            body: JSON.stringify(body)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.message.includes("éxito")) {
+                // Si hay un problema, revertir el estado visual
+                setIsFavorited(!shouldBeFavorited);
+                console.error('Error de la API:', data.message);
+            }
+        })
+        .catch(error => {
+            // Revertir el estado en caso de error de red
+            setIsFavorited(!shouldBeFavorited);
+            console.error('Error al comunicarse con la API:', error);
+        });
+    };
+    
+    
+    
+    const togglePlayPause = () => {
+        if (isPlaying) {
+            pause();
+        } else {
+            play();
+        }
+    };
+
+    const handlePrevTrack = () => {
+        changeTrack(false);
+    };
+
+    const handleNextTrack = () => {
+        const newIndex = (trackIndex + 1) % tracks.length;
+        setTrackIndex(newIndex);
+        updateTrack(tracks[newIndex]);
+    };
+    
+
     useEffect(() => {
         console.log("Current Track ID:", currentTrackId);  // Imprimir el ID de la pista actual
     }, [currentTrackId]);
@@ -40,8 +146,27 @@ export default function PlayerControls() {
                 });
         }
     }, [currentTrackId]);
-    
 
+    useEffect(() => {
+        const audio = audioRef.current;
+    
+        const onEnded = () => {
+            if (isRepeating) {
+                play();  // Reproduce la misma canción de nuevo
+            } else {
+                changeTrack(true);  // Pasa a la siguiente pista
+            }
+        };
+    
+        audio.addEventListener('ended', onEnded);
+    
+        return () => {
+            audio.removeEventListener('ended', onEnded);
+        };
+    }, [audioRef, isRepeating, play, changeTrack]); // Añade changeTrack a la lista de dependencias
+    
+    
+    
     const handleShowLyrics = () => setShowLyrics(true);
     const handleCloseLyrics = () => setShowLyrics(false);
 
@@ -65,34 +190,47 @@ export default function PlayerControls() {
         };
     }, [audioRef]);
 
-    const togglePlayPause = () => {
-        if (isPlaying) {
-            pause();
-        } else {
-            play();
-        }
+    useEffect(() => {
+        const audio = audioRef.current;
+    
+        const onEnded = () => {
+            if (isRepeating) {
+                play();
+            }
+        };
+    
+        audio.addEventListener('ended', onEnded);
+    
+        return () => {
+            audio.removeEventListener('ended', onEnded);
+        };
+    }, [audioRef, isRepeating, play]);
+
+    const toggleRepeat = () => {
+        setIsRepeating(!isRepeating);
     };
-
-    const handlePrevTrack = () => {
-        changeTrack(false);
-    };
-
-    const handleNextTrack = () => {
-        changeTrack(true);
-    };
-
-
-    const formatTime = (time) => `${Math.floor(time / 60)}:${Math.floor(time % 60).toString().padStart(2, '0')}`;
+    
+    const repeatIconStyle = isRepeating ? { color: 'red' } : { color: 'grey' };
 
     return (
         <Container>
-            <div className="shuffle"><BsShuffle /></div>
+            <div className="shuffle" onClick={toggleShuffle}>
+                <BsShuffle style={{ color: isShuffling ? 'red' : 'grey' }} />
+            </div>
+            <div className="track__actions">
+                    <div onClick={handleFavorite}>
+                        {isFavorited ? <FaHeart color="red" /> : <FaHeart color="white" />}
+                    </div>
+            </div>
             <div className="previous" onClick={handlePrevTrack}><CgPlayTrackPrev /></div>
             <div className="state" onClick={togglePlayPause}>
                 {isPlaying ? <BsFillPauseCircleFill /> : <BsFillPlayCircleFill />}
             </div>
             <div className="next" onClick={handleNextTrack}><CgPlayTrackNext /></div>
-            <div className="repeat"><FiRepeat /></div>
+            <div className="repeat" onClick={toggleRepeat}>
+                <FiRepeat style={repeatIconStyle} />
+            </div>
+
             <div className="progress-bar">
                 <Progress 
                     currentTime={currentTime} 
@@ -108,7 +246,6 @@ export default function PlayerControls() {
         </Container>
     );
 }
-
 
 const Container = styled.div`
    display: flex;
