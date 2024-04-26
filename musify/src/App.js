@@ -5,7 +5,7 @@ import LoginForm from './components/LoginForm';
 import RegisterMail from './components/register_1';
 import RegisterPasswd from './components/register_2';
 import RegisterInfo from './components/register_3';
-import Asistencia from './components/asistencia';
+import Asistencia from './components/configuracion';
 import Profile from './components/Profile';
 import Busqueda from './Musify_busqueda';
 import Chat from './MusifyChat';
@@ -16,7 +16,9 @@ import PantallaInicio from './Musify_inicio';
 import Musify from './Musify';
 import MusifyP from './Musify_podcast';
 import Preguntas from './components/Preguntas';
-import Ayuda from './components/Ayuda';
+import Ayuda from './components/ayuda_cuenta';
+import Ayuda2 from './components/ayuda_aplicacion';
+import Ayuda3 from './components/ayuda_seguridad';
 import Reportar from './components/ReportarP';
 import Cola from './Musify_cola';
 import IniAdmin from './admin/inicio_admin';
@@ -46,7 +48,9 @@ export default class App extends React.Component {
             <Route path="/busqueda" element={<Busqueda />} />
             <Route path="/perfil" element={<Profile />} />
             <Route path="/preguntas" element={<Preguntas />} />
-            <Route path="/ayuda" element={<Ayuda />} />
+            <Route path="/ayuda_cuenta" element={<Ayuda />} />
+            <Route path="/ayuda_aplicacion" element={<Ayuda2 />} />
+            <Route path="/ayuda_seguridad" element={<Ayuda3 />} />
             <Route path="/problemas" element={<Reportar />} />
             <Route path="/mi_perfil" element={<Perfil />} />
             <Route path="/perfil_amigo" element={<PerfilA />} />

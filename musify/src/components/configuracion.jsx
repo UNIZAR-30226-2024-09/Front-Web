@@ -30,11 +30,15 @@ export default function Asistencia() {
                 </IconWrapper>
                     <IconWrapper className='wrapper3'>
                         <h2>Preguntas FAQ</h2>
+                        <Link to="/preguntas" className="link">
                         <StyledFaQuestionCircle />
+                        </Link>
                     </IconWrapper>
                     <IconWrapper className='wrapper4'>
                         <h2>Reportar Problema</h2>
+                        <Link to="/problemas" className="link">
                         <StyledMdReportProblem />
+                        </Link>
                     </IconWrapper>
                 </FlexContainer>
             </Container>

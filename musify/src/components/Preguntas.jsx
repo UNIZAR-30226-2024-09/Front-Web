@@ -3,6 +3,7 @@ import styled, { keyframes } from "styled-components";
 import { CgProfile } from "react-icons/cg";
 import { MdOutlineManageAccounts } from "react-icons/md";
 import { IoIosHelpCircleOutline } from "react-icons/io";
+import { Link } from 'react-router-dom';
 import { FaLock } from "react-icons/fa6";
 
 export default function Preguntas() {
@@ -16,15 +17,21 @@ export default function Preguntas() {
                 <FlexContainer>
                     <IconWrapper className='wrapper1'>
                         <h2>Ayuda con tu cuenta</h2>
+                        <Link to="/ayuda_cuenta" className="link">
                         <StyledMdOutlineManageAccounts />
+                        </Link>
                     </IconWrapper>
                     <IconWrapper className='wrapper2'>
                         <h2>Ayuda con la aplicación</h2>
+                        <Link to="/ayuda_aplicacion" className="link">
                         <StyledIoIosHelpCircleOutline />
+                        </Link>
                     </IconWrapper>
                     <IconWrapper className='wrapper3'>
                         <h2>Seguridad y privacidad</h2>
+                        <Link to="/ayuda_seguridad" className="link">
                         <StyledFaLock />
+                        </Link>
                     </IconWrapper>
                 </FlexContainer>
             </Container>

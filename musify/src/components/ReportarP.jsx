@@ -12,9 +12,8 @@ export default function ReportarP() {
             <div className="select-wrapper" style={{ width: '800px' }}>
                 <select className='select'>
                     <option value ="">Selecciona una opción</option>
-                    <option value ="problema1">Problema 1</option>
-                    <option value ="problema2">Problema 2</option>
-                    <option value ="problema3">Problema 3</option>
+                    <option value ="problema1">Problemas con la cuenta</option>
+                    <option value ="problema2">Problemas con la aplicación</option>
                 </select>
             </div>
             <h2>Descripción del problema</h2>
