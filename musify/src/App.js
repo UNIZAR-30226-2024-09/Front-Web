@@ -51,11 +51,11 @@ export default class App extends React.Component {
             <Route path="/cola" element={<Cola />} />
             <Route path="/ini_admin" element={<IniAdmin />} />
             <Route path="/lista_canciones_admin" element={<ListaCancionesAdmin />} />
-            <Route path="/editar_cancion" element={<EditarCancionAdmin />} />
+            <Route path="/editar_cancion/:canacionId" element={<EditarCancionAdmin />} />
             <Route path="/aniadir_cancion" element={<AniadirCancionAdmin />} />
             <Route path="/lista_podcast_admin" element={<ListaPodcastAdmin />} />
             <Route path="/aniadir_podcast" element={<AniadirPodcastAdmin />} />
-            <Route path="/editar_podcast" element={<EditarPodcastAdmin />} />
+            <Route path="/editar_podcast/:podcastId" element={<EditarPodcastAdmin />} />
 
           </Routes>
         </UserProvider>

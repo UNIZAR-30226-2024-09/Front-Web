@@ -17,21 +17,21 @@ export default function InicioAdmin() {
                 </Header>
                 <FlexContainer>
                     <FlexContainerTop>
-                        <IconWrapper className='wrapper1'>
+                        <IconWrapper className='wrapper1' onClick ={() => navigate('/lista_canciones_admin')}>
                             <h2>Lista de canciones</h2>
                             <StyledLuListMusic />
                         </IconWrapper>
-                        <IconWrapper className='wrapper2'>
+                        <IconWrapper className='wrapper2' onClick ={() => navigate('/lista_podcast_admin')}>
                             <h2>Lista de podcasts</h2>
                             <StyledRiPlayList2Fill />
                         </IconWrapper>
                     </FlexContainerTop>
                     <FlexContainerBottom>
-                        <IconWrapper className='wrapper3'>
+                        <IconWrapper className='wrapper3' onClick ={() => navigate('/aniadir_cancion')}>
                             <h2>Añadir canción</h2>
                             <StyledIoIosAdd />
                         </IconWrapper>
-                        <IconWrapper className='wrapper4'>
+                        <IconWrapper className='wrapper4' onClick ={() => navigate('/aniadir_podcast')}>
                             <h2>Añadir podcast</h2>
                             <StyledIoIosAdd />
                         </IconWrapper>
