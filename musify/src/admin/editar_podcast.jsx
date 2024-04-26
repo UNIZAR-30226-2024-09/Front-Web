@@ -1,45 +1,51 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import AniadirWindow from "./salir_sin_guardar";
 import EditCapWindow from "./editr_capitulo";
 import { FaCog, FaClock } from "react-icons/fa";
 
-const capitulos = [
-    {
-      id: 1,
-      name: "Capitulo 1",
-      fecha: "Fecha 1",
-      duration: "3:45",
-    },
-    {
-      id: 2,
-      name: "Capitulo 2",
-      fecha: "Fecha 2",
-      duration: "4:05",
-    },
-];
+const base64ToImageSrc = (base64) => {
+    console.log("Base64 original:", base64); // Imprimir la base64 original
 
-export default function EditarPodcasrAdmin(tituloI, presentadorI, anioI, generoI) {
+    // Eliminar el prefijo de la cadena base64 si está presente
+    const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
+    console.log("Base64 sin prefijo:", base64WithoutPrefix); // Imprimir la base64 sin prefijo
+
+    // Decodificar la cadena base64
+    const byteCharacters = atob(base64WithoutPrefix);
+    console.log("Caracteres de bytes:", byteCharacters); // Opcional: Imprimir los caracteres después de atob
+    const imageSrc = `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
+    console.log("Imagen transformada:", imageSrc); // Imprimir el src de la imagen transformada
+    return imageSrc;
+};
+
+export default function EditarPodcasrAdmin() {
+    const { podcastId } = useParams();
+    const[podcast, setPodcast] = useState(null);
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
-    const [podcastValid, setPodcastValid] = useState(false);
+    const [capitulos, setCapitulos] = useState([]);
 
-    const [titulo, setTitulo] = useState(tituloI);
-    const [presentador, setPresentador] = useState(presentadorI);
-    const [fecha, setFecha] = useState(anioI);
-    const [duracion, setDuracion] = useState('');
-    const [genero, setGenero] = useState(generoI);
-    const [imagen, setImagen] = useState(null);
+    const [nombre, setNombre] = useState('');
+    const [presentador, setPresentador] = useState('');
+    const [anio, setAnio] = useState('');
+    const [genero, setGenero] = useState([]);
+    const [foto, setFoto] = useState(null);
     const [audio, setAudio] = useState(null);
 
-    useEffect(() => {
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    /*useEffect(() => {
         if (titulo.trim() !== '' && fecha.trim() !== '' && duracion.trim() !== '' ) {
           setPodcastValid(true);
         } else {
           setPodcastValid(false);
         }
     }, [titulo, presentador, fecha]);
+    */
 
     const handleExitWithoutSave = () => {
         setShowModal(true); // Muestra el modal al hacer clic en "Salir sin guardar"
@@ -52,12 +58,78 @@ export default function EditarPodcasrAdmin(tituloI, presentadorI, anioI, generoI
     const handleCloseModalNoSave = () => {
         navigate('/lista_podcast_admin'); //Vuelve a la lista de canciones
     };
-    
-    const handleCancionAniadida = () => {
-        if(podcastValid) {
-            navigate('/lista_podcast_admin');
-        }
-    };
+
+    useEffect(() => {
+        const fetchPodcast = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch('http://127.0.0.1:8000/devolverPodcast/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: podcastId })
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    const podcastData = {
+                      id: data.id,
+                      foto: base64ToImageSrc(data.foto),
+                      nombre: data.nombre,
+                      presentador: data.presentador,
+                      fecha: data.fecha,
+                    };
+                    setPodcast(podcastData);
+                    console.log(podcastData);
+                    setNombre(podcastData.nombre);
+                    setPresentador(podcastData.presentador);
+                    setAnio(podcastData.fecha);
+                    //setGenero(podcastData);
+                    setFoto(podcastData.foto);
+
+                }else {
+                    const errorData = await response.text();
+                    throw new Error(errorData || "Error al recibir datos");
+                }
+            } catch (error) {
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPodcast();
+    }, [podcastId]);
+
+    useEffect(() => {
+        const fetchCapitulos = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch('http://127.0.0.1:8000/listarCapitulosPodcast/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: podcastId })
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    const updatedCapitulos = data.canciones.map(capitulo => ({
+                        id: capitulo.id,
+                        nombre: capitulo.nombre
+                    }));
+                    setCapitulos(updatedCapitulos);
+                }else {
+                    const errorData = await response.text();
+                    throw new Error(errorData || "Error al recibir datos");
+                }
+            } catch (error) {
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCapitulos();
+    }, []);
 
     return (
         <>
@@ -68,8 +140,8 @@ export default function EditarPodcasrAdmin(tituloI, presentadorI, anioI, generoI
                         <div className="titulo">
                             <input 
                                 type="titulo" 
-                                value={titulo}
-                                onChange={e=>setTitulo(e.target.value)}
+                                value={nombre}
+                                onChange={e=>setNombre(e.target.value)}
                                 placeholder="Título de la canción" required />
                         </div>
                         <div className="input-box">
@@ -82,8 +154,8 @@ export default function EditarPodcasrAdmin(tituloI, presentadorI, anioI, generoI
                         <div className="input-box">
                             <input 
                                 type="año" 
-                                value={fecha}
-                                onChange={e=>setFecha(e.target.value)}
+                                value={anio}
+                                onChange={e=>setAnio(e.target.value)}
                                 placeholder="Año" required />
                         </div>
                         <select value={genero} onChange={e=>setGenero(e.target.value)} required>
@@ -100,7 +172,7 @@ export default function EditarPodcasrAdmin(tituloI, presentadorI, anioI, generoI
                     </div>
                     <div className="image">
                         <h7>Imagen:</h7>
-                        <input type="file" accept="image/*" onChange={e=>setImagen(e.target.value)} required />
+                        <input type="file" accept="image/*" onChange={e=>setFoto(e.target.value)} required />
                     </div>
                     <div className="chapter-list-container">
                         <div className="chapter-list-header">
@@ -130,7 +202,7 @@ export default function EditarPodcasrAdmin(tituloI, presentadorI, anioI, generoI
                     <div className="buttons-container">
                         <button type="button" className="cancel-button" onClick={handleExitWithoutSave}>Salir sin guardar</button>
                         {showModal && <AniadirWindow onClose={handleCloseModal} ruta={handleCloseModalNoSave} />}
-                        <button type="submit" className="save-button" onClick={handleCancionAniadida}>Guardar</button>
+                        <button type="submit" className="save-button">Guardar</button>
                     </div>
                 </form>
             </div>

@@ -1,112 +1,101 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { FaSearch, FaCog, FaClock } from "react-icons/fa";
-import { useNavigate } from 'react-router-dom';
-import EditarCancion from "./editar_cancion";
+import { FaCog } from "react-icons/fa";
+import { Link } from 'react-router-dom';
 
-const canciones = [
-    {
-      id: 1,
-      name: "Canción 1",
-      artist: "Artista 1",
-      album: "Álbum 1",
-      duration: "3:45",
-      imageUrl: "/imagenes/prueba.jpg",
-    },
-    {
-      id: 2,
-      name: "Canción 2",
-      artist: "Artista 2",
-      album: "Álbum 2",
-      duration: "4:05",
-      imageUrl: "/imagenes/prueba.jpg",
-    },
-    {
-        id: 3,
-        name: "Canción 3",
-        artist: "Artista 3",
-        album: "Álbum 3",
-        duration: "4:05",
-        imageUrl: "/imagenes/prueba.jpg",
-    },
-    {
-        id: 4,
-        name: "Canción 5",
-        artist: "Artista 4",
-        album: "Álbum 4",
-        duration: "4:05",
-        imageUrl: "/imagenes/prueba.jpg",
-    },
-    {
-        id: 5,
-        name: "Canción 5",
-        artist: "Artista 5",
-        album: "Álbum 5",
-        duration: "4:05",
-        imageUrl: "/imagenes/prueba.jpg",
-    },
-];
+const base64ToImageSrc = (base64) => {
+    console.log("Base64 original:", base64); // Imprimir la base64 original
+
+    // Eliminar el prefijo de la cadena base64 si está presente
+    const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
+    console.log("Base64 sin prefijo:", base64WithoutPrefix); // Imprimir la base64 sin prefijo
+
+    // Decodificar la cadena base64
+    const byteCharacters = atob(base64WithoutPrefix);
+    console.log("Caracteres de bytes:", byteCharacters); // Opcional: Imprimir los caracteres después de atob
+    const imageSrc = `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
+    console.log("Imagen transformada:", imageSrc); // Imprimir el src de la imagen transformada
+    return imageSrc;
+};
 
 
 export default function ListaCancionesAdmin() {
-    const navigate = useNavigate();
-    const [busqueda, setBusqueda] = useState("");
+    const [canciones, setCanciones] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
-    // Función para filtrar las canciones
-    const cancionesFiltradas = canciones.filter(cancion =>
-        cancion.name.toLowerCase().includes(busqueda.toLowerCase()) ||
-        cancion.artist.toLowerCase().includes(busqueda.toLowerCase())
-    );
-
-    const handleEdicion = () => {
-        
-    };
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch('http://127.0.0.1:8000/listarCanciones/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({})
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    const updatedCanciones = data.canciones.slice(0, 3).map(cancion => ({
+                        id: cancion.id,
+                        foto: base64ToImageSrc(cancion.foto),
+                        nombre: cancion.nombre,
+                        artista: cancion.artista,
+                        album: cancion.album
+                    }));
+                    setCanciones(updatedCanciones);
+                }else {
+                    const errorData = await response.text();
+                    throw new Error(errorData || "Error al recibir datos");
+                }
+            } catch (error) {
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+    
+    if (loading) return <p>Cargando...</p>;
+    if (error) return <p>Error: {error}</p>;
+    if (!canciones.length) return <p>No hay canciones disponibles</p>;
 
     return(
         <>
             <Container>
-                <div className="search__bar">
-                    <FaSearch />
-                    <input 
-                        type="text" 
-                        placeholder="Buscar canciones por nombre, artista..."
-                        value={busqueda}
-                        onChange={(e) => setBusqueda(e.target.value)}
-                    />
-                </div>
-                <Table>
+            <Table>
                     <thead>
                         <tr>
                             <th>#</th>
                             <th>Título</th>
                             <th>Álbum</th>
-                            <th><FaClock /></th>
                             <th>Editar</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {cancionesFiltradas.map(cancion => (
-                            <tr key={cancion.id}>
-                                <td>{cancion.id}</td>
+                        {canciones.map((c, index) => (
+                            <tr key={c.id}>
+                                <td>{index + 1}</td>
                                 <td>
                                     <div className="cancion__details">
-                                        <img src={cancion.imageUrl} alt={cancion.name} />
+                                        <img src={c.foto} alt={c.nombre} />
                                         <div>
-                                            <div className="cancion__title">{cancion.name}</div>
-                                            <div className="cancion__artist">{cancion.artist}</div>
+                                            <div className="cancion__title">{c.nombre}</div>
+                                            <div className="cancion__artist">{c.artista}</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td>{cancion.album}</td>
-                                <td>{cancion.duration}</td>
-                                <FaCog 
-                                    className="cancion__settings" 
-                                    onClick={handleEdicion}
-                                />
+                                <td>{c.album}</td>
+                                <Link to={`/editar_cancion/${c.id}`} className="cancion__settings">
+                                  {c.album}
+                                  <FaCog />
+                                </Link>
                             </tr>
                         ))}
                     </tbody>
-                </Table>
+                </Table> 
             </Container>
         </>
     );
@@ -117,29 +106,10 @@ const Container = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-    .search__bar{
-        background-color: white;
-        width: 1000px;
-        padding: 0.4rem 1rem;
-        border-radius: 2rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        input{
-            border: none;
-            height: 2rem;
-            width: 100%;
-            &:focus{
-                outline: none;
-            }
-            
-        }
-    }
 `;
 
 const Table = styled.table`
-    width: 100%;
+    width: 800px;
     border-collapse: separate;
     border-spacing: 0;
     margin-top: 20px;
@@ -183,5 +153,36 @@ const Table = styled.table`
   }
   tbody tr {
     border-bottom: 1px solid #ddd;
+  }
+`;
+
+const StyledList = styled.ul`
+  list-style-type: none;
+  padding: 0;
+`;
+
+const StyledListItem = styled.li`
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+
+  .cancion__details {
+    display: flex;
+    align-items: center;
+  }
+
+  .cancion__title {
+    font-weight: bold;
+  }
+
+  .cancion__artist {
+    color: #888;
+  }
+
+  .cancion__settings {
+    cursor: pointer;
+    margin-left: auto;
   }
 `;

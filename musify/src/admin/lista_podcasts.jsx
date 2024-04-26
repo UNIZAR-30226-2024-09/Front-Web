@@ -1,54 +1,67 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { FaSearch, FaCog, FaClock } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-const podcast = [
-    {
-      id: 1,
-      name: "Podcast 1",
-      presentador: "Presentador 1",
-      fecha: "Fecha 1",
-      cap: "2",
-      imageUrl: "/imagenes/prueba.jpg",
-    },
-    {
-        id: 2,
-        name: "Podcast 2",
-        presentador: "Presentador 2",
-        fecha: "Fecha 2",
-        cap: "3",
-        imageUrl: "/imagenes/prueba.jpg",
-    },
-];
+const base64ToImageSrc = (base64) => {
+    console.log("Base64 original:", base64); // Imprimir la base64 original
 
+    // Eliminar el prefijo de la cadena base64 si está presente
+    const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
+    console.log("Base64 sin prefijo:", base64WithoutPrefix); // Imprimir la base64 sin prefijo
+
+    // Decodificar la cadena base64
+    const byteCharacters = atob(base64WithoutPrefix);
+    console.log("Caracteres de bytes:", byteCharacters); // Opcional: Imprimir los caracteres después de atob
+    const imageSrc = `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
+    console.log("Imagen transformada:", imageSrc); // Imprimir el src de la imagen transformada
+    return imageSrc;
+};
 
 export default function ListaPodcastsAdmin() {
+    const [podcasts, setPodcasts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
     const [busqueda, setBusqueda] = useState("");
 
-    // Función para filtrar las canciones
-    const podcastFiltrados = podcast.filter(podcast =>
-        podcast.name.toLowerCase().includes(busqueda.toLowerCase()) ||
-        podcast.presentador.toLowerCase().includes(busqueda.toLowerCase())
-    );
-
-    const handleEdicion = () => {
-        
-    };
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch('http://127.0.0.1:8000/listarPodcasts/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({})
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    const updatedPodcasts = data.podcasts.slice(0, 3).map(podcast => ({
+                        id: podcast.id,
+                        foto: base64ToImageSrc(podcast.foto),
+                        nombre: podcast.nombre,
+                        presentador: podcast.presentador
+                    }));
+                    setPodcasts(updatedPodcasts);
+                }else {
+                    const errorData = await response.text();
+                    throw new Error(errorData || "Error al recibir datos");
+                }
+            } catch (error) {
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
     return(
         <>
             <Container>
-                <div className="search__bar">
-                    <FaSearch />
-                    <input 
-                        type="text" 
-                        placeholder="Buscar podcast por nombre, autor..."
-                        value={busqueda}
-                        onChange={(e) => setBusqueda(e.target.value)}
-                    />
-                </div>
                 <Table>
                     <thead>
                         <tr>
@@ -60,24 +73,23 @@ export default function ListaPodcastsAdmin() {
                         </tr>
                     </thead>
                     <tbody>
-                        {podcastFiltrados.map(podcast => (
-                            <tr key={podcast.id}>
-                                <td>{podcast.id}</td>
+                        {podcasts.map((p, index) => (
+                            <tr key={p.id}>
+                                <td>{index + 1}</td>
                                 <td>
                                     <div className="podcast__details">
-                                        <img src={podcast.imageUrl} alt={podcast.name} />
+                                        <img src={p.foto} alt={p.nombre} />
                                         <div>
-                                            <div className="podcast__title">{podcast.name}</div>
-                                            <div className="podcast__author">{podcast.presentador}</div>
+                                            <div className="podcast__title">{p.nombre}</div>
+                                            <div className="podcast__author">{p.presentador}</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td>{podcast.fecha}</td>
-                                <td>{podcast.cap}</td>
-                                <FaCog 
-                                    className="podcast__settings" 
-                                    
-                                />
+                                <td>{p.fecha}</td>
+                                <td>{p.cap}</td>
+                                <Link to={`/editar_podcast/${p.id}`} className="cancion__settings">
+                                  <FaCog />
+                                </Link>
                             </tr>
                         ))}
                     </tbody>
@@ -114,7 +126,7 @@ const Container = styled.div`
 `;
 
 const Table = styled.table`
-    width: 100%;
+    width: 800px;
     border-collapse: separate;
     border-spacing: 0;
     margin-top: 20px;
