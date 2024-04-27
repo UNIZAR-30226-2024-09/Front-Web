@@ -1,24 +1,27 @@
 import React from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { UserProvider } from './components/UserContext';
-import LoginForm from './components/LoginForm';
-import RegisterMail from './components/register_1';
-import RegisterPasswd from './components/register_2';
-import RegisterInfo from './components/register_3';
-import Asistencia from './components/asistencia';
-import Profile from './components/Profile';
-import Busqueda from './Musify_busqueda';
-import Chat from './MusifyChat';
-import Perfil from './Musify_perfil';
-import PerfilA from './Musify_perfilamigo';
-import Salas from './Musify_salas';
-import PantallaInicio from './Musify_inicio';
-import Musify from './Musify';
-import MusifyP from './Musify_podcast';
-import Preguntas from './components/Preguntas';
-import Ayuda from './components/Ayuda';
-import Reportar from './components/ReportarP';
-import Cola from './Musify_cola';
+import { UserProvider } from './components/UserContext/userContext';
+import LoginForm from './components/pantallaInicioSesion/inicioSesion';
+import RegisterMail from './components/pantallasRegistro/registro1';
+import RegisterPasswd from './components/pantallasRegistro/registro2';
+import RegisterInfo from './components/pantallasRegistro/registro3';
+import Asistencia from './components/pantallaConfiguracion/configuracion';
+import Profile from './components/pantallaEditarPerfil/editarPerfil';
+import Busqueda from './components/pantallaBuscar/buscar';
+import Chat from './components/pantallaChat/chat';
+import Perfil from './components/pantallaPerfil/miPerfil';
+import PerfilA from './components/pantallaPerfilAmigo/perfilAmigo';
+import Salas from './components/pantallaSalas/salasChat';
+import PantallaInicio from './components/pantallaInicial/inicio';
+import Musify from './components/pantallaPlaylist/playlist';
+import MusifyP from './components/pantallaPodcast/podcasts';
+import MusifyC from './components/pantallaCanciones/canciones';
+import Preguntas from './components/pantallaPreguntasFAQ/preguntas';
+import Ayuda from './components/pantallasAyuda/ayudaCuenta';
+import Ayuda2 from './components/pantallasAyuda/ayudaAplicacion';
+import Ayuda3 from './components/pantallasAyuda/ayudaSeguridad';
+import Reportar from './components/pantallaReporte/reportar';
+import Cola from './components/pantallaCola/colaReproducción';
 import IniAdmin from './admin/inicio_admin';
 import ListaCancionesAdmin from './admin/lista_canciones';
 import EditarCancionAdmin from './admin/editar_cancion';
@@ -26,7 +29,7 @@ import AniadirCancionAdmin from './admin/aniadir_cancion';
 import ListaPodcastAdmin from './admin/lista_podcasts';
 import AniadirPodcastAdmin from './admin/aniadir_podcast';
 import EditarPodcastAdmin from './admin/editar_podcast';
-import Historial from './Musify_historial';
+import Historial from './components/pantallaHistorial/historialReproducción';
 
 export default class App extends React.Component {
   render() {
@@ -39,6 +42,7 @@ export default class App extends React.Component {
             <Route path="/register_3" element={<RegisterInfo />} />
             <Route path="/musify/:playlistId" element={<Musify />} />
             <Route path="/musifyp/:podcastId" element={<MusifyP />} />
+            <Route path="/musifyc/:cancionId" element={<MusifyC />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path="/inicio" element={<PantallaInicio />} />
             <Route path="/chat" element={<Chat />} />
@@ -46,7 +50,9 @@ export default class App extends React.Component {
             <Route path="/busqueda" element={<Busqueda />} />
             <Route path="/perfil" element={<Profile />} />
             <Route path="/preguntas" element={<Preguntas />} />
-            <Route path="/ayuda" element={<Ayuda />} />
+            <Route path="/ayuda_cuenta" element={<Ayuda />} />
+            <Route path="/ayuda_aplicacion" element={<Ayuda2 />} />
+            <Route path="/ayuda_seguridad" element={<Ayuda3 />} />
             <Route path="/problemas" element={<Reportar />} />
             <Route path="/mi_perfil" element={<Perfil />} />
             <Route path="/perfil_amigo" element={<PerfilA />} />
