@@ -33,14 +33,14 @@ const base64ToAudioSrc = (base64) => {
 export default function EditarCancion() {
     const navigate = useNavigate();
     const { cancionId } = useParams();
-    const[cancion, setCancion] = useState(null);
 
     const[nombre, setNombre] = useState('');
-    const[artista, setArtista] = useState('');
+    const[artistas, setArtistas] = useState([]);
     const[album, setAlbum] = useState('');
     const[genero, setGenero] = useState('');
     const[foto, setFoto] = useState(null);
     const[audio, setAudio] = useState(null);
+    const[duracion, setDuracion] = useState('');
 
     const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
     //const [modificado, setModificado] = useState(false);
@@ -53,56 +53,99 @@ export default function EditarCancion() {
         const fetchCancion = async () => {
             setLoading(true);
             try {
-                const response = await fetch('http://127.0.0.1:8000/devolverCancion/', {
+                const response = await fetch(`http://127.0.0.1:8000/devolverCancion/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ id: cancionId })
+                    body: JSON.stringify({ cancionId })
                 });
-                if (response.ok) {
-                    const data = await response.json();
-                    const cancionData = {
-                      id: data.id,
-                      foto: base64ToImageSrc(data.foto),
-                      archivo_mp3: base64ToAudioSrc(data.archivoMp3),
-                      nombre: data.nombre,
-                      artista: data.artista,
-                      album: data.album,
-                    };
-                    setCancion(cancionData);
-                    console.log(cancionData);
-                    setNombre(cancionData.nombre);
-                    setArtista(cancionData.artista);
-                    setAlbum(cancionData.album);
-                    //setGenero(cancionData);
-                    setFoto(cancionData.foto);
-                    setAudio(cancionData.archivo_mp3);
-
-                }else {
-                    const errorData = await response.text();
-                    throw new Error(errorData || "Error al recibir datos");
-                }
+                if (!response.ok) throw new Error("Failed to fetch song details");
+                const data = await response.json();
+                setNombre(data.cancion.nombre);
+                setAlbum(data.cancion.miAlbum);
+                setFoto(base64ToImageSrc(data.cancion.foto));
+                setAudio(base64ToAudioSrc(data.cancion.archivoMp3));
+                fetchArtistas();
+                fetchAlbum(data.cancion.miAlbum);
+                fetchDuracion(base64ToAudioSrc(data.cancion.archivoMp3))
             } catch (error) {
                 setError(error.message);
             } finally {
                 setLoading(false);
             }
         };
+
+        const fetchArtistas = async () => {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/listarArtistasCancion/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cancionId })
+                });
+                if (!response.ok) throw new Error("Failed to fetch artistas");
+                const songData = await response.json();
+                const updatedArtistas = songData.artistas.map(artista => ({
+                    nombre: artista.nombre
+                }));
+                setArtistas(updatedArtistas);
+            } catch (error) {
+                setError(`Failed to fetch artistas: ${error.message}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const fetchAlbum = async (idAlbum) => {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/devolverAlbum/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ albumId: idAlbum })
+                });
+                if (!response.ok) throw new Error("Failed to fetch album");
+                const albumData = await response.json();
+                setAlbum(albumData.album.nombre);
+            } catch (error) {
+                setError(`Failed to fetch album: ${error.message}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+
         fetchCancion();
     }, [cancionId]);
 
-    useEffect(() => {
+    const fetchDuracion = (audioSrc) => {
+        return new Promise((resolve, reject) => {
+            const audio = new Audio(audioSrc);
+            audio.onloadedmetadata = () => {
+                resolve(audio.duration);
+                setDuracion(audio.duration);
+            };
+            audio.onerror = () => {
+                reject('Failed to load audio');
+            };
+        });
+    };
+
+    const formatDuration = (duration) => {
+        if (!duration) return 'N/A';
+        const minutes = Math.floor(duration / 60);
+        const seconds = Math.floor(duration % 60);
+        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    };
+
+    /*useEffect(() => {
         if (nombre.trim() !== '' && artista.trim() !== '' && album.trim() !== '' ) {
           setCancionValid(true);
         } else {
           setCancionValid(false);
         }
-    }, [nombre, artista, album]);
+    }, [nombre, artista, album]);*/
 
     if (loading) return <p>Cargando...</p>;
     if (error) return <p>Error: {error}</p>;
-    if (!cancion.length) return <p>No hay cancion disponibles</p>;
 
     /*useEffect(() => {
         // Verifica si hay cambios en los datos de la canción
@@ -134,6 +177,11 @@ export default function EditarCancion() {
         }
     };
 
+    const handleInputChange = (e) => {
+        const nuevosArtistas = e.target.value.split(",").map((nombre) => nombre.trim());
+        setArtistas(nuevosArtistas);
+    };
+
     return (
         <>
           <Container>
@@ -141,30 +189,40 @@ export default function EditarCancion() {
                 <form action="">
                     <div className="info">
                         <div className="titulo">
+                            <h6>Título:</h6>
                             <input 
-                                type="titulo" 
+                                type="text" 
                                 value={nombre}
-                                onChange={e=>setNombre(e.target.value)}
-                                placeholder="Título de la canción" required />
+                                onChange={(e) => {
+                                    console.log('Valor del nombre:', e.target.value);
+                                    setNombre(e.target.value)
+                                }}
+                                placeholder={nombre}
+                                />
+                        </div>
+                        <div className="artistas">
+                            <h6>Artistas:</h6>
+                            <textarea
+                                rows={4} 
+                                value={artistas.map(artista => artista.nombre).join(",")}
+                                onChange={handleInputChange}
+                                placeholder="Escribe los nombres de los artistas separados por comas"
+                            />
                         </div>
                         <div className="input-box">
-                            <input 
-                                type="artista" 
-                                value={artista}
-                                onChange={e=>setArtista(e.target.value)}
-                                placeholder="Artista" required />
-                        </div>
-                        <div className="input-box">
+                            <h6>Album:</h6>
                             <input 
                                 type="album" 
-                                value={album}
-                                onChange={e=>setAlbum(e.target.value)}
-                                placeholder="Album" required />
+                                value={album} 
+                                onChange={(e) => setAlbum(e.target.value)}
+                                />
                         </div>
                         <div className="input-box">
+                            <h6>Duración:</h6>
                             <input 
                                 type="duracion" 
-                                value={''}
+                                value={formatDuration(duracion)} 
+                                onChange={(e) => setDuracion(e.target.value)}
                                 />
                         </div>
                         <select value={genero} onChange={e=>setGenero(e.target.value)} required>
@@ -176,11 +234,15 @@ export default function EditarCancion() {
                         </select>
                     </div>
                     <div className="audio">
-                        <h7>Archivo de audio (.mp3):</h7>
+                        <h6>Archivo de audio (.mp3):</h6>
                         <input type="file" accept=".mp3" />
                     </div>
                     <div className="image">
-                        <h7>Imagen:</h7>
+                        <h6>Imagen:</h6>
+                        <img 
+                            className="album-image"
+                            src={foto} alt="Imagen predefinida" 
+                        />
                         <input type="file" accept="image/*"/>
                     </div>
                     <div className="buttons-container">
@@ -218,7 +280,25 @@ const Container = styled.div`
     .titulo {
         width: 400px;
         height: 80px;
+        margin-bottom: 30px;
+    }
+
+    .artistas{
+        width: 400px;
+        height: 80px;
         margin-bottom: 20px;
+        textarea {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            outline: none;
+            border: 2px solid #fff;
+            border-radius: 20px;
+            font-size: 20px;
+            color: #fff;
+            padding: 20px;
+            appearance: none;
+        }
     }
     
     .input-box, select{
@@ -234,7 +314,7 @@ const Container = styled.div`
         outline: none;
         border: 2px solid #fff;
         border-radius: 20px;
-        font-size: 16px;
+        font-size: 20px;
         color: #fff;
         padding-left: 20px;
         appearance: none;
@@ -258,6 +338,7 @@ const Container = styled.div`
 
 .image {
     position: absolute;
+    text-align: center; 
     top: 30px;
     right: 40px;
     width: 300px;
@@ -265,11 +346,16 @@ const Container = styled.div`
     outline: none;
     border: 2px solid #fff;
     border-radius: 20px;
-    h7 {
+    h6 {
         border: 10px;
         text-align: center;
     }
-    input {
+    .album-image{
+        width: 120px; 
+        height: 120px;
+        align: center
+    }
+    input { 
         width: 100%;
         height: 100%;
         background: transparent;

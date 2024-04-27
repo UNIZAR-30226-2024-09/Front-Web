@@ -20,6 +20,8 @@ const base64ToImageSrc = (base64) => {
 
 
 export default function ListaCancionesAdmin() {
+    const [albums, setAlbums] = useState({});
+
     const [canciones, setCanciones] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -37,14 +39,22 @@ export default function ListaCancionesAdmin() {
                 });
                 if (response.ok) {
                     const data = await response.json();
+                    console.log(data);
                     const updatedCanciones = data.canciones.slice(0, 3).map(cancion => ({
                         id: cancion.id,
                         foto: base64ToImageSrc(cancion.foto),
                         nombre: cancion.nombre,
-                        artista: cancion.artista,
-                        album: cancion.album
+                        album: cancion.miAlbum
                     }));
                     setCanciones(updatedCanciones);
+                    const fetchAlbumPromises = updatedCanciones.map(cancion => fetchAlbum(cancion.album));
+                    const albumsData = await Promise.all(fetchAlbumPromises);
+                    const updatedAlbums = albumsData.reduce((acc, album, index) => {
+                        acc[index] = album;
+                        return acc;
+                    }, {});
+                    setAlbums(updatedAlbums);
+                    console.log(updatedAlbums);
                 }else {
                     const errorData = await response.text();
                     throw new Error(errorData || "Error al recibir datos");
@@ -54,6 +64,24 @@ export default function ListaCancionesAdmin() {
             } finally {
                 setLoading(false);
             }
+        };
+
+        const fetchAlbum = async (idAlbum) => {
+          try {
+              const response = await fetch(`http://127.0.0.1:8000/devolverAlbum/`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ albumId: idAlbum })
+              });
+              if (!response.ok) throw new Error("Failed to fetch album");
+              const albumData = await response.json();
+              console.log(albumData);
+              console.log(albumData.album.nombre);
+              return albumData.album.nombre;
+          } catch (error) {
+            console.log(error);
+              setError(`Failed to fetch album: ${error.message}`);
+          }
         };
         fetchData();
     }, []);
@@ -87,9 +115,8 @@ export default function ListaCancionesAdmin() {
                                         </div>
                                     </div>
                                 </td>
-                                <td>{c.album}</td>
+                                <td>{albums[index]}</td>
                                 <Link to={`/editar_cancion/${c.id}`} className="cancion__settings">
-                                  {c.album}
                                   <FaCog />
                                 </Link>
                             </tr>
@@ -153,36 +180,5 @@ const Table = styled.table`
   }
   tbody tr {
     border-bottom: 1px solid #ddd;
-  }
-`;
-
-const StyledList = styled.ul`
-  list-style-type: none;
-  padding: 0;
-`;
-
-const StyledListItem = styled.li`
-  border: 1px solid #ccc;
-  margin-bottom: 10px;
-  padding: 10px;
-  display: flex;
-  align-items: center;
-
-  .cancion__details {
-    display: flex;
-    align-items: center;
-  }
-
-  .cancion__title {
-    font-weight: bold;
-  }
-
-  .cancion__artist {
-    color: #888;
-  }
-
-  .cancion__settings {
-    cursor: pointer;
-    margin-left: auto;
   }
 `;
