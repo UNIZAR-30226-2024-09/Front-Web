@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { AiFillClockCircle } from 'react-icons/ai';
-import { FaPlay, FaPause, FaLock, FaUnlock, FaUserPlus } from 'react-icons/fa';
+import { FaPlay, FaPause, FaLock, FaUnlock, FaUserPlus, FaTrash } from 'react-icons/fa';
 import { useTrack } from "../TrackContext/trackContext";
 import Modal from '../agnadirColaboradorModal/agnadirColaborador';
 
@@ -26,6 +26,13 @@ export default function Body() {
     const [isPublic, setIsPublic] = useState(true);
     const [collaboratorEmail, setCollaboratorEmail] = useState('');
     const [isAddingCollaborator, setIsAddingCollaborator] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [songToDelete, setSongToDelete] = useState(null);
+
+    const confirmDelete = (songId) => {
+        setSongToDelete(songId);
+        setShowDeleteConfirm(true);
+    };    
 
     const handleAddCollaborator = async () => {
         if (!collaboratorEmail) {
@@ -127,15 +134,39 @@ export default function Body() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': 'tu_token_csrf'  // Asegúrate de tener el token CSRF correcto
+                'X-CSRFToken': 'tu_token_csrf'
             },
             body: JSON.stringify({ playlistId })
         });
         const data = await response.json();
         if (response.ok) {
-            setPlaylistName(data.playlist.nombre);  // Accediendo a la propiedad 'nombre' dentro de 'playlist'
+            setPlaylistName(data.playlist.nombre); 
         } else {
             console.error('Failed to fetch playlist name');
+        }
+    };    
+
+    const removeSongFromPlaylist = async (songId) => {
+        try {
+            const response = await fetch('http://localhost:8000/eliminarCancionPlaylist/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': 'tu_token_csrf'
+                },
+                body: JSON.stringify({ playlistId, cancionId: songId })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setSongs(songs.filter(song => song.id !== songId));
+                setShowDeleteConfirm(false);
+                alert(data.message); 
+            } else {
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            console.error('Error removing song from playlist:', error.message);
+            alert('Error al eliminar la canción de la playlist.');
         }
     };    
 
@@ -264,14 +295,19 @@ export default function Body() {
                                 </div>
                             </div>
                             <div className="col"><span>{song.album}</span></div>
-                            <div className="col"><span>{song.duration}</span></div>
+                            <div className="col">
+                                <span>{song.duration}</span>
+                                <FaTrash size="1em" style={{ cursor: 'pointer', marginLeft: '40px' }} onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeSongFromPlaylist(song.id);
+                                }} />
+                            </div>
                         </div>
                     ))
                 ) : (
                     <div className="row">{message}</div>
                 )}
             </div>
-
         </Container>
     );
 }
@@ -323,7 +359,7 @@ const Container = styled.div`
 .list {
     .header__row {
         display: grid;
-        grid-template-columns: 0.3fr 3fr 2fr 0.1fr;
+        grid-template-columns: 0.3fr 3fr 2fr 0.45fr;
         color: #dddcdc;
         margin: 1rem 0 0 0;
         position: sticky;

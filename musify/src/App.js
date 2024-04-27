@@ -15,6 +15,7 @@ import Salas from './components/pantallaSalas/salasChat';
 import PantallaInicio from './components/pantallaInicial/inicio';
 import Musify from './components/pantallaPlaylist/playlist';
 import MusifyP from './components/pantallaPodcast/podcasts';
+import MusifyC from './components/pantallaCanciones/canciones';
 import Preguntas from './components/pantallaPreguntasFAQ/preguntas';
 import Ayuda from './components/pantallasAyuda/ayudaCuenta';
 import Ayuda2 from './components/pantallasAyuda/ayudaAplicacion';
@@ -41,6 +42,7 @@ export default class App extends React.Component {
             <Route path="/register_3" element={<RegisterInfo />} />
             <Route path="/musify/:playlistId" element={<Musify />} />
             <Route path="/musifyp/:podcastId" element={<MusifyP />} />
+            <Route path="/musifyc/:cancionId" element={<MusifyC />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path="/inicio" element={<PantallaInicio />} />
             <Route path="/chat" element={<Chat />} />

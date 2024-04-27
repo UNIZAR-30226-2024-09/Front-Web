@@ -1,9 +1,10 @@
 import React from "react";
 import styled from "styled-components";
 import Sidebar from "../Sidebar/sidebar";
-import Body from "./playlistBody";
+import Navbar from "../Navbar/navbar";
 import Footer from "../Footer/footer";
 import { useParams } from 'react-router-dom';
+import SongDetails from "./cancionesBody";
 
 export default function Musify(){
     const { playlistId } = useParams();
@@ -12,8 +13,9 @@ export default function Musify(){
         <div className="musify__body">
             <Sidebar />
             <div className="body">
+            <Navbar />
                 <div className="body__contents">
-                <Body />
+                <SongDetails />
                 </div>
             </div>
         </div>
