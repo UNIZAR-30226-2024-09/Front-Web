@@ -40,7 +40,7 @@ const base64ToImageSrc = (base64) => {
   return `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
 };
 
-export default function Cola() {
+export default function Body_cola() {
   const [songs, setSongs] = useState([]);
   const [message, setMessage] = useState('');
   const { setTrackList } = useTrack();
@@ -79,7 +79,7 @@ export default function Cola() {
     const response = await fetch(`http://127.0.0.1:8000/listarCola/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ correo: "zineb@gmail.com" })
+      body: JSON.stringify({ correo: email })
     });
     const data = await response.json();
     console.log("Respuesta del servidor:", data);
