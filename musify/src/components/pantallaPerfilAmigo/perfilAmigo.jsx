@@ -2,7 +2,7 @@ import React from "react";
 import styled, { createGlobalStyle } from "styled-components";
 import Sidebar from "../Sidebar/sidebar";
 import Footer from "../Footer/footer";
-import Perfil from "./perfilAmigoBody";
+import PerfilAmigoBody from "./perfilAmigoBody";
 
 export default function Musify(){
     return (
@@ -13,7 +13,7 @@ export default function Musify(){
                     <Sidebar />
                     <div className="body">
                         <div className="body__contents">
-                            <Perfil />
+                            <PerfilAmigoBody />
                         </div>
                     </div>
                 </div>
