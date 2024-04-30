@@ -2,11 +2,10 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Link, useNavigate } from 'react-router-dom';
 import { IoLibrary, IoChatbubblesOutline} from "react-icons/io5";
-import { FaPowerOff } from "react-icons/fa";
+import { FaPowerOff, FaUser } from "react-icons/fa";
 import { IoMdSettings, IoIosAddCircleOutline } from "react-icons/io";
 import { MdHomeFilled, MdSearch, MdFavorite } from "react-icons/md";
 import PlaylistForm from "../crearPlaylistModal/crearPlaylist";
-
 
 export default function Sidebar() {
     const [playlists, setPlaylists] = useState([]);
@@ -130,6 +129,12 @@ export default function Sidebar() {
                         <Link to="/salas" className="link">
                             <IoChatbubblesOutline />
                             <span>Salas</span>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/mi_perfil" className="link">
+                            <FaUser />
+                            <span>Mi perfil</span>
                         </Link>
                     </li>
                     <div className="separator"></div>

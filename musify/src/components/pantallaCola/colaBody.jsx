@@ -2,39 +2,6 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useTrack } from "../TrackContext/trackContext";
 
-/*const canciones = [
-    {
-      id: 1,
-      name: "Canción 1",
-      duration: "3:45",
-      imageUrl: "/imagenes/prueba.jpg",
-    },
-    {
-      id: 2,
-      name: "Canción 2",
-      duration: "4:05",
-      imageUrl: "/imagenes/prueba.jpg",
-    },
-    {
-        id: 3,
-        name: "Canción 3",
-        duration: "4:05",
-        imageUrl: "/imagenes/prueba.jpg",
-      },
-      {
-        id: 4,
-        name: "Canción 4",
-        duration: "4:05",
-        imageUrl: "/imagenes/prueba.jpg",
-      },
-      {
-        id: 5,
-        name: "Canción 5",
-        duration: "4:05",
-        imageUrl: "/imagenes/prueba.jpg",
-      },
-  ];*/
-
 const base64ToImageSrc = (base64) => {
   const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
   return `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
@@ -163,56 +130,6 @@ export default function Body_cola() {
                     <div className="row">{message}</div>
                 )}
             </div>
-        {/*<div className="sonando">
-          <Titulo>Sonando</Titulo>
-          {songs.slice(0, 1).map((song, index) => (
-            <FilaCancion key={song.id}>
-                  <span>{1}</span>
-              <ImagenCancion src={song.imageUrl} alt={song.name} />
-              <InfoCancion>
-                <NombreCancion>{song.name}</NombreCancion>
-                <Duracion>{song.duration}</Duracion>
-              </InfoCancion>
-            </FilaCancion>
-          ))}
-        </div>
-
-        <div className="siguiente">
-          <Titulo>Siguiente</Titulo>
-          {songs.slice(1).map((song, index) => (
-            <FilaCancion key={song.id}>
-              <span>{index + 1}</span>
-              <ImagenCancion src={song.imageUrl} alt={song.name} />
-              
-                                <div className="info">
-                                    <span className="name">{song.nombre}</span>
-                                    <span>{song.artistas || 'Artista Desconocido'}</span>
-                                </div>
-            </FilaCancion>
-          ))}
-        </div>
-        {/*}
-        <div className="tracks">
-                {songs.length > 0 ? (
-                    songs.map((song, index) => (
-                        <div className="row" key={song.id}>
-                            <div className="col"><span>{index + 1}</span></div>
-                            <div className="col detail">
-                                <div className="image">
-                                    <img src={song.imageUrl} alt={song.nombre} style={{ width: "50px", height: "auto" }} />
-                                </div>
-                                <div className="info">
-                                    <span className="name">{song.nombre}</span>
-                                    <span>{song.artistas || 'Artista Desconocido'}</span>
-                                </div>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <div className="row">{message}</div>
-                )}
-            </div>
-        */}
       </Container>
     );
   }

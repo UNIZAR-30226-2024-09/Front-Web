@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from 'styled-components';
 import { FaListAlt, FaHeart, FaPlayCircle } from 'react-icons/fa';
 import PerfilIcon from '../panda2.jpg'; 
+import { useParams } from 'react-router-dom';
 
 const usuarioPredeterminado = {
     nombre: "Daniel",
@@ -30,16 +31,44 @@ function ListasUsuario({ listas }) {
 }
 
 export default function PerfilUsuario({ usuario = usuarioPredeterminado }) {
+    const { correoAmigo } = useParams();
+    const [amigo, setAmigo] = useState({});
     const [siguiendo, setSiguiendo] = useState(false);
 
     const toggleSeguir = () => {
         setSiguiendo(!siguiendo);
     };
 
+    useEffect(() => {
+        fetchUsuario();
+    }, [correoAmigo]);
+
+    const fetchUsuario = async () => {
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/devolverUsuario/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ correo: correoAmigo })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                if (data.usuario) {
+                    setAmigo(data.usuario);
+                }
+            } else {
+                console.error('Failed to fetch user:', data);
+            }
+        } catch (error) {
+            console.error('Error fetching user details:', error);
+        }
+    };
+
+    
+
     return (
         <PerfilContainer>
             <ProfileIcon src={PerfilIcon} alt="Icono de perfil" />
-            <NombreUsuario>{usuario.nombre}</NombreUsuario>
+            <NombreUsuario>{amigo.nombre}</NombreUsuario>
             <SeguidoresYSeguidos>
                 <Seguidores>{usuario.seguidores} seguidores</Seguidores>
                 <Seguidos>{usuario.seguidos} siguiendo</Seguidos>
@@ -52,6 +81,7 @@ export default function PerfilUsuario({ usuario = usuarioPredeterminado }) {
         </PerfilContainer>
     );
 }
+
 
 // Estilos aquí
 const PerfilContainer = styled.div`

@@ -41,6 +41,7 @@ export default class App extends React.Component {
             <Route path="/register_2" element={<RegisterPasswd />} />
             <Route path="/register_3" element={<RegisterInfo />} />
             <Route path="/musify/:playlistId" element={<Musify />} />
+            <Route path="/perfilAmigo/:amigoCorreo" element={<PerfilA />} />
             <Route path="/musifyp/:podcastId" element={<MusifyP />} />
             <Route path="/musifyc/:cancionId" element={<MusifyC />} />
             <Route path="/login" element={<LoginForm />} />
@@ -55,7 +56,6 @@ export default class App extends React.Component {
             <Route path="/ayuda_seguridad" element={<Ayuda3 />} />
             <Route path="/problemas" element={<Reportar />} />
             <Route path="/mi_perfil" element={<Perfil />} />
-            <Route path="/perfil_amigo" element={<PerfilA />} />
             <Route path="/salas" element={<Salas />} />
             <Route path="/cola" element={<Cola />} />
             <Route path="/ini_admin" element={<IniAdmin />} />
