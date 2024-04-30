@@ -37,7 +37,7 @@ export default function PlayerControls() {
     const checkIfFavorited = async () => {
         const email = "zineb@gmail.com";
         const cancionId = currentTrackId;
-        const url = 'http://localhost:8000/esFavorita';  // Asegúrate de que la URL sea correcta
+        const url = 'http://localhost:8000/esFavorita/';  // Asegúrate de que la URL sea correcta
 
         try {
             const response = await fetch(url, {

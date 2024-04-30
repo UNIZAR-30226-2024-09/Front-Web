@@ -68,7 +68,7 @@ export default function Body_historial() {
                 setSongs(enrichedSongs);
                 setTrackList(enrichedSongs);
             } else {
-                setMessage('El historial no tiene canciones');
+                setMessage('No hay canciones en el historial');
             }
         } else {
             console.error('Failed to fetch data for historial');

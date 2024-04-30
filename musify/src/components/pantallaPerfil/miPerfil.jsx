@@ -3,6 +3,7 @@ import styled, { createGlobalStyle } from "styled-components";
 import Sidebar from "../Sidebar/sidebar";
 import Footer from "../Footer/footer";
 import Perfil from "./miPerfilBody";
+import Body_perfil from "./miPerfilBody";
 
 export default function Musify(){
     return (
@@ -13,12 +14,12 @@ export default function Musify(){
                     <Sidebar />
                     <div className="body">
                         <div className="body__contents">
-                            <Perfil />
+                            <Body_perfil />
                         </div>
                     </div>
                 </div>
                 <div className="musify__footer">
-                    <Footer />
+                   <Footer />
                 </div>
             </MusifyContainer>
         </>

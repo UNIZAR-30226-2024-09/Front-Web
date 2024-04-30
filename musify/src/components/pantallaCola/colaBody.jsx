@@ -2,45 +2,12 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useTrack } from "../TrackContext/trackContext";
 
-/*const canciones = [
-    {
-      id: 1,
-      name: "Canción 1",
-      duration: "3:45",
-      imageUrl: "/imagenes/prueba.jpg",
-    },
-    {
-      id: 2,
-      name: "Canción 2",
-      duration: "4:05",
-      imageUrl: "/imagenes/prueba.jpg",
-    },
-    {
-        id: 3,
-        name: "Canción 3",
-        duration: "4:05",
-        imageUrl: "/imagenes/prueba.jpg",
-      },
-      {
-        id: 4,
-        name: "Canción 4",
-        duration: "4:05",
-        imageUrl: "/imagenes/prueba.jpg",
-      },
-      {
-        id: 5,
-        name: "Canción 5",
-        duration: "4:05",
-        imageUrl: "/imagenes/prueba.jpg",
-      },
-  ];*/
-
 const base64ToImageSrc = (base64) => {
   const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
   return `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
 };
 
-export default function Cola() {
+export default function Body_cola() {
   const [songs, setSongs] = useState([]);
   const [message, setMessage] = useState('');
   const { setTrackList } = useTrack();
@@ -79,14 +46,14 @@ export default function Cola() {
     const response = await fetch(`http://127.0.0.1:8000/listarCola/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ correo: "zineb@gmail.com" })
+      body: JSON.stringify({ correo: email })
     });
     const data = await response.json();
     console.log("Respuesta del servidor:", data);
     if (response.ok) {
-      if (data.cola && data.cola.length > 0) {
-        console.log("Canciones recibidas:", data.cola);
-        const enrichedSongs = await Promise.all(data.cola.map(async (song) => {
+      if (data.queue && data.queue.length > 0) {
+        console.log("Canciones recibidas:", data.queue);
+        const enrichedSongs = await Promise.all(data.queue.map(async (song) => {
           const imageUrl = base64ToImageSrc(song.foto);
           const artistas = await fetchArtistsForSong(song.id);
           return {
@@ -120,35 +87,29 @@ export default function Cola() {
   };
   return (
     <Container>
-        {/*
         <div className="sonando">
-          <Titulo>Sonando</Titulo>
-          {songs.slice(0, 1).map((song, index) => (
-            <FilaCancion key={song.id}>
-                  <span>{1}</span>
-              <ImagenCancion src={song.imageUrl} alt={song.name} />
-              <InfoCancion>
-                <NombreCancion>{song.name}</NombreCancion>
-                <Duracion>{song.duration}</Duracion>
-              </InfoCancion>
-            </FilaCancion>
-          ))}
-        </div>
+          <div className="details">
+            <h1 className="title">SONANDO</h1>
 
-        <div className="siguiente">
-          <Titulo>Siguiente</Titulo>
-          {songs.slice(1).map((song, index) => (
-            <FilaCancion key={song.id}>
-              <span>{index + 1}</span>
-              <ImagenCancion src={song.imageUrl} alt={song.name} />
-              <InfoCancion>
-                <NombreCancion>{song.name}</NombreCancion>
-                <Duracion>{song.duration}</Duracion>
-              </InfoCancion>
-            </FilaCancion>
-          ))}
+          </div>
         </div>
-        */}
+        <div className="list">
+                <div className="header__row">
+                    <div className="col"><span>#</span></div>
+                    <div className="col"><span>TITULO</span></div>
+                </div>
+            </div>
+        <div className="siguiente">
+          <div className="details">
+            <h1 className="title">SIGUIENTE</h1>
+          </div>
+        </div>
+        <div className="list">
+          <div className="header__row">
+            <div className="col"><span>#</span></div>
+            <div className="col"><span>TITULO</span></div>
+          </div>
+        </div>
         <div className="tracks">
                 {songs.length > 0 ? (
                     songs.map((song, index) => (
@@ -255,38 +216,3 @@ export default function Cola() {
   }
   }
   `;
- /* const Container = styled.div`
-  color: white;
-  padding: 20px;
-`;
-
-const Titulo = styled.h2`
-  margin-bottom: 20px;
-`;
-
-const FilaCancion = styled.div`
-  display: grid;
-  grid-template-columns: 60px 1fr 1fr 1fr;
-  gap: 5px; 
-  align-items: center;
-  margin-bottom: 5px;
-`;
-
-const ImagenCancion = styled.img`
-  width: 40px;
-  height: 40px;
-  border-radius: 5px;
-`;
-
-const InfoCancion = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const NombreCancion = styled.span`
-  font-weight: bold;
-`;
-
-const Duracion = styled.span`
-  margin-left: auto;
-`;*/

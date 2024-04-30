@@ -2,25 +2,25 @@ import React from "react";
 import styled, { createGlobalStyle } from "styled-components";
 import Sidebar from "../Sidebar/sidebar";
 import Footer from "../Footer/footer";
-import Cola from "./colaBody.jsx";
+import Body_cola from "./colaBody.jsx";
 
-export default function Musify(){
+export default function Musify_cola(){
     return (
         <>
             <GlobalStyle />
-            <MusifyContainer>
+            <Container>
                 <div className="musify__body">
                     <Sidebar />
                     <div className="body">
                         <div className="body__contents">
-                            <Cola/>
+                            <Body_cola/>
                         </div>
                     </div>
                 </div>
                 <div className="musify__footer">
                     <Footer />
                 </div>
-            </MusifyContainer>
+            </Container>
         </>
     );
 }
@@ -36,7 +36,7 @@ const GlobalStyle = createGlobalStyle`
     }
 `;
 
-const MusifyContainer = styled.div`
+const Container = styled.div`
     max-width: 100vw;
     max-height: 100vh;
     overflow: hidden;
