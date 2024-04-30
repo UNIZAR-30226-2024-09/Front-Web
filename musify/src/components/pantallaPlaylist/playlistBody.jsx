@@ -237,78 +237,82 @@ export default function Body() {
 
     return (
         <Container>
-            <div className="playlist">
-            <div className="image">
-                <img src="/imagenes/playlist.jpg" alt="Descripción" />
-                
-            </div>
-            <div className="details">
-                <span className="type">PLAYLIST</span>
-                <h1 className="title">{playlistName || 'Loading...'}</h1>  {/* Mostrar el nombre de la playlist */}
-                <div className='iconos'>
-                    <IconButton onClick={() => setIsAddingCollaborator(true)}>
-                        <FaUserPlus size="1.3em" />  
-                    </IconButton>
-                    <Modal show={isAddingCollaborator} onClose={() => setIsAddingCollaborator(false)}>
-                        <input
-                        type="email"
-                        value={collaboratorEmail}
-                        onChange={e => setCollaboratorEmail(e.target.value)}
-                        placeholder="Correo del colaborador"
-                        />
-                        <button onClick={handleAddCollaborator}>Confirmar</button>
-                    </Modal>
-                    <div onClick={togglePublic}>
-                        {isPublic ? <FaUnlock size="2em" /> : <FaLock size="2em" />}
+        {isPublic  && (
+            <>
+                <div className="playlist">
+                    <div className="image">
+                        <img src="/imagenes/playlist.jpg" alt="Descripción" />
                     </div>
-                </div>
-            </div>
-        </div>
-            <div className="list">
-                <div className="header__row">
-                    <div className="col"><span>#</span></div>
-                    <div className="col"><span>TITULO</span></div>
-                    <div className="col"><span>ÁLBUM</span></div>
-                    <div className="col"><span><AiFillClockCircle /></span></div>
-                </div>
-            </div>
-            <div className="tracks">
-                {songs.length > 0 ? (
-                    songs.map((song, index) => (
-                        <div className="row" key={song.id}
-                            onMouseEnter={() => setHoverIndex(index)}
-                            onMouseLeave={() => setHoverIndex(-1)}
-                            onClick={() => togglePlayPause(index)}>
-                            <div className="col"><span>{index + 1}</span></div>
-                            <div className="col detail">
-                                <div className="image">
-                                    <img src={song.imageUrl} alt={song.nombre} style={{ width: "50px", height: "auto" }} />
-                                    {hoverIndex === index && (
-                                        <div className="play-icon">
-                                            {isPlaying && currentTrack.id === song.id ? <FaPause size="2em" /> : <FaPlay size="2em" />}
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="info">
-                                    <span className="name">{song.nombre}</span>
-                                    <span>{song.artistas|| 'Artista Desconocido'}</span>
-                                </div>
-                            </div>
-                            <div className="col"><span>{song.album}</span></div>
-                            <div className="col">
-                                <span>{song.duration}</span>
-                                <FaTrash size="1em" style={{ cursor: 'pointer', marginLeft: '40px' }} onClick={(e) => {
-                                    e.stopPropagation();
-                                    removeSongFromPlaylist(song.id);
-                                }} />
+                    <div className="details">
+                        <span className="type">PLAYLIST</span>
+                        <h1 className="title">{playlistName || 'Loading...'}</h1>
+                        <div className='iconos'>
+                            <IconButton onClick={() => setIsAddingCollaborator(true)}>
+                                <FaUserPlus size="1.3em" />  
+                            </IconButton>
+                            <Modal show={isAddingCollaborator} onClose={() => setIsAddingCollaborator(false)}>
+                                <input
+                                    type="email"
+                                    value={collaboratorEmail}
+                                    onChange={e => setCollaboratorEmail(e.target.value)}
+                                    placeholder="Correo del colaborador"
+                                />
+                                <button onClick={handleAddCollaborator}>Confirmar</button>
+                            </Modal>
+                            <div onClick={togglePublic}>
+                                {isPublic ? <FaUnlock size="2em" /> : <FaLock size="2em" />}
                             </div>
                         </div>
-                    ))
-                ) : (
-                    <div className="row">{message}</div>
-                )}
-            </div>
-        </Container>
+                    </div>
+                </div>
+                <div className="list">
+                    <div className="header__row">
+                        <div className="col"><span>#</span></div>
+                        <div className="col"><span>TITULO</span></div>
+                        <div className="col"><span>ÁLBUM</span></div>
+                        <div className="col"><span><AiFillClockCircle /></span></div>
+                    </div>
+                </div>
+                <div className="tracks">
+                    {songs.length > 0 ? (
+                        songs.map((song, index) => (
+                            <div className="row" key={song.id}
+                                onMouseEnter={() => setHoverIndex(index)}
+                                onMouseLeave={() => setHoverIndex(-1)}
+                                onClick={() => togglePlayPause(index)}>
+                                <div className="col"><span>{index + 1}</span></div>
+                                <div className="col detail">
+                                    <div className="image">
+                                        <img src={song.imageUrl} alt={song.nombre} style={{ width: "50px", height: "auto" }} />
+                                        {hoverIndex === index && (
+                                            <div className="play-icon">
+                                                {isPlaying && currentTrack.id === song.id ? <FaPause size="2em" /> : <FaPlay size="2em" />}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="info">
+                                        <span className="name">{song.nombre}</span>
+                                        <span>{song.artistas|| 'Artista Desconocido'}</span>
+                                    </div>
+                                </div>
+                                <div className="col"><span>{song.album}</span></div>
+                                <div className="col">
+                                    <span>{song.duration}</span>
+                                    <FaTrash size="1em" style={{ cursor: 'pointer', marginLeft: '40px' }} onClick={(e) => {
+                                        e.stopPropagation();
+                                        removeSongFromPlaylist(song.id);
+                                    }} />
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="row">{message}</div>
+                    )}
+                </div>
+            </>
+        )}
+    </Container>
+    
     );
 }
 

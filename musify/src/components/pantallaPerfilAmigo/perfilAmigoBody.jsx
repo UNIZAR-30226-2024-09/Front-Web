@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import styled from 'styled-components';
-import { FaListAlt, FaHeart, FaPlayCircle } from 'react-icons/fa';
 import PerfilIcon from '../panda2.jpg'; 
 import { useParams, Link } from 'react-router-dom';
 import Modal from '../agnadirCancionPlaylistModal/agnadirCancion';
@@ -34,10 +33,8 @@ export default function PerfilAmigoBody () {
           });
           const data = await response.json();
           if (response.ok) {
-            const email = data.correo;
             setUsuario(data);
-            fetchUsuario();
-          } else {
+        } else {
             console.error('Failed to fetch user details:', data);
           }
         } catch (error) {
@@ -48,50 +45,14 @@ export default function PerfilAmigoBody () {
         if (localStorage.getItem('userToken')) {
           fetchUserDetails();
         }
-      }, []);
+      }, []); 
 
-      const toggleSeguir = async () => {
-        if (siguiendo) {
-            try {
-                const response = await fetch(`http://127.0.0.1:8000/dejarDeSeguir/`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ correo : usuario.correo, seguido : amigo.correo,})
-                });
-                const data = await response.json();
-                if (response.ok) {
-                    setSiguiendo(false);
-                    fetchSeguidores(amigo.correo);
-                    fetchSeguidos(amigo.correo);
-                } else {
-                    console.error('Failed to toggle follow status:', data);
-                }
-            } catch (error) {
-                console.error('Error toggling follow status:', error);
-            }
-        } else {
-            try {
-                const response = await fetch(`http://127.0.0.1:8000/seguir/`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ correo : usuario.correo, seguido : amigo.correo,})
-                });
-                const data = await response.json();
-                if (response.ok) {
-                    setSiguiendo(true);
-                    fetchSeguidores(amigo.correo);
-                    fetchSeguidos(amigo.correo);
-                } else {
-                    console.error('Failed to toggle follow status:', data);
-                }
-            } catch (error) {
-                console.error('Error toggling follow status:', error);
-            }
+      useEffect(() => {
+        if (correoAmigo) {
+            fetchUsuario();
         }
-    };
+    }, [correoAmigo, usuario]); // Agrega usuario como dependencia
     
-
-
     const fetchUsuario = async () => {
         try {
             const response = await fetch(`http://127.0.0.1:8000/devolverUsuario/`, {
@@ -103,16 +64,38 @@ export default function PerfilAmigoBody () {
             if (response.ok) {
                 if (data.usuario) {
                     setAmigo(data.usuario);
-                    fetchPlaylists(data.usuario.correo)
-                    fetchSeguidores(data.usuario.correo)
-                    fetchSeguidos(data.usuario.correo)
-                    checkSiguiendo()
+                    fetchSeguidores(data.usuario.correo);
+                    fetchSeguidos(data.usuario.correo);
+                    if (usuario && usuario.correo) { // Verifica si usuario.correo está definido
+                        checkSiguiendo(usuario.correo, data.usuario.correo);
+                    }
+                    fetchPlaylists(data.usuario.correo);
                 }
             } else {
                 console.error('Failed to fetch user:', data);
             }
         } catch (error) {
             console.error('Error fetching user details:', error);
+        }
+    };
+    
+    const checkSiguiendo = async (correoUsuario, correoAmigo) => {
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/siguiendo/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ correo: correoUsuario, esSeguido: correoAmigo, })
+            });
+            console.log("correo: ", correoUsuario, "esSeguido: ", correoAmigo)
+            console.log("Respuesta del servidor:", response);
+            const data = await response.json();
+            if (response.ok) {
+                setSiguiendo(data.siguiendo);
+            } else {
+                console.error('Failed to check if user follows friend:', data);
+            }
+        } catch (error) {
+            console.error('Error checking if user follows friend:', error);
         }
     };
 
@@ -160,24 +143,44 @@ export default function PerfilAmigoBody () {
             console.error('Failed to fetch seguidos:', data);
         }
     };
-    
-    const checkSiguiendo = async () => {
-        try {
-            const response = await fetch(`http://127.0.0.1:8000/siguiendo/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ correo : usuario.correo, esSeguido : amigo.correo,}) // Pasa el ID del amigo al backend para verificar
-            });
-            console.log("correo: ", usuario.correo, "esSeguido: ", amigo.correo)
-            console.log("Respuesta del servidor:", response);
-            const data = await response.json();
-            if (response.ok) {
-                setSiguiendo(data.siguiendo);
-            } else {
-                console.error('Failed to check if user follows friend:', data);
+
+    const toggleSeguir = async () => {
+        if (siguiendo) {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/dejarDeSeguir/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo : usuario.correo, seguido : amigo.correo,})
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    setSiguiendo(false);
+                    fetchSeguidores(amigo.correo);
+                    fetchSeguidos(amigo.correo);
+                } else {
+                    console.error('Failed to toggle follow status:', data);
+                }
+            } catch (error) {
+                console.error('Error toggling follow status:', error);
             }
-        } catch (error) {
-            console.error('Error checking if user follows friend:', error);
+        } else {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/seguir/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo : usuario.correo, seguido : amigo.correo,})
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    setSiguiendo(true);
+                    fetchSeguidores(amigo.correo);
+                    fetchSeguidos(amigo.correo);
+                } else {
+                    console.error('Failed to toggle follow status:', data);
+                }
+            } catch (error) {
+                console.error('Error toggling follow status:', error);
+            }
         }
     };
 
@@ -243,7 +246,6 @@ export default function PerfilAmigoBody () {
 }
 
 
-// Estilos aquí
 const PerfilContainer = styled.div`
     display: flex;
     flex-direction: column;
@@ -314,10 +316,6 @@ const Lista = styled.div`
         background: #16213E;
     }
 `;
-
-const Seguidores = styled.div``;
-
-const Seguidos = styled.div``;
 
 const SeguidosYSeguidoresContainer = styled.div`
   display: flex;
