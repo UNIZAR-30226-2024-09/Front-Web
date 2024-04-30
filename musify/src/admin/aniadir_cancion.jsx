@@ -69,13 +69,6 @@ export default function AniadirCancionesAdmin() {
                                 onChange={e=>setAlbum(e.target.value)}
                                 placeholder="Album" required />
                         </div>
-                        <div className="input-box">
-                            <input 
-                                type="duracion" 
-                                value={duracion}
-                                onChange={e=>setDuracion(e.target.value)}
-                                placeholder="Duración" required />
-                        </div>
                         <select value={genero} onChange={e=>setGenero(e.target.value)} required>
                             <option value="">Selecciona un género</option>
                             <option value="Rock">Rock</option>
@@ -124,6 +117,7 @@ const Container = styled.div`
     width: 100%;
     height: 500px;
     padding: 30px;
+
     .titulo {
         width: 400px;
         height: 80px;
@@ -174,6 +168,7 @@ const Container = styled.div`
     outline: none;
     border: 2px solid #fff;
     border-radius: 20px;
+    text-align: center;
     h7 {
         border: 10px;
         text-align: center;

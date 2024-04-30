@@ -75,8 +75,8 @@ export default function ListaCancionesAdmin() {
               });
               if (!response.ok) throw new Error("Failed to fetch album");
               const albumData = await response.json();
-              console.log(albumData);
-              console.log(albumData.album.nombre);
+              //console.log(albumData);
+              //console.log(albumData.album.nombre);
               return albumData.album.nombre;
           } catch (error) {
             console.log(error);

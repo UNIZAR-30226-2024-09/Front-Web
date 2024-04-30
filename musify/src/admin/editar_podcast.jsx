@@ -2,39 +2,36 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import AniadirWindow from "./salir_sin_guardar";
-import EditCapWindow from "./editr_capitulo";
 import { FaCog, FaClock } from "react-icons/fa";
 
 const base64ToImageSrc = (base64) => {
-    console.log("Base64 original:", base64); // Imprimir la base64 original
-
-    // Eliminar el prefijo de la cadena base64 si está presente
     const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
-    console.log("Base64 sin prefijo:", base64WithoutPrefix); // Imprimir la base64 sin prefijo
-
-    // Decodificar la cadena base64
-    const byteCharacters = atob(base64WithoutPrefix);
-    console.log("Caracteres de bytes:", byteCharacters); // Opcional: Imprimir los caracteres después de atob
     const imageSrc = `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
-    console.log("Imagen transformada:", imageSrc); // Imprimir el src de la imagen transformada
     return imageSrc;
 };
 
+const base64ToAudioSrc = (base64) => {
+    const base64WithoutPrefix = base64.replace(/^data:audio\/mp3;base64,/, '').replace(/^data:[^;]+;base64,/, '');
+    return `data:audio/mp3;base64,${atob(base64WithoutPrefix)}`;
+};
+
 export default function EditarPodcasrAdmin() {
-    const { podcastId } = useParams();
-    const[podcast, setPodcast] = useState(null);
     const navigate = useNavigate();
-    const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
+    const { idPodcast } = useParams();
+    const [podcast, setPodcast] = useState(null);
     const [capitulos, setCapitulos] = useState([]);
+    const [nomCapitulos, setNomCapitulos] = useState({});
+    const [duraciones, setDuraciones] = useState({});
 
     const [nombre, setNombre] = useState('');
-    const [presentador, setPresentador] = useState('');
-    const [anio, setAnio] = useState('');
+    const [presentadores, setPresentadores] = useState([]);
     const [genero, setGenero] = useState([]);
     const [foto, setFoto] = useState(null);
     const [audio, setAudio] = useState(null);
 
+    const [showModal, setShowModal] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -68,24 +65,17 @@ export default function EditarPodcasrAdmin() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ id: podcastId })
+                    body: JSON.stringify({ podcastId: idPodcast })
                 });
                 if (response.ok) {
-                    const data = await response.json();
-                    const podcastData = {
-                      id: data.id,
-                      foto: base64ToImageSrc(data.foto),
-                      nombre: data.nombre,
-                      presentador: data.presentador,
-                      fecha: data.fecha,
-                    };
+                    if (!response.ok) throw new Error("Failed to fetch song details");
+                    const podcastData = await response.json();
                     setPodcast(podcastData);
-                    console.log(podcastData);
-                    setNombre(podcastData.nombre);
-                    setPresentador(podcastData.presentador);
-                    setAnio(podcastData.fecha);
-                    //setGenero(podcastData);
-                    setFoto(podcastData.foto);
+                    setNombre(podcastData.podcast.nombre);
+                    setFoto(base64ToImageSrc(podcastData.podcast.foto));
+                    fetchPresentadores(idPodcast);
+                    fetchCapitulos(podcastData.podcast.nombre);
+                    
 
                 }else {
                     const errorData = await response.text();
@@ -97,39 +87,72 @@ export default function EditarPodcasrAdmin() {
                 setLoading(false);
             }
         };
-        fetchPodcast();
-    }, [podcastId]);
 
-    useEffect(() => {
-        const fetchCapitulos = async () => {
-            setLoading(true);
+        const fetchCapitulos = async (nomPodcast) => {
             try {
-                const response = await fetch('http://127.0.0.1:8000/listarCapitulosPodcast/', {
+                const response = await fetch(`http://127.0.0.1:8000/listarCapitulosPodcast/`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ id: podcastId })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombrePodcast: nomPodcast })
                 });
-                if (response.ok) {
-                    const data = await response.json();
-                    const updatedCapitulos = data.canciones.map(capitulo => ({
-                        id: capitulo.id,
-                        nombre: capitulo.nombre
-                    }));
-                    setCapitulos(updatedCapitulos);
-                }else {
-                    const errorData = await response.text();
-                    throw new Error(errorData || "Error al recibir datos");
-                }
+                if (!response.ok) throw new Error("Failed to fetch chapters");
+                const chaptersData = await response.json();
+                setCapitulos(chaptersData.capitulos);
+                chaptersData.capitulos.forEach((chapter, index) => {
+                    fetchAudioDuration(base64ToAudioSrc(chapter.archivoMp3))
+                        .then(duration => setDuraciones(prev => ({ ...prev, [index]: duration })))
+                        .catch(console.error);
+                });
+                const nombresCapitulos = chaptersData.capitulos.map(capitulo => capitulo.nombre);
+                setNomCapitulos(nombresCapitulos);
             } catch (error) {
-                setError(error.message);
+                setError(`Failed to fetch chapters: ${error.message}`);
             } finally {
                 setLoading(false);
             }
         };
-        fetchCapitulos();
-    }, []);
+
+        const fetchPresentadores = async (idPodcast) => {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/listarPresentadoresPodcast/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ podcastId: idPodcast })
+                });
+                if (!response.ok) throw new Error("Failed to fetch album");
+                const podcastData = await response.json();
+                const nombresPresentadores = podcastData.presentadores.map(presentador => presentador.nombre);
+                setPresentadores(nombresPresentadores);
+            } catch (error) {
+              console.log(error);
+                setError(`Failed to fetch album: ${error.message}`);
+            }
+          };
+
+        fetchPodcast();
+    }, [idPodcast]);
+
+    const fetchAudioDuration = (audioSrc) => {
+        return new Promise((resolve, reject) => {
+            const audio = new Audio(audioSrc);
+            audio.onloadedmetadata = () => {
+                resolve(audio.duration);
+            };
+            audio.onerror = () => {
+                reject('Failed to load audio');
+            };
+        });
+    };    
+
+    const formatDuration = (duration) => {
+        if (!duration) return 'N/A';
+        const minutes = Math.floor(duration / 60);
+        const seconds = Math.floor(duration % 60);
+        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    };
+
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>Error: {error}</p>;
 
     return (
         <>
@@ -138,25 +161,22 @@ export default function EditarPodcasrAdmin() {
                 <form action="">
                     <div className="info">
                         <div className="titulo">
+                            <h6>Título:</h6>
                             <input 
-                                type="titulo" 
+                                type="text" 
                                 value={nombre}
                                 onChange={e=>setNombre(e.target.value)}
-                                placeholder="Título de la canción" required />
+                                placeholder="Título de la canción" required 
+                            />
                         </div>
-                        <div className="input-box">
+                        <div className="presentadores">
+                            <h6>Presentadores:</h6>
                             <input 
-                                type="presentador" 
-                                value={presentador}
-                                onChange={e=>setPresentador(e.target.value)}
-                                placeholder="Presentador" required />
-                        </div>
-                        <div className="input-box">
-                            <input 
-                                type="año" 
-                                value={anio}
-                                onChange={e=>setAnio(e.target.value)}
-                                placeholder="Año" required />
+                                type="text" 
+                                value={presentadores.join(", ")}
+                                onChange={e=>setNombre(e.target.value)}
+                                placeholder="Presentadores" required 
+                            />
                         </div>
                         <select value={genero} onChange={e=>setGenero(e.target.value)} required>
                             <option value="">Selecciona un género</option>
@@ -167,32 +187,34 @@ export default function EditarPodcasrAdmin() {
                         </select>
                     </div>
                     <div className="audio">
-                        <h7>Archivo de audio (.mp3):</h7>
+                        <h6>Archivo de audio (.mp3):</h6>
                         <input type="file" accept=".mp3" onChange={e=>setAudio(e.target.value)} required />
                     </div>
                     <div className="image">
-                        <h7>Imagen:</h7>
-                        <input type="file" accept="image/*" onChange={e=>setFoto(e.target.value)} required />
+                    <h6>Imagen:</h6>
+                        <img 
+                            className="podcast-image"
+                            src={foto} alt="Imagen predefinida" 
+                        />
+                        <input type="file" accept="image/*"/>
+                    </div>
+                    <div className="chapter-list-header">
+                        <div className="chapter-list-item">Capítulo</div>
+                        <div className="chapter-list-item">Título</div>
+                        <div className="chapter-list-item"><FaClock /></div>
+                        <div className="chapter-list-item">Editar</div>
                     </div>
                     <div className="chapter-list-container">
-                        <div className="chapter-list-header">
-                            <div className="chapter-list-item">Capítulo</div>
-                            <div className="chapter-list-item">Título</div>
-                            <div className="chapter-list-item">Fecha</div>
-                            <div className="chapter-list-item"><FaClock /></div>
-                            <div className="chapter-list-item">Editar</div>
-                        </div>
                         <div className="chapter-list-body">
-                            {capitulos.map(capitulo => (
+                            {capitulos.map((capitulo, index) => (
                                 <div key={capitulo.id} className="chapter-list-row">
-                                    <div className="chapter-list-item">{capitulo.id}</div>
-                                    <div className="chapter-list-item">{capitulo.name}</div>
-                                    <div className="chapter-list-item">{capitulo.fecha}</div>
-                                    <div className="chapter-list-item">{capitulo.duration}</div>
+                                    <div className="chapter-list-item">{index + 1}</div>
+                                    <div className="chapter-list-item">{nomCapitulos[index]}</div>
+                                    <div className="chapter-list-item">{formatDuration(duraciones[index])}</div>
                                     <div className="chapter-list-item">
-                                        <FaCog className="capitulos__settings" 
-                                        onClick={() => showModal && EditCapWindow(capitulo.name, capitulo.fecha, capitulo.duration)}
-                                        />
+                                    <Link to={`/editar_capitulo/${capitulo.id}`}>
+                                        <FaCog className="capitulo__settings"/>
+                                    </Link>
                                     </div>
                                 </div>
                             ))}
@@ -229,14 +251,32 @@ const Container = styled.div`
 
 .info {
     width: 100%;
-    height: 380px;
+    height: 370px;
     padding: 30px;
     .titulo {
         width: 400px;
         height: 80px;
-        margin-bottom: 20px;
+        margin-bottom: 40px;
     }
     
+    .presentadores{
+        width: 400px;
+        height: 80px;
+        margin-bottom: 30px;
+        textarea {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            outline: none;
+            border: 2px solid #fff;
+            border-radius: 20px;
+            font-size: 20px;
+            color: #fff;
+            padding: 20px;
+            appearance: none;
+        }
+    }
+
     .input-box, select{
         position: relative;
         width: 400px;
@@ -250,7 +290,7 @@ const Container = styled.div`
         outline: none;
         border: 2px solid #fff;
         border-radius: 20px;
-        font-size: 16px;
+        font-size: 20px;
         color: #fff;
         padding-left: 20px;
         appearance: none;
@@ -274,6 +314,7 @@ const Container = styled.div`
 
 .image {
     position: absolute;
+    text-align: center; 
     top: 30px;
     right: 40px;
     width: 300px;
@@ -281,11 +322,16 @@ const Container = styled.div`
     outline: none;
     border: 2px solid #fff;
     border-radius: 20px;
-    h7 {
+    h6 {
         border: 10px;
         text-align: center;
     }
-    input {
+    .podcast-image{
+        width: 120px; 
+        height: 120px;
+        align: center
+    }
+    input { 
         width: 100%;
         height: 100%;
         background: transparent;
@@ -318,29 +364,38 @@ const Container = styled.div`
   }
 
 
+.chapter-list-header {
+    display: flex;
+    background-color: none;
+    padding: 6px;
+    font-weight: bold;
+    margin-left: 70px; 
+    z-index: 1;
+    gap: 140px;
+}
 
   .chapter-list-container {
+    height: 100px;
     overflow-y: auto; 
     scroll-behavior: smooth;
+    border: 1px solid #ccc;
+    margin-left: 30px; 
+    margin-right: 30px;
         .capitulos__settings {
             cursor: pointer;
         }
-        .chapter-list-header {
-            display: flex;
-            justify-content: space-between;
-            background-color: none;
-            padding: 8px;
-            font-weight: bold;
-        }
         .chapter-list-body {
             overflow-y: auto; 
+            .capitulo_settings{
+                color: #FFF;
+            }
         }
     
         .chapter-list-row {
             display: flex;
             justify-content: space-between;
-            border-bottom: 1px solid #ccc;
             padding: 8px;
+            gap: 5px;
         }
     
         .chapter-list-item {

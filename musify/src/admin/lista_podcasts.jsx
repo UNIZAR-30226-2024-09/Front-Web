@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { FaSearch, FaCog, FaClock } from "react-icons/fa";
-import { useNavigate } from 'react-router-dom';
+import { FaCog } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 
 const base64ToImageSrc = (base64) => {
@@ -21,10 +20,9 @@ const base64ToImageSrc = (base64) => {
 
 export default function ListaPodcastsAdmin() {
     const [podcasts, setPodcasts] = useState([]);
+    const [presentadores, setPresentadores] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const navigate = useNavigate();
-    const [busqueda, setBusqueda] = useState("");
 
     useEffect(() => {
         const fetchData = async () => {
@@ -41,11 +39,18 @@ export default function ListaPodcastsAdmin() {
                     const data = await response.json();
                     const updatedPodcasts = data.podcasts.slice(0, 3).map(podcast => ({
                         id: podcast.id,
-                        foto: base64ToImageSrc(podcast.foto),
                         nombre: podcast.nombre,
-                        presentador: podcast.presentador
+                        foto: base64ToImageSrc(podcast.foto)
                     }));
                     setPodcasts(updatedPodcasts);
+                    const fetchPodcastPromises = updatedPodcasts.map(podcast => fetchPresentadores(podcast.id));
+                    const podcastsData = await Promise.all(fetchPodcastPromises);
+                    const updatedPresentadores = podcastsData.reduce((acc, podcast, index) => {
+                        acc[index] = podcast;
+                        return acc;
+                    }, {});
+                    setPresentadores(updatedPresentadores);
+                    console.log(updatedPresentadores);
                 }else {
                     const errorData = await response.text();
                     throw new Error(errorData || "Error al recibir datos");
@@ -56,8 +61,35 @@ export default function ListaPodcastsAdmin() {
                 setLoading(false);
             }
         };
+
+        const fetchPresentadores = async (idPodcast) => {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/listarPresentadoresPodcast/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ podcastId: idPodcast })
+                });
+                if (!response.ok) throw new Error("Failed to fetch album");
+                const podcastData = await response.json();
+                console.log(podcastData.presentadores);
+                if (podcastData.presentadores && podcastData.presentadores.length > 0) {
+                    const nombresPresentadores = podcastData.presentadores.map(presentador => presentador.nombre);
+                    return nombresPresentadores;
+                } else {
+                    return null;
+                }
+            } catch (error) {
+              console.log(error);
+                setError(`Failed to fetch album: ${error.message}`);
+            }
+          };
+
         fetchData();
     }, []);
+
+    
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>Error: {error}</p>;
 
     return(
         <>
@@ -67,8 +99,7 @@ export default function ListaPodcastsAdmin() {
                         <tr>
                             <th>#</th>
                             <th>Título</th>
-                            <th>Fecha</th>
-                            <th>Capítulos</th>
+                            <th>Presentadores</th>
                             <th>Editar</th>
                         </tr>
                     </thead>
@@ -79,14 +110,19 @@ export default function ListaPodcastsAdmin() {
                                 <td>
                                     <div className="podcast__details">
                                         <img src={p.foto} alt={p.nombre} />
-                                        <div>
-                                            <div className="podcast__title">{p.nombre}</div>
-                                            <div className="podcast__author">{p.presentador}</div>
-                                        </div>
+                                        <div className="podcast__title">{p.nombre}</div>
+                                        
                                     </div>
                                 </td>
-                                <td>{p.fecha}</td>
-                                <td>{p.cap}</td>
+                                <td>
+                                <div className="podcast__author">
+                                    {presentadores[index] ? (
+                                        presentadores[index].join(", ")
+                                    ) : (
+                                        "No hay presentadores disponibles"
+                                    )}
+                                </div>
+                                </td>
                                 <Link to={`/editar_podcast/${p.id}`} className="cancion__settings">
                                   <FaCog />
                                 </Link>

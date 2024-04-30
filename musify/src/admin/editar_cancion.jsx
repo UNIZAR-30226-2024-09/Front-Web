@@ -204,7 +204,7 @@ export default function EditarCancion() {
                             <h6>Artistas:</h6>
                             <textarea
                                 rows={4} 
-                                value={artistas.map(artista => artista.nombre).join(",")}
+                                value={artistas.map(artista => artista.nombre).join(", ")}
                                 onChange={handleInputChange}
                                 placeholder="Escribe los nombres de los artistas separados por comas"
                             />
