@@ -132,7 +132,7 @@ export default function Body_perfil() {
             <Modal title="Usuarios a los que sigues" onClose={() => setShowSeguidosModal(false)}>
               <ul>
                 {seguidos.map((seguido, index) => (
-                  <Link key={index} to={`/perfil_amigo/${seguido.miUsuarioSeguido}`} className="link">
+                  <Link key={index} to={`/perfilAmigo/${seguido.seguido}`} className="link">
                     <UsuarioItem key={index}>{seguido.seguido}</UsuarioItem>
                   </Link>
                 ))}
@@ -144,7 +144,9 @@ export default function Body_perfil() {
             <Modal title="Usuarios que te siguen" onClose={() => setShowSeguidoresModal(false)}>
               <ul>
                 {seguidores.map((seguidor, index) => (
-                  <UsuarioItem key={index}>{seguidor.miUsuarioSeguidor}</UsuarioItem>
+                  <Link key={index} to={`/perfilAmigo/${seguidor.seguidor}`} className="link">
+                    <UsuarioItem key={index}>{seguidor.seguidor}</UsuarioItem>
+                  </Link>
                 ))}
               </ul>
             </Modal>
@@ -237,24 +239,6 @@ const ListasContainer = styled.div`
     justify-content: center;
     gap: 20px;
 `;
-
-/*const SeguidosYSeguidoresButton = styled.button`
-background-color: black;
-color: #b3b3b3;
-display: flex;
-flex-direction: column;
-height: 100%;
-width: 350px;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    cursor: pointer;
-    transition: 0.3s ease-in-out;
-    &:hover {
-        color: white;
-    }
-`;*/
-
 
 const SeguidosYSeguidoresContainer = styled.div`
   display: flex;

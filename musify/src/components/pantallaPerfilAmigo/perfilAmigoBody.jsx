@@ -8,8 +8,9 @@ import Modal from '../agnadirCancionPlaylistModal/agnadirCancion';
 
 export default function PerfilAmigoBody () {
     const { correoAmigo } = useParams();
+    const [usuario, setUsuario] = useState({});
     const [amigo, setAmigo] = useState({});
-    const [siguiendo, setSiguiendo] = useState(false);
+    const [siguiendo, setSiguiendo] = useState();
     const [seguidores, setSeguidores] = useState([]);
     const [seguidos, setSeguidos] = useState([]);
     const [showSeguidoresModal, setShowSeguidoresModal] = useState(false);
@@ -34,6 +35,7 @@ export default function PerfilAmigoBody () {
           const data = await response.json();
           if (response.ok) {
             const email = data.correo;
+            setUsuario(data);
             fetchUsuario();
           } else {
             console.error('Failed to fetch user details:', data);
@@ -48,9 +50,46 @@ export default function PerfilAmigoBody () {
         }
       }, []);
 
-    const toggleSeguir = () => {
-        setSiguiendo(!siguiendo);
+      const toggleSeguir = async () => {
+        if (siguiendo) {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/dejarDeSeguir/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo : usuario.correo, seguido : amigo.correo,})
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    setSiguiendo(false);
+                    fetchSeguidores(amigo.correo);
+                    fetchSeguidos(amigo.correo);
+                } else {
+                    console.error('Failed to toggle follow status:', data);
+                }
+            } catch (error) {
+                console.error('Error toggling follow status:', error);
+            }
+        } else {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/seguir/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo : usuario.correo, seguido : amigo.correo,})
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    setSiguiendo(true);
+                    fetchSeguidores(amigo.correo);
+                    fetchSeguidos(amigo.correo);
+                } else {
+                    console.error('Failed to toggle follow status:', data);
+                }
+            } catch (error) {
+                console.error('Error toggling follow status:', error);
+            }
+        }
     };
+    
 
 
     const fetchUsuario = async () => {
@@ -67,7 +106,7 @@ export default function PerfilAmigoBody () {
                     fetchPlaylists(data.usuario.correo)
                     fetchSeguidores(data.usuario.correo)
                     fetchSeguidos(data.usuario.correo)
-                    //checkEsSeguido(data.usuario.correo)
+                    checkSiguiendo()
                 }
             } else {
                 console.error('Failed to fetch user:', data);
@@ -122,23 +161,25 @@ export default function PerfilAmigoBody () {
         }
     };
     
-    /*const checkEsSeguido = async (amigo) => {
+    const checkSiguiendo = async () => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/esSeguido/`, {
+            const response = await fetch(`http://127.0.0.1:8000/siguiendo/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ correo : email, amigo : amigo}) // Pasa el ID del amigo al backend para verificar
+                body: JSON.stringify({ correo : usuario.correo, esSeguido : amigo.correo,}) // Pasa el ID del amigo al backend para verificar
             });
+            console.log("correo: ", usuario.correo, "esSeguido: ", amigo.correo)
+            console.log("Respuesta del servidor:", response);
             const data = await response.json();
             if (response.ok) {
-                setSiguiendo(data.sigue); // Actualiza el estado de "siguiendo" basado en la respuesta del backend
+                setSiguiendo(data.siguiendo);
             } else {
                 console.error('Failed to check if user follows friend:', data);
             }
         } catch (error) {
             console.error('Error checking if user follows friend:', error);
         }
-    };*/
+    };
 
     return (
         <PerfilContainer>
@@ -157,7 +198,7 @@ export default function PerfilAmigoBody () {
             <Modal title="Usuarios a los que sigue" onClose={() => setShowSeguidosModal(false)}>
               <ul>
                 {seguidos.map((seguido, index) => (
-                  <Link key={index} to={`/perfil_amigo/${seguido.miUsuarioSeguido}`} className="link">
+                  <Link key={index} to={`/perfil_amigo/${seguido.seguido}`} className="link">
                     <UsuarioItem key={index}>{seguido.seguido}</UsuarioItem>
                   </Link>
                 ))}
@@ -169,29 +210,13 @@ export default function PerfilAmigoBody () {
             <Modal title="Usuarios que le siguen" onClose={() => setShowSeguidoresModal(false)}>
               <ul>
                 {seguidores.map((seguidor, index) => (
-                  <UsuarioItem key={index}>{seguidor.miUsuarioSeguidor}</UsuarioItem>
+                  <UsuarioItem key={index}>{seguidor.seguidor}</UsuarioItem>
                 ))}
               </ul>
             </Modal>
           )}
 
             <SeguidoresYSeguidos />
-            {/*<ListasTitulo>Sus listas</ListasTitulo>
-            <ListasContainer key={playlists}>
-                {playlists.map((playlist, index) => (
-                <Link key={index} to={`/musify/${playlist.id}`} className="link">
-                    <Lista>
-                    <div>{playlist && playlist.nombre}</div>
-                    </Lista>
-                </Link>
-                ))}
-            </ListasContainer>
-            
-            <BotonSeguir onClick={toggleSeguir}>
-                {siguiendo ? "Siguiendo" : "Seguir"}
-            </BotonSeguir>
-            {(siguiendo || amigo.esPublico) && <ListasUsuario listas={usuarioPredeterminado.listas} />}
-            {(!siguiendo && !usuarioPredeterminado.esPublico) && <p>Este perfil es privado. Sigue a este usuario para ver sus listas.</p>}*/}
             <BotonSeguir onClick={toggleSeguir}>
                 {siguiendo ? "Siguiendo" : "Seguir"}
             </BotonSeguir>
@@ -320,25 +345,6 @@ const ListasTitulo = styled.h2`
     margin: 20px 0 10px;
     color: white;
 `;
-
-
-/*const Lista = styled.div`
-    flex: 0 0 calc(33.33% - 80px);
-    height: auto;
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px;
-    transition: transform 0.3s ease-in-out;
-    border: 1px solid #0f3460;
-    background-color: #0f3460;
-    color: white;
-    &:hover {
-        transform: translateY(-10px);
-        background: #16213E;
-    }
-`;*/
 
 const UsuarioItem = styled.li`
     padding: 10px;
