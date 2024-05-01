@@ -33,11 +33,10 @@ export default function PlayerControls() {
     const [currentTime, setCurrentTime] = useState(0);
     const [isFavorited, setIsFavorited] = useState(false);
 
-    // Función para verificar si la canción actual es favorita
     const checkIfFavorited = async () => {
         const email = "zineb@gmail.com";
         const cancionId = currentTrackId;
-        const url = 'http://localhost:8000/esFavorita/';  // Asegúrate de que la URL sea correcta
+        const url = 'http://localhost:8000/esFavorita/';
 
         try {
             const response = await fetch(url, {

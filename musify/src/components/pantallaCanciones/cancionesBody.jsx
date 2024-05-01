@@ -6,6 +6,7 @@ import { FaPlay, FaPause } from 'react-icons/fa';
 import Modal from '../agnadirCancionPlaylistModal/agnadirCancion';
 import { RiMenuAddFill } from "react-icons/ri";
 import { useTrack } from "../TrackContext/trackContext";
+import { CiShare1 } from "react-icons/ci";
 
 const base64ToImageSrc = (base64) => {
     const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
@@ -31,6 +32,21 @@ const SongDetails = () => {
     const [playlists, setPlaylists] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [user, setUser] = useState(null);
+    const [songUrl, setSongUrl] = useState('');
+
+    useEffect(() => {
+        // Generar la URL de la canción
+        setSongUrl(`${window.location.origin}/musifyc/${cancionId}`);
+    }, [cancionId]);
+
+    const handleShareClick = () => {
+        // Copiar la URL al portapapeles
+        navigator.clipboard.writeText(songUrl).then(() => {
+            alert('URL copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+        });
+    };
 
     useEffect(() => {
         const fetchUserDetails = async () => {
@@ -241,6 +257,9 @@ const SongDetails = () => {
                 <IconButton onClick={() => setShowModal(true)}>
                         <RiMenuAddFill size="1.3em" />
                     </IconButton>
+                    <IconButton onClick={handleShareClick}>
+                            <CiShare1 size="1.3em" />
+                        </IconButton>
                     {showModal && (
                         <Modal title="Selecciona una Playlist" onClose={() => setShowModal(false)}>
                             <ul>
