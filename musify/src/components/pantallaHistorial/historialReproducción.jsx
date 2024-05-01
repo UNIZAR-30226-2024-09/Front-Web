@@ -5,7 +5,7 @@ import Sidebar from "../Sidebar/sidebar";
 import Footer from "../Footer/footer";
 import Body_historial from "./historialBody";
 
-export default function Musify_historial() {
+export default function Historial() {
     return (
         <TrackProvider> {/* Añade el TrackProvider aquí */}
             <Container>

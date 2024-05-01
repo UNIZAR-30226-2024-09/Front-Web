@@ -2,10 +2,9 @@ import React from "react";
 import styled, { createGlobalStyle } from "styled-components";
 import Sidebar from "../Sidebar/sidebar";
 import Footer from "../Footer/footer";
-import Perfil from "./miPerfilBody";
 import Body_perfil from "./miPerfilBody";
 
-export default function Musify(){
+export default function Perfil(){
     return (
         <>
             <GlobalStyle />

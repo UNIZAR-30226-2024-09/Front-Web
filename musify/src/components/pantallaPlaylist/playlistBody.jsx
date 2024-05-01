@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { AiFillClockCircle } from 'react-icons/ai';
 import { FaPlay, FaPause, FaLock, FaUnlock, FaUserPlus, FaTrash } from 'react-icons/fa';
 import { useTrack } from "../TrackContext/trackContext";
+import { MdQueue } from 'react-icons/md';
 import Modal from '../agnadirColaboradorModal/agnadirColaborador';
 
 const base64ToImageSrc = (base64) => {
@@ -34,6 +35,35 @@ export default function Body() {
         setShowDeleteConfirm(true);
     };    
 
+    const addToQueue = async (song) => {
+        // Asumimos que 'userEmail' está disponible en algún lugar en el estado de la aplicación
+        const userEmail = 'zineb@gmail.com';  // Deberías obtener esto dinámicamente si es posible
+    
+        try {
+            const response = await fetch('http://localhost:8000/agnadirCancionCola/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': 'DzhprC2SlIAP3lSTMjqcHy40R5NlRDtSHhTpdkNtKYZ38l6wQP798n4jWSyvqcAq'  // Asegúrate de manejar esto dinámicamente si es necesario
+                },
+                body: JSON.stringify({
+                    correo: userEmail,
+                    cancionId: song.id
+                })
+            });
+    
+            if (!response.ok) {
+                throw new Error('Failed to add song to queue');
+            }
+    
+            const data = await response.json();
+            alert('Canción añadida a la cola de reproducción con éxito');
+        } catch (error) {
+            console.error('Error adding song to queue:', error);
+            alert('Error al añadir la canción a la cola de reproducción.');
+        }
+    };
+    
     const handleAddCollaborator = async () => {
         if (!collaboratorEmail) {
             alert("Por favor, introduce un correo válido.");
@@ -237,34 +267,35 @@ export default function Body() {
 
     return (
         <Container>
-            <div className="playlist">
-            <div className="image">
-                <img src="/imagenes/playlist.jpg" alt="Descripción" />
-                
-            </div>
-            <div className="details">
-                <span className="type">PLAYLIST</span>
-                <h1 className="title">{playlistName || 'Loading...'}</h1>  {/* Mostrar el nombre de la playlist */}
-                <div className='iconos'>
-                    <IconButton onClick={() => setIsAddingCollaborator(true)}>
-                        <FaUserPlus size="1.3em" />  
-                    </IconButton>
-                    <Modal show={isAddingCollaborator} onClose={() => setIsAddingCollaborator(false)}>
-                        <input
-                        type="email"
-                        value={collaboratorEmail}
-                        onChange={e => setCollaboratorEmail(e.target.value)}
-                        placeholder="Correo del colaborador"
-                        />
-                        <button onClick={handleAddCollaborator}>Confirmar</button>
-                    </Modal>
-                    <div onClick={togglePublic}>
-                        {isPublic ? <FaUnlock size="2em" /> : <FaLock size="2em" />}
+        {isPublic  && (
+            <>
+                <div className="playlist">
+                    <div className="image">
+                        <img src="/imagenes/playlist.jpg" alt="Descripción" />
+                    </div>
+                    <div className="details">
+                        <span className="type">PLAYLIST</span>
+                        <h1 className="title">{playlistName || 'Loading...'}</h1>
+                        <div className='iconos'>
+                            <IconButton onClick={() => setIsAddingCollaborator(true)}>
+                                <FaUserPlus size="1.3em" />  
+                            </IconButton>
+                            <Modal show={isAddingCollaborator} onClose={() => setIsAddingCollaborator(false)}>
+                                <input
+                                    type="email"
+                                    value={collaboratorEmail}
+                                    onChange={e => setCollaboratorEmail(e.target.value)}
+                                    placeholder="Correo del colaborador"
+                                />
+                                <button onClick={handleAddCollaborator}>Confirmar</button>
+                            </Modal>
+                            <div onClick={togglePublic}>
+                                {isPublic ? <FaUnlock size="2em" /> : <FaLock size="2em" />}
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-            <div className="list">
+                <div className="list">
                 <div className="header__row">
                     <div className="col"><span>#</span></div>
                     <div className="col"><span>TITULO</span></div>
@@ -291,24 +322,31 @@ export default function Body() {
                                 </div>
                                 <div className="info">
                                     <span className="name">{song.nombre}</span>
-                                    <span>{song.artistas|| 'Artista Desconocido'}</span>
+                                    <span>{song.artistas || 'Artista Desconocido'}</span>
                                 </div>
                             </div>
                             <div className="col"><span>{song.album}</span></div>
                             <div className="col">
                                 <span>{song.duration}</span>
+                                <MdQueue size="1em" style={{ cursor: 'pointer', marginLeft: '10px' }} onClick={(e) => {
+                                    e.stopPropagation(); // Evita que el evento de clic en la fila se dispare
+                                    addToQueue(song);
+                                }} />
                                 <FaTrash size="1em" style={{ cursor: 'pointer', marginLeft: '40px' }} onClick={(e) => {
                                     e.stopPropagation();
                                     removeSongFromPlaylist(song.id);
                                 }} />
+                                </div>
                             </div>
-                        </div>
-                    ))
-                ) : (
-                    <div className="row">{message}</div>
-                )}
-            </div>
-        </Container>
+                        ))
+                    ) : (
+                        <div className="row">{message}</div>
+                    )}
+                </div>
+            </>
+        )}
+    </Container>
+    
     );
 }
 

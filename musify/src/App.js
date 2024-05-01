@@ -57,7 +57,7 @@ export default class App extends React.Component {
             <Route path="/ayuda_aplicacion" element={<Ayuda2 />} />
             <Route path="/ayuda_seguridad" element={<Ayuda3 />} />
             <Route path="/problemas" element={<Reportar />} />
-            <Route path="/mi_perfil" element={<Perfil />} />
+            <Route path="/miPerfil" element={<Perfil />} />
             <Route path="/salas" element={<Salas />} />
             <Route path="/cola" element={<Cola />} />
             <Route path="/ini_admin" element={<IniAdmin />} />
@@ -70,6 +70,7 @@ export default class App extends React.Component {
             <Route path="/aniadir_capitulo" element={<AniadirCapituloAdmin />} />
             <Route path="/editar_capitulo/:idCap" element={<EditarCapAdmin />} />
             <Route path="/historial" element={<Historial />} />
+            <Route path="/historial/:correo" element={<Historial />} />
 
           </Routes>
         </UserProvider>

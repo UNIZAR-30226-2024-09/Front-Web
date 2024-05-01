@@ -1,10 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { IoIosArrowBack } from 'react-icons/io';
 import { FaUserCircle } from 'react-icons/fa';
 
+
+function useExternalScript(url) {
+    useEffect(() => {
+        const script = document.createElement('script');
+        script.src = url;
+        script.async = true;
+        document.head.appendChild(script);
+
+        return () => {
+            document.head.removeChild(script);
+        };
+    }, [url]);
+}
+
 function Chat() {
-    // Initializing with a sample conversation
+    useExternalScript("https://unpkg.com/htmx.org@1.9.12/dist/ext/ws.js");
     const [messages, setMessages] = useState([
         { id: 1, text: "Hey everyone, how's the project going?", type: 'received' },
         { id: 2, text: "Pretty good! Just finished the new feature.", type: 'sent' },
@@ -13,6 +27,37 @@ function Chat() {
         { id: 5, text: "Could use some help with the backend later.", type: 'received' }
     ]);
     const [input, setInput] = useState('');
+    const websocket = useRef(null);
+
+    useEffect(() => {
+        // Cambia el host y puerto según tu configuración de Django y asegúrate de incluir el nombre de la sala
+        // Por ejemplo, si tu servidor Django corre en localhost en el puerto 8000 y la sala se llama "public"
+        websocket.current = new WebSocket('ws://localhost:8000/ws/chatroom/public/');
+    
+        websocket.current.onmessage = (event) => {
+            const newMessage = JSON.parse(event.data);
+            setMessages(prevMessages => [...prevMessages, newMessage]);
+        };
+    
+        websocket.current.onopen = () => {
+            console.log("WebSocket Conectado");
+        };
+    
+        websocket.current.onerror = (error) => {
+            console.error("WebSocket Error: ", error);
+        };
+    
+        websocket.current.onclose = () => {
+            console.log("WebSocket Desconectado");
+        };
+    
+        // Asegúrate de cerrar el WebSocket cuando el componente se desmonte
+        return () => {
+            if (websocket.current) {
+                websocket.current.close();
+            }
+        };
+    }, []);
 
     useEffect(() => {
         const messageList = document.getElementById("messagesList");
@@ -21,8 +66,9 @@ function Chat() {
 
     const sendMessage = (e) => {
         e.preventDefault();
-        if (input.trim()) {
-            setMessages([...messages, { id: messages.length + 1, text: input, type: 'sent' }]);
+        if (input.trim() && websocket.current.readyState === WebSocket.OPEN) {
+            const messageToSend = JSON.stringify({ text: input, type: 'sent' });
+            websocket.current.send(messageToSend);
             setInput('');
         }
     };
@@ -30,8 +76,8 @@ function Chat() {
     return (
         <ChatContainer>
             <ChatHeader>
-                <IoIosArrowBack size="24" style={{ cursor: 'pointer' }} /> {/* Back arrow icon */}
-                <ChatTitle>Taylor Swift Group</ChatTitle> {/* Chat group title */}
+                <IoIosArrowBack size="24" style={{ cursor: 'pointer' }} />
+                <ChatTitle>Taylor Swift Group</ChatTitle>
             </ChatHeader>
             <MessagesList id="messagesList">
                 {messages.map((msg) => (
