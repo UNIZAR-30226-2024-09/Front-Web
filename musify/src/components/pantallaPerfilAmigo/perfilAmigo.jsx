@@ -4,7 +4,7 @@ import Sidebar from "../Sidebar/sidebar";
 import Footer from "../Footer/footer";
 import PerfilAmigoBody from "./perfilAmigoBody";
 
-export default function Musify(){
+export default function PerfilA(){
     return (
         <>
             <GlobalStyle />

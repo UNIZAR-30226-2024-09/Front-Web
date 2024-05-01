@@ -132,7 +132,7 @@ export default function Sidebar() {
                         </Link>
                     </li>
                     <li>
-                        <Link to="/mi_perfil" className="link">
+                        <Link to="/miPerfil" className="link">
                             <FaUser />
                             <span>Mi perfil</span>
                         </Link>

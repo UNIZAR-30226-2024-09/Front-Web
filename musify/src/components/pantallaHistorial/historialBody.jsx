@@ -9,7 +9,7 @@ const base64ToImageSrc = (base64) => {
 };
 
 export default function Body_historial() {
-    const { playlistId } = useParams();
+    const { correo } = useParams();
     const [songs, setSongs] = useState([]);
     const [message, setMessage] = useState('');
     const { setTrackList } = useTrack();
@@ -30,7 +30,7 @@ export default function Body_historial() {
                 const data = await response.json();
                 if (response.ok) {
                     const email = data.correo;
-                    fetchHistorySongs(email);
+                    fetchHistorySongs(email); // Si se obtienen los detalles del usuario, llamar a fetchHistorySongs con su correo
                 } else {
                     console.error('Failed to fetch user details:', data);
                 }
@@ -38,11 +38,42 @@ export default function Body_historial() {
                 console.error('Error fetching user details:', error);
             }
         };
-    
-        if (localStorage.getItem('userToken')) {
+
+        if (!correo) { // Si no hay correo en los parámetros de la URL, buscar el correo del usuario del token
             fetchUserDetails();
+        } else { // Si hay un correo en los parámetros de la URL, buscar las canciones del historial para ese correo
+            fetchHistorySongs(correo);
         }
-    }, []);
+    }, [correo]);
+
+
+    
+
+    useEffect(() => {
+        if (correo) {
+            fetchUsuario();
+        }
+    }, [correo]);
+
+    const fetchUsuario = async () => {
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/devolverUsuario/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ correo: correo })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                if (data.usuario) {
+                    fetchHistorySongs(data.usuario.correo);
+                }
+            } else {
+                console.error('Failed to fetch user:', data);
+            }
+        } catch (error) {
+            console.error('Error fetching user details:', error);
+        }
+    };
 
     const fetchHistorySongs = async (email) => {
         const response = await fetch(`http://127.0.0.1:8000/listarHistorial/`, {

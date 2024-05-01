@@ -267,34 +267,35 @@ export default function Body() {
 
     return (
         <Container>
-            <div className="playlist">
-            <div className="image">
-                <img src="/imagenes/playlist.jpg" alt="Descripción" />
-                
-            </div>
-            <div className="details">
-                <span className="type">PLAYLIST</span>
-                <h1 className="title">{playlistName || 'Loading...'}</h1>  {/* Mostrar el nombre de la playlist */}
-                <div className='iconos'>
-                    <IconButton onClick={() => setIsAddingCollaborator(true)}>
-                        <FaUserPlus size="1.3em" />  
-                    </IconButton>
-                    <Modal show={isAddingCollaborator} onClose={() => setIsAddingCollaborator(false)}>
-                        <input
-                        type="email"
-                        value={collaboratorEmail}
-                        onChange={e => setCollaboratorEmail(e.target.value)}
-                        placeholder="Correo del colaborador"
-                        />
-                        <button onClick={handleAddCollaborator}>Confirmar</button>
-                    </Modal>
-                    <div onClick={togglePublic}>
-                        {isPublic ? <FaUnlock size="2em" /> : <FaLock size="2em" />}
+        {isPublic  && (
+            <>
+                <div className="playlist">
+                    <div className="image">
+                        <img src="/imagenes/playlist.jpg" alt="Descripción" />
+                    </div>
+                    <div className="details">
+                        <span className="type">PLAYLIST</span>
+                        <h1 className="title">{playlistName || 'Loading...'}</h1>
+                        <div className='iconos'>
+                            <IconButton onClick={() => setIsAddingCollaborator(true)}>
+                                <FaUserPlus size="1.3em" />  
+                            </IconButton>
+                            <Modal show={isAddingCollaborator} onClose={() => setIsAddingCollaborator(false)}>
+                                <input
+                                    type="email"
+                                    value={collaboratorEmail}
+                                    onChange={e => setCollaboratorEmail(e.target.value)}
+                                    placeholder="Correo del colaborador"
+                                />
+                                <button onClick={handleAddCollaborator}>Confirmar</button>
+                            </Modal>
+                            <div onClick={togglePublic}>
+                                {isPublic ? <FaUnlock size="2em" /> : <FaLock size="2em" />}
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-            <div className="list">
+                <div className="list">
                 <div className="header__row">
                     <div className="col"><span>#</span></div>
                     <div className="col"><span>TITULO</span></div>
@@ -335,14 +336,17 @@ export default function Body() {
                                     e.stopPropagation();
                                     removeSongFromPlaylist(song.id);
                                 }} />
+                                </div>
                             </div>
-                        </div>
-                    ))
-                ) : (
-                    <div className="row">{message}</div>
-                )}
-            </div>
-        </Container>
+                        ))
+                    ) : (
+                        <div className="row">{message}</div>
+                    )}
+                </div>
+            </>
+        )}
+    </Container>
+    
     );
 }
 
