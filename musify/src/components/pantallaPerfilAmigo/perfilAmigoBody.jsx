@@ -51,7 +51,7 @@ export default function PerfilAmigoBody () {
         if (correoAmigo) {
             fetchUsuario();
         }
-    }, [correoAmigo, usuario]); // Agrega usuario como dependencia
+    }, [correoAmigo, usuario]);
     
     const fetchUsuario = async () => {
         try {
@@ -201,9 +201,9 @@ export default function PerfilAmigoBody () {
             <Modal title="Usuarios a los que sigue" onClose={() => setShowSeguidosModal(false)}>
               <ul>
                 {seguidos.map((seguido, index) => (
-                  <Link key={index} to={`/perfil_amigo/${seguido.seguido}`} className="link">
-                    <UsuarioItem key={index}>{seguido.seguido}</UsuarioItem>
-                  </Link>
+                    <Link key={index} to={seguido.seguido === usuario.correo ? '/miPerfil' : `/perfilAmigo/${seguido.seguido}`} style={LinkStyle} className="link">
+                        <UsuarioItem key={index}>{seguido.seguido}</UsuarioItem>
+                    </Link>
                 ))}
               </ul>
             </Modal>
@@ -213,7 +213,9 @@ export default function PerfilAmigoBody () {
             <Modal title="Usuarios que le siguen" onClose={() => setShowSeguidoresModal(false)}>
               <ul>
                 {seguidores.map((seguidor, index) => (
-                  <UsuarioItem key={index}>{seguidor.seguidor}</UsuarioItem>
+                    <Link key={index} to={seguidor.seguidor === usuario.correo ? '/miPerfil' : `/perfilAmigo/${seguidor.seguidor}`} style={LinkStyle} className="link">
+                        <UsuarioItem key={index}>{seguidor.seguidor}</UsuarioItem>
+                    </Link>
                 ))}
               </ul>
             </Modal>
@@ -228,12 +230,18 @@ export default function PerfilAmigoBody () {
                     <ListasTitulo>Sus listas</ListasTitulo>
                     <ListasContainer>
                         {playlists.map((playlist, index) => (
-                            <Link key={index} to={`/musify/${playlist.id}`} className="link">
+                            <Link key={index} to={`/musify/${playlist.id}`} style={LinkStyle} className="link">
                                 <Lista>
                                     <div>{playlist.nombre}</div>
                                 </Lista>
                             </Link>
                         ))}
+            
+                        <Link to={`/historial/${correoAmigo}`} style={LinkStyle} className="link">
+                          <Lista>
+                            <div>Historial</div>
+                          </Lista>
+                        </Link>
                     </ListasContainer>
                 </>
             )}
@@ -352,3 +360,8 @@ const UsuarioItem = styled.li`
         background-color: #f0f0f0;
     }
 `;
+
+const LinkStyle = {
+    textDecoration: 'none',
+    color: 'inherit'
+};

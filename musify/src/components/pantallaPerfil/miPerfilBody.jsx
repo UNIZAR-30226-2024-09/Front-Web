@@ -132,7 +132,7 @@ export default function Body_perfil() {
             <Modal title="Usuarios a los que sigues" onClose={() => setShowSeguidosModal(false)}>
               <ul>
                 {seguidos.map((seguido, index) => (
-                  <Link key={index} to={`/perfilAmigo/${seguido.seguido}`} className="link">
+                  <Link key={index} to={`/perfilAmigo/${seguido.seguido}`} style={LinkStyle} className="link">
                     <UsuarioItem key={index}>{seguido.seguido}</UsuarioItem>
                   </Link>
                 ))}
@@ -144,7 +144,7 @@ export default function Body_perfil() {
             <Modal title="Usuarios que te siguen" onClose={() => setShowSeguidoresModal(false)}>
               <ul>
                 {seguidores.map((seguidor, index) => (
-                  <Link key={index} to={`/perfilAmigo/${seguidor.seguidor}`} className="link">
+                  <Link key={index} to={`/perfilAmigo/${seguidor.seguidor}`} style={LinkStyle} className="link">
                     <UsuarioItem key={index}>{seguidor.seguidor}</UsuarioItem>
                   </Link>
                 ))}
@@ -156,7 +156,7 @@ export default function Body_perfil() {
           <ListasTitulo>Mis listas</ListasTitulo>
           <ListasContainer key={playlists}>
             {playlists.map((playlist, index) => (
-              <Link key={index} to={`/musify/${playlist.id}`} className="link">
+              <Link key={index} to={`/musify/${playlist.id}`} style={LinkStyle} className="link">
                 <Lista>
                   <div>{playlist && playlist.nombre}</div>
                 </Lista>
@@ -260,3 +260,8 @@ const SeguidosYSeguidoresButton = styled.button`
     background-color: grey;
   }
 `;
+
+const LinkStyle = {
+  textDecoration: 'none',
+  color: 'inherit'
+};
