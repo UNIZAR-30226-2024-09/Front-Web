@@ -2,9 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
-import { Link } from 'react-router-dom';
 import AniadirWindow from "./salir_sin_guardar";
-import { FaCog, FaClock } from "react-icons/fa";
 
 const base64ToAudioSrc = (base64) => {
   const base64WithoutPrefix = base64.replace(/^data:audio\/mp3;base64,/, '').replace(/^data:[^;]+;base64,/, '');
@@ -16,7 +14,7 @@ export default function EditCapitulo() {
   const navigate = useNavigate();
   const { idCap } = useParams();
   const [capitulo, setCapitulo] = useState(null);
-  const [miPodcast, setPodcast] = useState('');
+  const [podcast, setPodcast] = useState('');
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [duracion, setDuracion] = useState('');
@@ -44,6 +42,7 @@ export default function EditCapitulo() {
             setNombre(capituloData.capitulo.nombre);
             setDescripcion(capituloData.capitulo.descripcion);
             setPodcast(capituloData.capitulo.miPodcast);
+            fetchNomPodcast(capituloData.capitulo.miPodcast)
             fetchDuracion(base64ToAudioSrc(capituloData.capitulo.archivoMp3));
         } catch (error) {
             setError(error.message);
@@ -51,6 +50,24 @@ export default function EditCapitulo() {
             setLoading(false);
         }
     };
+
+    const fetchNomPodcast = async (idPodcast) => {
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/devolverPodcast/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ podcastId: idPodcast })
+            });
+            if (!response.ok) throw new Error("Failed to fetch album");
+            const podcastData = await response.json();
+            setPodcast(podcastData.podcast.nombre);
+        } catch (error) {
+            setError(`Failed to fetch podcast: ${error.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     fetchCapitulo();
 }, [idCap]);
 
@@ -83,12 +100,30 @@ export default function EditCapitulo() {
   };
 
   const handleCloseModalNoSave = () => {
-      navigate(`/editar_podcast/${miPodcast}`); //Vuelve a la lista de canciones
+      navigate(`/editar_podcast/${podcast}`); //Vuelve a la lista de canciones
   };
 
-    const handleCapituloAniadido = () => {
-        if(capituloValid) {
-            navigate(`/editar_podcast/${miPodcast}`);
+    const handleCapituloEditado = async () => {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/actualizarCapitulo/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ capituloId: idCap, nombre: nombre, descripcion: descripcion, miPodcast: podcast }),
+            });
+    
+            if (response.ok) {
+                // Actualización exitosa
+                console.log('Canción actualizada correctamente en la base de datos');
+                navigate(`/editar_podcast/${podcast}`);
+            } else {
+                // Maneja errores de respuesta
+                console.error('Error al actualizar la canción en la base de datos');
+            }
+        } catch (error) {
+            // Maneja errores de red u otros
+            console.error('Error de red al actualizar la canción:', error);
         }
     };
 
@@ -125,7 +160,7 @@ export default function EditCapitulo() {
                 <div className="buttons-container">
                     <button type="button" className="cancel-button" onClick={handleExitWithoutSave}>Salir sin guardar</button>
                     {showModal && <AniadirWindow onClose={handleCloseModal} ruta={handleCloseModalNoSave} />}
-                    <button type="submit" className="save-button" onClick={handleCapituloAniadido}>Guardar</button>
+                    <button type="submit" className="save-button" onClick={handleCapituloEditado}>Guardar</button>
                 </div>
             </form>
         </div>
@@ -155,14 +190,14 @@ const Container = styled.div`
     padding: 30px;
     margin-top: 20px;
     .titulo {
-        width: 450px;
+        width: 400px;
         height: 80px;
         margin-bottom: 30px;
     }
     
     .input-box{
         position: relative;
-        width: 450px;
+        width: 400px;
         height: 40px;
         margin: 30px 0;
     }

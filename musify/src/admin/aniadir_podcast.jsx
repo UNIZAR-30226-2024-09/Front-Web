@@ -2,25 +2,13 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from 'react-router-dom';
 import AniadirWindow from "./salir_sin_guardar";
-import { FaCog, FaClock } from "react-icons/fa";
-
-const capitulos = [
-    {
-      id: 1,
-      name: "Capitulo 1",
-      fecha: "Fecha 1",
-      duration: "3:45",
-    },
-    {
-      id: 2,
-      name: "Capitulo 2",
-      fecha: "Fecha 2",
-      duration: "4:05",
-    },
-];
+import { FaClock } from "react-icons/fa";
+import { IoAddCircle } from "react-icons/io5";
+import { usePodcast } from "./podcastContext";
 
 export default function AniadirPodcasrAdmin() {
     const navigate = useNavigate();
+    const { podcastDetails, setPodcastDetails } = usePodcast() || {};
     const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
     const [showModalCap, setShowModalCap] = useState(false);
     const [podcastValid, setPodcastValid] = useState(false);
@@ -39,7 +27,7 @@ export default function AniadirPodcasrAdmin() {
         } else {
           setPodcastValid(false);
         }
-    }, [titulo, presentador, fecha]);
+    }, [titulo, fecha, duracion]);
 
     const handleExitWithoutSave = () => {
         setShowModal(true); // Muestra el modal al hacer clic en "Salir sin guardar"
@@ -52,15 +40,35 @@ export default function AniadirPodcasrAdmin() {
     const handleCloseModalNoSave = () => {
         navigate('/lista_podcast_admin'); //Vuelve a la lista de canciones
     };
-    
-    const handleCancionAniadida = () => {
-        if(podcastValid) {
-            navigate('/lista_podcast_admin');
-        }
-    };
 
-    const handleEditarCap = () => {
-        setShowModalCap(true)
+    const handleAddCap = () => {
+        navigate('/aniadir_capitulo'); //Vuelve a la lista de canciones
+    };
+    
+    const handleCancionAniadida = async () => {
+        if(podcastValid) {
+            const updatedPodcastDetails = { ...podcastDetails, nombre: titulo, foto: imagen };
+            setPodcastDetails(updatedPodcastDetails);
+            console.log(podcastDetails);
+            try {
+                const response = await fetch('http://127.0.0.1:8000/crearCancion/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({nombre: titulo, nombreFoto: audio}),
+                });
+
+                if (response.ok) {
+                    // Si el registro es exitoso, redirige al usuario
+                    navigate('/lista_podcast_admin');
+                } else {
+                    // Maneja errores, por ejemplo, mostrar un mensaje al usuario
+                }
+            } catch (error) {
+                // Maneja excepciones
+            }
+        }
     };
 
     return (
@@ -99,11 +107,11 @@ export default function AniadirPodcasrAdmin() {
                         </select>
                     </div>
                     <div className="audio">
-                        <h7>Archivo de audio (.mp3):</h7>
+                        <h6>Archivo de audio (.mp3):</h6>
                         <input type="file" accept=".mp3" onChange={e=>setAudio(e.target.value)} required />
                     </div>
                     <div className="image">
-                        <h7>Imagen:</h7>
+                        <h6>Imagen:</h6>
                         <input type="file" accept="image/*" onChange={e=>setImagen(e.target.value)} required />
                     </div>
                     <div className="chapter-list-container">
@@ -114,17 +122,9 @@ export default function AniadirPodcasrAdmin() {
                             <div className="chapter-list-item"><FaClock /></div>
                             <div className="chapter-list-item">Editar</div>
                         </div>
-                        <div className="chapter-list-body">
-                            {capitulos.map(capitulo => (
-                                <div key={capitulo.id} className="chapter-list-row">
-                                    <div className="chapter-list-item">{capitulo.id}</div>
-                                    <div className="chapter-list-item">{capitulo.name}</div>
-                                    <div className="chapter-list-item">{capitulo.fecha}</div>
-                                    <div className="chapter-list-item">{capitulo.duration}</div>
-                                    <div className="chapter-list-item"><FaCog className="capitulos__settings"/></div>
-                                </div>
-                            ))}
-                        </div>
+                        <button type="button" className="chapter-button">
+                            <IoAddCircle className="icon" onClick={handleAddCap}/>
+                        </button>
                     </div>
 
                     <div className="buttons-container">
@@ -226,7 +226,7 @@ const Container = styled.div`
     padding: 30px 20px;
   }
 
-  .cancel-button, .save-button {
+  .cancel-button, .save-button, .chapter-button {
     padding: 10px 20px;
     border: 20px;
     border-radius: 20px;
@@ -245,7 +245,12 @@ const Container = styled.div`
     color: #fff;
   }
 
-
+  .chapter-button {
+    margin-top: 10px;
+    margin-left: 25px;
+    background-color: #fff;
+    color: #000;
+  }
 
   .chapter-list-container {
     overflow-y: auto; 

@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import AniadirWindow from "./salir_sin_guardar";
 import { FaCog, FaClock } from "react-icons/fa";
+import { IoAddCircle } from "react-icons/io5";
 
 const base64ToImageSrc = (base64) => {
     const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
@@ -43,18 +44,6 @@ export default function EditarPodcasrAdmin() {
         }
     }, [titulo, presentador, fecha]);
     */
-
-    const handleExitWithoutSave = () => {
-        setShowModal(true); // Muestra el modal al hacer clic en "Salir sin guardar"
-    };
-    
-    const handleCloseModal = () => {
-        setShowModal(false); // Cierra el modal al hacer clic en "Cancelar" o fuera del modal
-    };
-
-    const handleCloseModalNoSave = () => {
-        navigate('/lista_podcast_admin'); //Vuelve a la lista de canciones
-    };
 
     useEffect(() => {
         const fetchPodcast = async () => {
@@ -121,11 +110,15 @@ export default function EditarPodcasrAdmin() {
                 });
                 if (!response.ok) throw new Error("Failed to fetch album");
                 const podcastData = await response.json();
-                const nombresPresentadores = podcastData.presentadores.map(presentador => presentador.nombre);
-                setPresentadores(nombresPresentadores);
+                if (podcastData.presentadores && podcastData.presentadores.length > 0) {
+                    const nombresPresentadores = podcastData.presentadores.map(presentador => presentador.nombre);
+                    setPresentadores(nombresPresentadores);
+                } else {
+                    return null;
+                }
             } catch (error) {
               console.log(error);
-                setError(`Failed to fetch album: ${error.message}`);
+                setError(`Failed to fetch presentadores: ${error.message}`);
             }
           };
 
@@ -154,6 +147,46 @@ export default function EditarPodcasrAdmin() {
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
 
+    const handleExitWithoutSave = () => {
+        setShowModal(true); // Muestra el modal al hacer clic en "Salir sin guardar"
+    };
+    
+    const handleCloseModal = () => {
+        setShowModal(false); // Cierra el modal al hacer clic en "Cancelar" o fuera del modal
+    };
+
+    const handleCloseModalNoSave = () => {
+        navigate('/lista_podcast_admin'); //Vuelve a la lista de canciones
+    };
+
+    const handleAddCap = () => {
+        navigate('/aniadir_capitulo');
+    };
+
+    const handleActualizarPodcast = async () => {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/actualizarPodcast/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ podcastId: idPodcast, nombre: nombre }),
+            });
+    
+            if (response.ok) {
+                // Actualización exitosa
+                navigate('/lista_podcast_admin');
+                console.log('Canción actualizada correctamente en la base de datos');
+            } else {
+                // Maneja errores de respuesta
+                console.error('Error al actualizar la canción en la base de datos');
+            }
+        } catch (error) {
+            // Maneja errores de red u otros
+            console.error('Error de red al actualizar la canción:', error);
+        }
+    }
+
     return (
         <>
           <Container>
@@ -173,22 +206,19 @@ export default function EditarPodcasrAdmin() {
                             <h6>Presentadores:</h6>
                             <input 
                                 type="text" 
-                                value={presentadores.join(", ")}
+                                value={presentadores ? (
+                                    presentadores.join(", ")
+                                ) : (
+                                    "No hay presentadores"
+                                )}
                                 onChange={e=>setNombre(e.target.value)}
                                 placeholder="Presentadores" required 
                             />
                         </div>
-                        <select value={genero} onChange={e=>setGenero(e.target.value)} required>
-                            <option value="">Selecciona un género</option>
-                            <option value="Rock">Rock</option>
-                            <option value="Pop">Pop</option>
-                            <option value="Hip-Hop">Hip-Hop</option>
-                            {/* Otros géneros */}
-                        </select>
                     </div>
                     <div className="audio">
                         <h6>Archivo de audio (.mp3):</h6>
-                        <input type="file" accept=".mp3" onChange={e=>setAudio(e.target.value)} required />
+                        <input type="file" accept=".mp3" onChange={e=>setAudio(e.target.value)}/>
                     </div>
                     <div className="image">
                     <h6>Imagen:</h6>
@@ -196,7 +226,7 @@ export default function EditarPodcasrAdmin() {
                             className="podcast-image"
                             src={foto} alt="Imagen predefinida" 
                         />
-                        <input type="file" accept="image/*"/>
+                        <input type="file" accept="image/*" onChange={e=>setFoto(e.target.value)}/>
                     </div>
                     <div className="chapter-list-header">
                         <div className="chapter-list-item">Capítulo</div>
@@ -218,13 +248,16 @@ export default function EditarPodcasrAdmin() {
                                     </div>
                                 </div>
                             ))}
+                            <button type="button" className="chapter-button">
+                                <IoAddCircle className="icon" onClick={handleAddCap}/>
+                            </button>
                         </div>
                     </div>
 
                     <div className="buttons-container">
                         <button type="button" className="cancel-button" onClick={handleExitWithoutSave}>Salir sin guardar</button>
                         {showModal && <AniadirWindow onClose={handleCloseModal} ruta={handleCloseModalNoSave} />}
-                        <button type="submit" className="save-button">Guardar</button>
+                        <button type="submit" className="save-button" onClick={handleActualizarPodcast}>Guardar</button>
                     </div>
                 </form>
             </div>

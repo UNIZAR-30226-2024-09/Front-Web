@@ -29,6 +29,7 @@ import AniadirCancionAdmin from './admin/aniadir_cancion';
 import ListaPodcastAdmin from './admin/lista_podcasts';
 import AniadirPodcastAdmin from './admin/aniadir_podcast';
 import EditarPodcastAdmin from './admin/editar_podcast';
+import AniadirCapituloAdmin from './admin/aniadir_capitulo';
 import EditarCapAdmin from './admin/editar_capitulo';
 import Historial from './components/pantallaHistorial/historialReproducción';
 
@@ -66,6 +67,7 @@ export default class App extends React.Component {
             <Route path="/lista_podcast_admin" element={<ListaPodcastAdmin />} />
             <Route path="/aniadir_podcast" element={<AniadirPodcastAdmin />} />
             <Route path="/editar_podcast/:idPodcast" element={<EditarPodcastAdmin />} />
+            <Route path="/aniadir_capitulo" element={<AniadirCapituloAdmin />} />
             <Route path="/editar_capitulo/:idCap" element={<EditarCapAdmin />} />
             <Route path="/historial" element={<Historial />} />
 

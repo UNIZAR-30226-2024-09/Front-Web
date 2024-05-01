@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from 'react-router-dom';
 import AniadirWindow from "./salir_sin_guardar";
+import { useSong } from "./songContext";
 
 export default function AniadirCancionesAdmin() {
     const navigate = useNavigate();
-    const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
+    const [showModal, setShowModal] = useState(false);
+    const { songDetails, setSongDetails } = useSong() || {};
 
     const [titulo, setTitulo] = useState('');
     const [artista, setArtista] = useState('');
@@ -17,12 +19,12 @@ export default function AniadirCancionesAdmin() {
     const [cancionValid, setCancionValid] = useState(false);
 
     useEffect(() => {
-        if (titulo.trim() !== '' && artista.trim() !== '' && album.trim() !== '' && duracion.trim() !== '') {
+        if (titulo.trim() !== '' && artista.trim() !== '' && album.trim() !== '' && imagen.trim() !== '' && audio.trim() !== '') {
           setCancionValid(true);
         } else {
           setCancionValid(false);
         }
-    }, [titulo, artista, album, duracion, genero]);
+    }, [titulo, artista, album, imagen, audio]);
 
     const handleExitWithoutSave = () => {
         setShowModal(true); // Muestra el modal al hacer clic en "Salir sin guardar"
@@ -36,9 +38,29 @@ export default function AniadirCancionesAdmin() {
         navigate('/lista_canciones_admin'); //Vuelve a la lista de canciones
     };
     
-    const handleCancionAniadida = () => {
+    const handleCancionAniadida = async () => {
         if(cancionValid) {
-            navigate('/lista_canciones_admin');
+            const updatedSongDetails = { ...songDetails, nombre: titulo, miAlbum: album, foto: imagen, archivoMp3: audio};
+            setSongDetails(updatedSongDetails);
+            console.log(songDetails);
+            try {
+                const response = await fetch('http://127.0.0.1:8000/crearCancion/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({nombre: titulo, nombreFoto: imagen, miAlbum: album, nombreArchivoMp3: audio}),
+                });
+
+                if (response.ok) {
+                    // Si el registro es exitoso, redirige al usuario
+                    navigate('/lista_canciones_admin');
+                } else {
+                    // Maneja errores, por ejemplo, mostrar un mensaje al usuario
+                }
+            } catch (error) {
+                // Maneja excepciones
+            }
         }
     };
 
@@ -53,7 +75,8 @@ export default function AniadirCancionesAdmin() {
                                 type="titulo" 
                                 value={titulo}
                                 onChange={e=>setTitulo(e.target.value)}
-                                placeholder="Título de la canción" required />
+                                placeholder="Título de la canción" required 
+                                style={{ '::placeholder': { color: '#000' } }}/>
                         </div>
                         <div className="input-box">
                             <input 
@@ -78,11 +101,11 @@ export default function AniadirCancionesAdmin() {
                         </select>
                     </div>
                     <div className="audio">
-                        <h7>Archivo de audio (.mp3):</h7>
+                        <h6>Archivo de audio (.mp3):</h6>
                         <input type="file" accept=".mp3" onChange={e=>setAudio(e.target.value)} required />
                     </div>
                     <div className="image">
-                        <h7>Imagen:</h7>
+                        <h6>Imagen:</h6>
                         <input type="file" accept="image/*" onChange={e=>setImagen(e.target.value)} required />
                     </div>
                     <div className="buttons-container">
@@ -169,7 +192,7 @@ const Container = styled.div`
     border: 2px solid #fff;
     border-radius: 20px;
     text-align: center;
-    h7 {
+    h6 {
         border: 10px;
         text-align: center;
     }
