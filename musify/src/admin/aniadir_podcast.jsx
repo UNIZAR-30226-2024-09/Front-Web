@@ -4,11 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import AniadirWindow from "./salir_sin_guardar";
 import { FaClock } from "react-icons/fa";
 import { IoAddCircle } from "react-icons/io5";
-import { usePodcast } from "./podcastContext";
 
 export default function AniadirPodcasrAdmin() {
     const navigate = useNavigate();
-    const { podcastDetails, setPodcastDetails } = usePodcast() || {};
     const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
     const [showModalCap, setShowModalCap] = useState(false);
     const [podcastValid, setPodcastValid] = useState(false);
@@ -20,6 +18,10 @@ export default function AniadirPodcasrAdmin() {
     const [genero, setGenero] = useState('');
     const [imagen, setImagen] = useState(null);
     const [audio, setAudio] = useState(null);
+    const [generos, setGeneros] = useState([]);
+
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         if (titulo.trim() !== '' && fecha.trim() !== '' && duracion.trim() !== '' ) {
@@ -28,6 +30,27 @@ export default function AniadirPodcasrAdmin() {
           setPodcastValid(false);
         }
     }, [titulo, fecha, duracion]);
+
+    useEffect(() => {
+        const fetchGeneros = async () => {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/generosPodcasts/`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                if (!response.ok) throw new Error("Failed to fetch album");
+                const generosData = await response.json();
+                const nombresGeneros = generosData.generos.map(genero => genero.nombre);
+                setGeneros(nombresGeneros);
+                console.log(generosData);
+            } catch (error) {
+                setError(`Failed to fetch generos: ${error.message}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchGeneros();
+    }, []);
 
     const handleExitWithoutSave = () => {
         setShowModal(true); // Muestra el modal al hacer clic en "Salir sin guardar"
@@ -41,22 +64,15 @@ export default function AniadirPodcasrAdmin() {
         navigate('/lista_podcast_admin'); //Vuelve a la lista de canciones
     };
 
-    const handleAddCap = () => {
-        navigate('/aniadir_capitulo'); //Vuelve a la lista de canciones
-    };
-    
     const handleCancionAniadida = async () => {
         if(podcastValid) {
-            const updatedPodcastDetails = { ...podcastDetails, nombre: titulo, foto: imagen };
-            setPodcastDetails(updatedPodcastDetails);
-            console.log(podcastDetails);
             try {
-                const response = await fetch('http://127.0.0.1:8000/crearCancion/', {
+                const response = await fetch('http://127.0.0.1:8000/crearPodcast/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({nombre: titulo, nombreFoto: audio}),
+                    body: JSON.stringify({nombre: titulo, nombreFoto: imagen}),
                 });
 
                 if (response.ok) {
@@ -82,7 +98,7 @@ export default function AniadirPodcasrAdmin() {
                                 type="titulo" 
                                 value={titulo}
                                 onChange={e=>setTitulo(e.target.value)}
-                                placeholder="Título de la canción" required />
+                                placeholder="Título del podcast" required />
                         </div>
                         <div className="input-box">
                             <input 
@@ -91,19 +107,11 @@ export default function AniadirPodcasrAdmin() {
                                 onChange={e=>setPresentador(e.target.value)}
                                 placeholder="Presentador" required />
                         </div>
-                        <div className="input-box">
-                            <input 
-                                type="año" 
-                                value={fecha}
-                                onChange={e=>setFecha(e.target.value)}
-                                placeholder="Año" required />
-                        </div>
                         <select value={genero} onChange={e=>setGenero(e.target.value)} required>
                             <option value="">Selecciona un género</option>
-                            <option value="Rock">Rock</option>
-                            <option value="Pop">Pop</option>
-                            <option value="Hip-Hop">Hip-Hop</option>
-                            {/* Otros géneros */}
+                            {generos.map((genero, index) => (
+                                <option key={index} value={genero}>{genero}</option>
+                            ))}
                         </select>
                     </div>
                     <div className="audio">
@@ -114,19 +122,6 @@ export default function AniadirPodcasrAdmin() {
                         <h6>Imagen:</h6>
                         <input type="file" accept="image/*" onChange={e=>setImagen(e.target.value)} required />
                     </div>
-                    <div className="chapter-list-container">
-                        <div className="chapter-list-header">
-                            <div className="chapter-list-item">Capítulo</div>
-                            <div className="chapter-list-item">Título</div>
-                            <div className="chapter-list-item">Fecha</div>
-                            <div className="chapter-list-item"><FaClock /></div>
-                            <div className="chapter-list-item">Editar</div>
-                        </div>
-                        <button type="button" className="chapter-button">
-                            <IoAddCircle className="icon" onClick={handleAddCap}/>
-                        </button>
-                    </div>
-
                     <div className="buttons-container">
                         <button type="button" className="cancel-button" onClick={handleExitWithoutSave}>Salir sin guardar</button>
                         {showModal && <AniadirWindow onClose={handleCloseModal} ruta={handleCloseModalNoSave} />}
@@ -157,20 +152,35 @@ const Container = styled.div`
 
 .info {
     width: 100%;
-    height: 380px;
+    height: 400px;
     padding: 30px;
     .titulo {
         width: 400px;
         height: 80px;
+        margin-top: 35px;
         margin-bottom: 20px;
     }
     
-    .input-box, select{
+    .input-box{
         position: relative;
         width: 400px;
         height: 40px;
         margin: 30px 0;
     }
+    select {
+        position: relative;
+        width: 400px;
+        height: 40px;
+        margin-top: 100px;
+        background: none;
+        border: 2px solid #fff;
+        border-radius: 20px;
+        color: #fff;
+    }
+    select option {
+        color: #000;
+    }
+
     input{
         width: 100%;
         height: 100%;
@@ -186,13 +196,22 @@ const Container = styled.div`
 
 }
 
+.input-box input::placeholder {
+    color: #fff;
+}
+
+.titulo input::placeholder {
+    color: #fff;
+}
+
 .audio{
     position: absolute;
-    bottom: 260px;
+    bottom: 220px;
     right: 40px;
     width: 300px;
     height: 50px;
     outline: none;
+    text-align: center;
     input {
         width: 100%;
         height: 100%;
@@ -202,13 +221,14 @@ const Container = styled.div`
 
 .image {
     position: absolute;
-    top: 30px;
+    top: 60px;
     right: 40px;
     width: 300px;
     height: 200px;
     outline: none;
     border: 2px solid #fff;
     border-radius: 20px;
+    text-align: center;
     h7 {
         border: 10px;
         text-align: center;
@@ -223,7 +243,7 @@ const Container = styled.div`
   .buttons-container {
     display: flex;
     justify-content: space-between;
-    padding: 30px 20px;
+    padding: 90px 30px;
   }
 
   .cancel-button, .save-button, .chapter-button {
@@ -244,42 +264,4 @@ const Container = styled.div`
     background-color: #4CAF50; /* Verde */
     color: #fff;
   }
-
-  .chapter-button {
-    margin-top: 10px;
-    margin-left: 25px;
-    background-color: #fff;
-    color: #000;
-  }
-
-  .chapter-list-container {
-    overflow-y: auto; 
-    scroll-behavior: smooth;
-        .capitulos__settings {
-            cursor: pointer;
-        }
-        .chapter-list-header {
-            display: flex;
-            justify-content: space-between;
-            background-color: none;
-            padding: 8px;
-            font-weight: bold;
-        }
-        .chapter-list-body {
-            overflow-y: auto; 
-        }
-    
-        .chapter-list-row {
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px solid #ccc;
-            padding: 8px;
-        }
-    
-        .chapter-list-item {
-            flex: 1;
-            text-align: center;
-        }
-    }
-
 `;

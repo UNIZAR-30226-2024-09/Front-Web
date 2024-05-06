@@ -49,7 +49,7 @@ export default function RegisterInfo() {
 
                 if (response.ok) {
                     // Si el registro es exitoso, redirige al usuario
-                    navigate('/login');
+                    navigate('/register_4');
                 } else {
                     // Maneja errores, por ejemplo, mostrar un mensaje al usuario
                 }

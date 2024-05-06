@@ -5,6 +5,8 @@ import LoginForm from './components/pantallaInicioSesion/inicioSesion';
 import RegisterMail from './components/pantallasRegistro/registro1';
 import RegisterPasswd from './components/pantallasRegistro/registro2';
 import RegisterInfo from './components/pantallasRegistro/registro3';
+import RegisterTerminosCondiciones from './components/pantallasRegistro/registro4';
+import RegisterPreguntas from './components/pantallasRegistro/preguntasRecomendacion';
 import Asistencia from './components/pantallaConfiguracion/configuracion';
 import Profile from './components/pantallaEditarPerfil/editarPerfil';
 import Busqueda from './components/pantallaBuscar/buscar';
@@ -42,6 +44,8 @@ export default class App extends React.Component {
             <Route path="/register_1" element={<RegisterMail />} />
             <Route path="/register_2" element={<RegisterPasswd />} />
             <Route path="/register_3" element={<RegisterInfo />} />
+            <Route path="/register_4" element={<RegisterTerminosCondiciones />} />
+            <Route path="/register_5" element={<RegisterPreguntas />} />
             <Route path="/musify/:playlistId" element={<Musify />} />
             <Route path="/perfilAmigo/:correoAmigo" element={<PerfilA />} />
             <Route path="/musifyp/:podcastId" element={<MusifyP />} />

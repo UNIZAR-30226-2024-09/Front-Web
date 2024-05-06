@@ -13,10 +13,13 @@ export default function AniadirCancionesAdmin() {
     const [artista, setArtista] = useState('');
     const [album, setAlbum] = useState('');
     const [duracion, setDuracion] = useState('');
-    const [genero, setGenero] = useState('');
+    const [generos, setGeneros] = useState('');
     const [imagen, setImagen] = useState(null);
     const [audio, setAudio] = useState(null);
     const [cancionValid, setCancionValid] = useState(false);
+
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         if (titulo.trim() !== '' && artista.trim() !== '' && album.trim() !== '' && imagen.trim() !== '' && audio.trim() !== '') {
@@ -25,6 +28,29 @@ export default function AniadirCancionesAdmin() {
           setCancionValid(false);
         }
     }, [titulo, artista, album, imagen, audio]);
+
+    useEffect(() => {
+        const fetchGeneros = async () => {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/generosCanciones/`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                if (!response.ok) throw new Error("Failed to fetch album");
+                const generosData = await response.json();
+                const nombresGeneros = generosData.generos.map(genero => genero.nombre);
+                setGeneros(nombresGeneros);
+            } catch (error) {
+                setError(`Failed to fetch generos: ${error.message}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchGeneros();
+    }, []);
+
+    if (loading) return <p>Cargando...</p>;
+    if (error) return <p>Error: {error}</p>;
 
     const handleExitWithoutSave = () => {
         setShowModal(true); // Muestra el modal al hacer clic en "Salir sin guardar"
@@ -92,12 +118,11 @@ export default function AniadirCancionesAdmin() {
                                 onChange={e=>setAlbum(e.target.value)}
                                 placeholder="Album" required />
                         </div>
-                        <select value={genero} onChange={e=>setGenero(e.target.value)} required>
+                        <select value={generos} onChange={e=>setGeneros(e.target.value)} required>
                             <option value="">Selecciona un género</option>
-                            <option value="Rock">Rock</option>
-                            <option value="Pop">Pop</option>
-                            <option value="Hip-Hop">Hip-Hop</option>
-                            {/* Otros géneros */}
+                            {generos.map((genero, index) => (
+                                <option key={index} value={genero}>{genero}</option>
+                            ))}
                         </select>
                     </div>
                     <div className="audio">

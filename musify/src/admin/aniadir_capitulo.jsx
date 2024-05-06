@@ -2,11 +2,9 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from 'react-router-dom';
 import AniadirWindow from "./salir_sin_guardar";
-import { useCap } from "./capContext";
 
 export default function EditCapitulo() {
   const navigate = useNavigate();
-  const { capDetails, setCapDetails } = useCap() || {};
   const [capitulo, setCapitulo] = useState(null);
   const [miPodcast, setPodcast] = useState('');
   const [titulo, setNombre] = useState('');
@@ -38,9 +36,6 @@ export default function EditCapitulo() {
 
     const handleCapituloAniadido = async () => {
         if(capituloValid) {
-            const updatedCapDetails = { ...capDetails, titulo: titulo, podcast: miPodcast, descripcion: desc, archivoMp3: audio};
-            setCapDetails(updatedCapDetails);
-            console.log(capDetails);
             try {
                 const response = await fetch('http://127.0.0.1:8000/crearCapitulo/', {
                     method: 'POST',
@@ -174,6 +169,14 @@ const Container = styled.div`
         color: #fff;
         padding: 20px;
         appearance: none;
+    }
+
+    .input-box input::placeholder {
+        color: #fff;
+    }
+
+    .titulo input::placeholder {
+        color: #fff;
     }
 
     .audio{
