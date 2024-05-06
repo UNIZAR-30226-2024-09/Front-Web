@@ -2,12 +2,10 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from 'react-router-dom';
 import AniadirWindow from "./salir_sin_guardar";
-import { useSong } from "./songContext";
 
 export default function AniadirCancionesAdmin() {
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
-    const { songDetails, setSongDetails } = useSong() || {};
 
     const [titulo, setTitulo] = useState('');
     const [artista, setArtista] = useState('');
@@ -66,9 +64,6 @@ export default function AniadirCancionesAdmin() {
     
     const handleCancionAniadida = async () => {
         if(cancionValid) {
-            const updatedSongDetails = { ...songDetails, nombre: titulo, miAlbum: album, foto: imagen, archivoMp3: audio};
-            setSongDetails(updatedSongDetails);
-            console.log(songDetails);
             try {
                 const response = await fetch('http://127.0.0.1:8000/crearCancion/', {
                     method: 'POST',
@@ -101,8 +96,7 @@ export default function AniadirCancionesAdmin() {
                                 type="titulo" 
                                 value={titulo}
                                 onChange={e=>setTitulo(e.target.value)}
-                                placeholder="Título de la canción" required 
-                                style={{ '::placeholder': { color: '#000' } }}/>
+                                placeholder="Título de la canción" required />
                         </div>
                         <div className="input-box">
                             <input 
@@ -191,6 +185,14 @@ const Container = styled.div`
         appearance: none;
     }
 
+}
+
+.input-box input::placeholder {
+    color: #fff;
+}
+
+.titulo input::placeholder {
+    color: #fff;
 }
 
 .audio{

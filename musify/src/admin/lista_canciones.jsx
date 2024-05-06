@@ -4,17 +4,8 @@ import { FaCog } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 
 const base64ToImageSrc = (base64) => {
-    console.log("Base64 original:", base64); // Imprimir la base64 original
-
-    // Eliminar el prefijo de la cadena base64 si está presente
     const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
-    console.log("Base64 sin prefijo:", base64WithoutPrefix); // Imprimir la base64 sin prefijo
-
-    // Decodificar la cadena base64
-    const byteCharacters = atob(base64WithoutPrefix);
-    console.log("Caracteres de bytes:", byteCharacters); // Opcional: Imprimir los caracteres después de atob
     const imageSrc = `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
-    console.log("Imagen transformada:", imageSrc); // Imprimir el src de la imagen transformada
     return imageSrc;
 };
 
@@ -25,6 +16,17 @@ export default function ListaCancionesAdmin() {
     const [canciones, setCanciones] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+    const [indiceInicio, setIndiceInicio] = useState(0);
+    const filasPorGrupo = 3;
+
+    const handleMostrarSiguientesFilas = () => {
+        setIndiceInicio(indiceInicio + filasPorGrupo);
+    };
+
+    const handleMostrarAnterioresFilas = () => {
+        setIndiceInicio(Math.max(indiceInicio - filasPorGrupo, 0));
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -103,9 +105,9 @@ export default function ListaCancionesAdmin() {
                         </tr>
                     </thead>
                     <tbody>
-                        {canciones.map((c, index) => (
+                        {canciones.slice(indiceInicio, indiceInicio + filasPorGrupo).map((c, index) => (
                             <tr key={c.id}>
-                                <td>{index + 1}</td>
+                                <td>{indiceInicio + index + 1}</td>
                                 <td>
                                     <div className="cancion__details">
                                         <img src={c.foto} alt={c.nombre} />
@@ -122,6 +124,18 @@ export default function ListaCancionesAdmin() {
                             </tr>
                         ))}
                     </tbody>
+                    <tfoot>
+                    <tr>
+                        <td colSpan="4" className="pagination-buttons">
+                            {canciones.length > indiceInicio + filasPorGrupo && (
+                                <button onClick={handleMostrarSiguientesFilas}>Mostrar siguientes</button>
+                            )}
+                            {indiceInicio > 0 && (
+                                <button onClick={handleMostrarAnterioresFilas}>Mostrar anteriores</button>
+                            )}
+                        </td>
+                    </tr>
+                </tfoot>
                 </Table> 
             </Container>
         </>
@@ -180,5 +194,23 @@ const Table = styled.table`
   }
   tbody tr {
     border-bottom: 1px solid #ddd;
+  }
+
+  .pagination-buttons {
+    text-align: center;
+  }
+  
+  button {
+    border: 1px solid #ccc;
+    background-color: transparent;
+    color: #333;
+    padding: 8px 16px;
+    margin: 0 5px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #f0f0f0;
   }
 `;

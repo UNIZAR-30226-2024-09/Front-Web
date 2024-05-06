@@ -2,25 +2,60 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from 'react-router-dom';
 import AniadirWindow from "./salir_sin_guardar";
+import { useParams } from 'react-router-dom';
 
 export default function EditCapitulo() {
   const navigate = useNavigate();
+  const { miPodcast } = useParams();
   const [capitulo, setCapitulo] = useState(null);
-  const [miPodcast, setPodcast] = useState('');
+  const [nomPodcast, setNomPodcast] = useState('');
   const [titulo, setNombre] = useState('');
   const [desc, setDescripcion] = useState('');
   const [audio, setAudio] = useState('');
 
   const [showModal, setShowModal] = useState(false);
-  const [capituloValid, setCapituloValid] = useState(false);
+  const [capituloValid, setCapituloValid] = useState(true);
 
-    useEffect(() => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+
+    /*useEffect(() => {
         if (titulo.trim() !== '' && desc.trim() !== '' && miPodcast.trim() !== '' && audio.trim() !== '') {
         setCapituloValid(true);
         } else {
         setCapituloValid(false);
         }
-    }, [titulo, desc, miPodcast, audio]);
+    }, [titulo, desc, miPodcast, audio]);*/
+
+    useEffect(() => {
+        const fetchPodcast = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch('http://127.0.0.1:8000/devolverPodcast/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ podcastId: miPodcast })
+                });
+                if (response.ok) {
+                    if (!response.ok) throw new Error("Failed to fetch song details");
+                    const podcastData = await response.json();
+                    setNomPodcast(podcastData.podcast.nombre);
+                    console.log(podcastData.podcast.nombre);
+                }else {
+                    const errorData = await response.text();
+                    throw new Error(errorData || "Error al recibir datos");
+                }
+            } catch (error) {
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPodcast();
+    }, [miPodcast]);
 
     const handleExitWithoutSave = () => {
         setShowModal(true); // Muestra el modal al hacer clic en "Salir sin guardar"
@@ -80,15 +115,13 @@ export default function EditCapitulo() {
                         <h6>Podcast:</h6>
                         <input 
                             type="podcast" 
-                            value={miPodcast} 
-                            onChange={(e) => setPodcast(e.target.value)}
-                            placeholder="Podcast" required
+                            value={nomPodcast}
                             />
                     </div>
                 </div>
                 <div className="audio">
                     <h6>Archivo de audio (.mp3):</h6>
-                    <input type="file" accept=".mp3" onChange={e=>setAudio(e.target.value)} required />
+                    <input type="file" accept=".mp3" onChange={e=>setAudio(e.target.value)}/>
                 </div>
                 <div className="input-box">
                     <h6>Descripción:</h6>

@@ -17,7 +17,7 @@ export default function EditCapitulo() {
   const [podcast, setPodcast] = useState('');
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [duracion, setDuracion] = useState('');
+  const [duracion, setDuracion] = useState(0);
 
   const [showModal, setShowModal] = useState(false);
   const [capituloValid, setCapituloValid] = useState(false);
@@ -43,7 +43,7 @@ export default function EditCapitulo() {
             setDescripcion(capituloData.capitulo.descripcion);
             setPodcast(capituloData.capitulo.miPodcast);
             fetchNomPodcast(capituloData.capitulo.miPodcast)
-            fetchDuracion(base64ToAudioSrc(capituloData.capitulo.archivoMp3));
+            //fetchDuracion(base64ToAudioSrc(capituloData.capitulo.archivoMp3));
         } catch (error) {
             setError(error.message);
         } finally {
@@ -100,7 +100,7 @@ export default function EditCapitulo() {
   };
 
   const handleCloseModalNoSave = () => {
-      navigate(`/editar_podcast/${podcast}`); //Vuelve a la lista de canciones
+      navigate(`/editar_podcast/${podcast}`); 
   };
 
     const handleCapituloEditado = async () => {

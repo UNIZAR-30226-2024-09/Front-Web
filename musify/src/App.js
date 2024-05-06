@@ -71,7 +71,7 @@ export default class App extends React.Component {
             <Route path="/lista_podcast_admin" element={<ListaPodcastAdmin />} />
             <Route path="/aniadir_podcast" element={<AniadirPodcastAdmin />} />
             <Route path="/editar_podcast/:idPodcast" element={<EditarPodcastAdmin />} />
-            <Route path="/aniadir_capitulo" element={<AniadirCapituloAdmin />} />
+            <Route path="/aniadir_capitulo/:miPodcast" element={<AniadirCapituloAdmin />} />
             <Route path="/editar_capitulo/:idCap" element={<EditarCapAdmin />} />
             <Route path="/historial" element={<Historial />} />
             <Route path="/historial/:correo" element={<Historial />} />

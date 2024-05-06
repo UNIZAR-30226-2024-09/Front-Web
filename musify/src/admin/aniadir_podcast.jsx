@@ -2,14 +2,12 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from 'react-router-dom';
 import AniadirWindow from "./salir_sin_guardar";
-import { FaClock } from "react-icons/fa";
-import { IoAddCircle } from "react-icons/io5";
 
 export default function AniadirPodcasrAdmin() {
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
     const [showModalCap, setShowModalCap] = useState(false);
-    const [podcastValid, setPodcastValid] = useState(false);
+    const [podcastValid, setPodcastValid] = useState(true);
 
     const [titulo, setTitulo] = useState('');
     const [presentador, setPresentador] = useState('');
@@ -23,13 +21,13 @@ export default function AniadirPodcasrAdmin() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    useEffect(() => {
+    /*useEffect(() => {
         if (titulo.trim() !== '' && fecha.trim() !== '' && duracion.trim() !== '' ) {
           setPodcastValid(true);
         } else {
           setPodcastValid(false);
         }
-    }, [titulo, fecha, duracion]);
+    }, [titulo, fecha, duracion]);*/
 
     useEffect(() => {
         const fetchGeneros = async () => {
@@ -61,10 +59,10 @@ export default function AniadirPodcasrAdmin() {
     };
 
     const handleCloseModalNoSave = () => {
-        navigate('/lista_podcast_admin'); //Vuelve a la lista de canciones
+        navigate('/lista_podcast_admin'); //Vuelve a la lista de podcast
     };
 
-    const handleCancionAniadida = async () => {
+    const handlePodcastAniadido = async () => {
         if(podcastValid) {
             try {
                 const response = await fetch('http://127.0.0.1:8000/crearPodcast/', {
@@ -74,7 +72,7 @@ export default function AniadirPodcasrAdmin() {
                     },
                     body: JSON.stringify({nombre: titulo, nombreFoto: imagen}),
                 });
-
+                navigate('/lista_podcast_admin');
                 if (response.ok) {
                     // Si el registro es exitoso, redirige al usuario
                     navigate('/lista_podcast_admin');
@@ -107,7 +105,7 @@ export default function AniadirPodcasrAdmin() {
                                 onChange={e=>setPresentador(e.target.value)}
                                 placeholder="Presentador" required />
                         </div>
-                        <select value={genero} onChange={e=>setGenero(e.target.value)} required>
+                        <select value={genero} onChange={e=>setGenero(e.target.value)}>
                             <option value="">Selecciona un género</option>
                             {generos.map((genero, index) => (
                                 <option key={index} value={genero}>{genero}</option>
@@ -116,16 +114,16 @@ export default function AniadirPodcasrAdmin() {
                     </div>
                     <div className="audio">
                         <h6>Archivo de audio (.mp3):</h6>
-                        <input type="file" accept=".mp3" onChange={e=>setAudio(e.target.value)} required />
+                        <input type="file" accept=".mp3" onChange={e=>setAudio(e.target.value)}/>
                     </div>
                     <div className="image">
                         <h6>Imagen:</h6>
-                        <input type="file" accept="image/*" onChange={e=>setImagen(e.target.value)} required />
+                        <input type="file" accept="image/*" onChange={e=>setImagen(e.target.value)}/>
                     </div>
                     <div className="buttons-container">
                         <button type="button" className="cancel-button" onClick={handleExitWithoutSave}>Salir sin guardar</button>
                         {showModal && <AniadirWindow onClose={handleCloseModal} ruta={handleCloseModalNoSave} />}
-                        <button type="submit" className="save-button" onClick={handleCancionAniadida}>Guardar</button>
+                        <button type="submit" className="save-button" onClick={handlePodcastAniadido}>Guardar</button>
                     </div>
                 </form>
             </div>

@@ -208,6 +208,30 @@ export default function EditarCancion() {
         setArtistas(nuevosArtistas);
     };
 
+    const handleEliminarCancion = async () => {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/eliminarCancion/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ cancionId }),
+            });
+    
+            if (response.ok) {
+                // Borrado exitoso
+                navigate('/lista_canciones_admin');
+                console.log('Canción eliminada correctamente en la base de datos');
+            } else {
+                // Maneja errores de respuesta
+                console.error('Error al eliminar la canción en la base de datos');
+            }
+        } catch (error) {
+            // Maneja errores de red u otros
+            console.error('Error de red al eliminar la canción:', error);
+        }
+    }
+
     return (
         <>
           <Container>
@@ -273,6 +297,7 @@ export default function EditarCancion() {
                     <div className="buttons-container">
                         <button type="button" className="cancel-button" onClick={handleExitWithoutSave}>Salir sin guardar</button>
                         {showModal && <AniadirWindow onClose={handleCloseModal} ruta={handleCloseModalNoSave} />}
+                        <button type="submit" className="delete-button" onClick={handleEliminarCancion}>Eliminar</button>
                         <button type="submit" className="save-button" onClick={handleCancionAniadida}>Guardar</button>
                     </div>
                 </form>
@@ -409,6 +434,11 @@ const Container = styled.div`
 
   .save-button {
     background-color: #4CAF50; /* Verde */
+    color: #fff;
+  }
+
+  .delete-button {
+    background-color: #808080; /* Gris */
     color: #fff;
   }
 `;

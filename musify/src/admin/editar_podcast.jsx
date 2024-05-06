@@ -88,13 +88,16 @@ export default function EditarPodcasrAdmin() {
                 if (!response.ok) throw new Error("Failed to fetch chapters");
                 const chaptersData = await response.json();
                 setCapitulos(chaptersData.capitulos);
-                chaptersData.capitulos.forEach((chapter, index) => {
-                    fetchAudioDuration(base64ToAudioSrc(chapter.archivoMp3))
-                        .then(duration => setDuraciones(prev => ({ ...prev, [index]: duration })))
-                        .catch(console.error);
-                });
-                const nombresCapitulos = chaptersData.capitulos.map(capitulo => capitulo.nombre);
-                setNomCapitulos(nombresCapitulos);
+                console.log(chaptersData.capitulos);
+                if (chaptersData.capitulos !== undefined) {
+                    chaptersData.capitulos.forEach((chapter, index) => {
+                        fetchAudioDuration(base64ToAudioSrc(chapter.archivoMp3))
+                            .then(duration => setDuraciones(prev => ({ ...prev, [index]: duration })))
+                            .catch(console.error);
+                    });
+                    const nombresCapitulos = chaptersData.capitulos.map(capitulo => capitulo.nombre);
+                    setNomCapitulos(nombresCapitulos);
+                }
             } catch (error) {
                 setError(`Failed to fetch chapters: ${error.message}`);
             } finally {
@@ -242,11 +245,11 @@ export default function EditarPodcasrAdmin() {
                 console.log('Podcast eliminado correctamente en la base de datos');
             } else {
                 // Maneja errores de respuesta
-                console.error('Error al actualizar la canción en la base de datos');
+                console.error('Error al eliminar el podcast en la base de datos');
             }
         } catch (error) {
             // Maneja errores de red u otros
-            console.error('Error de red al actualizar la canción:', error);
+            console.error('Error de red al eliminar el podcast:', error);
         }
     }
 
@@ -275,10 +278,10 @@ export default function EditarPodcasrAdmin() {
                                     "No hay presentadores"
                                 )}
                                 onChange={e=>setNombre(e.target.value)}
-                                placeholder="Presentadores" required 
+                                placeholder="Presentadores" 
                             />
                         </div>
-                        <select value={generosPodcast} onChange={e=>setGenerosPodcast(e.target.value)} required>
+                        <select value={generosPodcast} onChange={e=>setGenerosPodcast(e.target.value)} >
                             <option value="">Selecciona un género</option>
                             {generos.map((genero, index) => (
                                 <option key={index} value={genero}>{genero}</option>
@@ -304,24 +307,30 @@ export default function EditarPodcasrAdmin() {
                         <div className="chapter-list-item">Editar</div>
                     </div>
                     <div className="chapter-list-container">
-                        <div className="chapter-list-body">
-                            {capitulos.map((capitulo, index) => (
+                    <div className="chapter-list-body">
+                        {capitulos !== undefined ? (
+                            capitulos.map((capitulo, index) => (
                                 <div key={capitulo.id} className="chapter-list-row">
                                     <div className="chapter-list-item">{index + 1}</div>
                                     <div className="chapter-list-item">{nomCapitulos[index]}</div>
                                     <div className="chapter-list-item">{formatDuration(duraciones[index])}</div>
                                     <div className="chapter-list-item">
-                                    <Link to={`/editar_capitulo/${capitulo.id}`}>
-                                        <FaCog className="capitulo__settings"/>
-                                    </Link>
+                                        <Link to={`/editar_capitulo/${capitulo.id}`}>
+                                            <FaCog className="capitulo__settings" />
+                                        </Link>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                        <button type="button" className="chapter-button"  onClick={handleAddCap}>
-                            <IoAddCircle className="icon"/>
+                            ))
+                        ) : (
+                            <div className="no-chapters-message">El podcast no tiene capítulos</div>
+                        )}
+                    </div>
+                    <Link to={`/aniadir_capitulo/${idPodcast}`}>
+                        <button type="button" className="chapter-button" onClick={handleAddCap}>
+                            <IoAddCircle className="icon" />
                             Añadir capítulo
                         </button>
+                    </Link>
                     </div>
                     <div className="buttons-container">
                         <button type="button" className="cancel-button" onClick={handleExitWithoutSave}>Salir sin guardar</button>
