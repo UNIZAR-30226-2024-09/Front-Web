@@ -3,8 +3,8 @@ import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { AiFillClockCircle } from 'react-icons/ai';
 import { FaPlay, FaPause, FaLock, FaUnlock, FaUserPlus, FaTrash } from 'react-icons/fa';
+import { MdOutlineAddToPhotos } from 'react-icons/md';
 import { useTrack } from "../TrackContext/trackContext";
-import { MdQueue } from 'react-icons/md';
 import Modal from '../agnadirColaboradorModal/agnadirColaborador';
 
 const base64ToImageSrc = (base64) => {
@@ -35,35 +35,6 @@ export default function Body() {
         setShowDeleteConfirm(true);
     };    
 
-    const addToQueue = async (song) => {
-        // Asumimos que 'userEmail' está disponible en algún lugar en el estado de la aplicación
-        const userEmail = 'zineb@gmail.com';  // Deberías obtener esto dinámicamente si es posible
-    
-        try {
-            const response = await fetch('http://localhost:8000/agnadirCancionCola/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': 'DzhprC2SlIAP3lSTMjqcHy40R5NlRDtSHhTpdkNtKYZ38l6wQP798n4jWSyvqcAq'  // Asegúrate de manejar esto dinámicamente si es necesario
-                },
-                body: JSON.stringify({
-                    correo: userEmail,
-                    cancionId: song.id
-                })
-            });
-    
-            if (!response.ok) {
-                throw new Error('Failed to add song to queue');
-            }
-    
-            const data = await response.json();
-            alert('Canción añadida a la cola de reproducción con éxito');
-        } catch (error) {
-            console.error('Error adding song to queue:', error);
-            alert('Error al añadir la canción a la cola de reproducción.');
-        }
-    };
-    
     const handleAddCollaborator = async () => {
         if (!collaboratorEmail) {
             alert("Por favor, introduce un correo válido.");
@@ -92,25 +63,21 @@ export default function Body() {
                 body: JSON.stringify({ playlistId })
             });
             const data = await response.json();
-            if (response.ok) {
-                if (data.canciones) {
-                    const enrichedSongs = await Promise.all(data.canciones.map(async song => {
-                        const imageUrl = base64ToImageSrc(song.foto);
-                        const audioUrl = base64ToAudioSrc(song.archivoMp3);
-                        const artistas = await fetchArtistsForSong(song.id);
-                        const album = await fetchAlbumForSong(song.miAlbum);  // Usar miAlbum para obtener el nombre del álbum
-                        const duration = await fetchAudioDuration(audioUrl).catch(() => 'Duración Desconocida');
-                        return { ...song, imageUrl, audioUrl, artistas, album, duration: formatDuration(duration) };
-                    }));
-                    setSongs(enrichedSongs);
-                } else {
-                    setMessage('La playlist no tiene canciones');
-                }
+            if (response.ok && data.canciones) {
+                const enrichedSongs = await Promise.all(data.canciones.map(async song => {
+                    const imageUrl = base64ToImageSrc(song.foto);
+                    const audioUrl = base64ToAudioSrc(song.archivoMp3);
+                    const artistas = await fetchArtistsForSong(song.id);
+                    const album = await fetchAlbumForSong(song.miAlbum);
+                    const duration = await fetchAudioDuration(audioUrl).catch(() => 'Duración Desconocida');
+                    return { ...song, imageUrl, audioUrl, artistas, album, duration: formatDuration(duration) };
+                }));
+                setSongs(enrichedSongs);
             } else {
-                console.error('Failed to fetch data for playlist');
+                console.error('Error fetching playlist songs:', data);
                 setMessage('Error al cargar las canciones de la playlist.');
             }
-        };        
+        };    
         fetchPlaylistSongs();
     }, [playlistId]);
 
@@ -131,7 +98,14 @@ export default function Body() {
             body: JSON.stringify({ cancionId: songId })
         });
         const data = await response.json();
-        return response.ok ? data.artistas.map(artista => artista.nombre).join(', ') : 'Artista Desconocido';
+        console.log('fetchArtistsForSong - Data:', data);
+    
+        if (!data.artistas) {
+            console.error('No artists found in response:', data);
+            return 'Artista Desconocido';
+        }
+    
+        return data.artistas.map(artista => artista.nombre).join(', ');
     };
 
     const fetchAlbumForSong = async (albumId) => {
@@ -221,6 +195,37 @@ export default function Body() {
         fetchPlaylistName();
     }, [playlistId]);
 
+    const addToQueue = async (correo, cancionId) => {
+        try {
+            const response = await fetch('http://localhost:8000/agnadirCancionCola/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': 'S7CtjKi19jEVUdMkUxKEVridb15UBJOrWPet5s3Cyz39Zd0XY3rBmgiwgOQ4aiVZ', // Adjust as needed
+                    'accept': 'application/json'
+                },
+                body: JSON.stringify({ correo, cancionId })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert(data.message); // Notify the user of success
+            } else {
+                console.error('Failed to add song to queue:', data);
+                alert(data.error || 'Error adding song to queue.');
+            }
+        } catch (error) {
+            console.error('Error adding song to queue:', error);
+            alert('Error adding song to queue.');
+        }
+    };
+
+    const handleAddToQueue = async (songId) => {
+        // Replace with the actual email you want to use
+        const email = 'zineb@gmail.com';
+        await addToQueue(email, songId);
+    };
+    
+
     const togglePublic = async () => {
         const newPublicState = !isPublic;
         setIsPublic(newPublicState);
@@ -267,35 +272,34 @@ export default function Body() {
 
     return (
         <Container>
-        {isPublic  && (
-            <>
-                <div className="playlist">
-                    <div className="image">
-                        <img src="/imagenes/playlist.jpg" alt="Descripción" />
-                    </div>
-                    <div className="details">
-                        <span className="type">PLAYLIST</span>
-                        <h1 className="title">{playlistName || 'Loading...'}</h1>
-                        <div className='iconos'>
-                            <IconButton onClick={() => setIsAddingCollaborator(true)}>
-                                <FaUserPlus size="1.3em" />  
-                            </IconButton>
-                            <Modal show={isAddingCollaborator} onClose={() => setIsAddingCollaborator(false)}>
-                                <input
-                                    type="email"
-                                    value={collaboratorEmail}
-                                    onChange={e => setCollaboratorEmail(e.target.value)}
-                                    placeholder="Correo del colaborador"
-                                />
-                                <button onClick={handleAddCollaborator}>Confirmar</button>
-                            </Modal>
-                            <div onClick={togglePublic}>
-                                {isPublic ? <FaUnlock size="2em" /> : <FaLock size="2em" />}
-                            </div>
-                        </div>
+            <div className="playlist">
+            <div className="image">
+                <img src="/imagenes/playlist.jpg" alt="Descripción" />
+                
+            </div>
+            <div className="details">
+                <span className="type">PLAYLIST</span>
+                <h1 className="title">{playlistName || 'Loading...'}</h1>  {/* Mostrar el nombre de la playlist */}
+                <div className='iconos'>
+                    <IconButton onClick={() => setIsAddingCollaborator(true)}>
+                        <FaUserPlus size="1.3em" />  
+                    </IconButton>
+                    <Modal show={isAddingCollaborator} onClose={() => setIsAddingCollaborator(false)}>
+                        <input
+                        type="email"
+                        value={collaboratorEmail}
+                        onChange={e => setCollaboratorEmail(e.target.value)}
+                        placeholder="Correo del colaborador"
+                        />
+                        <button onClick={handleAddCollaborator}>Confirmar</button>
+                    </Modal>
+                    <div onClick={togglePublic}>
+                        {isPublic ? <FaUnlock size="2em" /> : <FaLock size="2em" />}
                     </div>
                 </div>
-                <div className="list">
+            </div>
+        </div>
+            <div className="list">
                 <div className="header__row">
                     <div className="col"><span>#</span></div>
                     <div className="col"><span>TITULO</span></div>
@@ -328,25 +332,30 @@ export default function Body() {
                             <div className="col"><span>{song.album}</span></div>
                             <div className="col">
                                 <span>{song.duration}</span>
-                                <MdQueue size="1em" style={{ cursor: 'pointer', marginLeft: '10px' }} onClick={(e) => {
-                                    e.stopPropagation(); // Evita que el evento de clic en la fila se dispare
-                                    addToQueue(song);
-                                }} />
-                                <FaTrash size="1em" style={{ cursor: 'pointer', marginLeft: '40px' }} onClick={(e) => {
-                                    e.stopPropagation();
-                                    removeSongFromPlaylist(song.id);
-                                }} />
-                                </div>
+                                <MdOutlineAddToPhotos // Add new icon here
+                                    size="1em"
+                                    style={{ cursor: 'pointer', marginLeft: '20px' }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAddToQueue(song.id);
+                                    }}
+                                />
+                                <FaTrash
+                                    size="1em"
+                                    style={{ cursor: 'pointer', marginLeft: '20px' }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        removeSongFromPlaylist(song.id);
+                                    }}
+                                />
                             </div>
-                        ))
-                    ) : (
-                        <div className="row">{message}</div>
-                    )}
-                </div>
-            </>
-        )}
-    </Container>
-    
+                        </div>
+                    ))
+                ) : (
+                    <div className="row">{message}</div>
+                )}
+            </div>
+        </Container>
     );
 }
 
