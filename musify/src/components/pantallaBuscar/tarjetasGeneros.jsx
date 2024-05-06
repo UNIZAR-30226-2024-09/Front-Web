@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { FaMusic, FaGuitar, FaHeadphones, FaRegSmileBeam, FaRocketchat, FaRegGrinStars } from 'react-icons/fa';
+import { FaMusic, FaGuitar, FaHeadphones, FaRegSmileBeam, FaRocketchat, FaRegGrinStars, FaPodcast } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 const base64ToImageSrc = (base64) => {
@@ -29,55 +29,104 @@ export default function Cards() {
         { title: 'Electro', icon: <FaHeadphones /> },
         { title: 'Pop', icon: <FaRegSmileBeam /> },
         { title: 'Rock', icon: <FaRocketchat /> },
-        { title: 'Reggaeton', icon: <FaRegGrinStars /> }
+        { title: 'Reggaeton', icon: <FaRegGrinStars /> },
+        { title: 'Ciencias', icon: <FaPodcast />, isPodcast: true },
+        { title: 'Cultura', icon: <FaPodcast />, isPodcast: true },
+        { title: 'Inglés', icon: <FaPodcast />, isPodcast: true },
+        { title: 'Psicología', icon: <FaPodcast />, isPodcast: true }
     ]);
     const [songs, setSongs] = useState({});
+    const [podcasts, setPodcasts] = useState({});
     const [view, setView] = useState('cards');
     const [activeGenre, setActiveGenre] = useState('');
     const [hoverIndex, setHoverIndex] = useState(-1);
+    const [isPodcastGenre, setIsPodcastGenre] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (view === 'songs' && !songs[activeGenre]) {
+        if (view === 'songs' && !isPodcastGenre && !songs[activeGenre]) {
             const fetchSongs = async (genre) => {
-                const response = await fetch(`http://127.0.0.1:8000/filtrarCancionesPorGenero/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ genero: genre })
-                });
-                const data = await response.json();
-                if (response.ok) {
-                    const songsWithArtists = await Promise.all(data.canciones.map(async (song) => {
-                        return {
+                try {
+                    const response = await fetch(`http://127.0.0.1:8000/filtrarCancionesPorGenero/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ genero: genre })
+                    });
+                    const data = await response.json();
+                    if (response.ok && data.canciones) {
+                        const songsWithArtists = data.canciones.map((song) => ({
                             ...song,
                             foto: base64ToImageSrc(song.foto),
                             archivoMp3: base64ToAudioSrc(song.archivoMp3),
-                        };
-                    }));
-                    setSongs(prev => ({
-                        ...prev,
-                        [genre]: songsWithArtists
-                    }));
-                } else {
-                    console.error('Failed to fetch songs for genre:', genre);
+                        }));
+                        setSongs(prev => ({
+                            ...prev,
+                            [genre]: songsWithArtists
+                        }));
+                    } else {
+                        console.error('Failed to fetch songs for genre:', genre, data);
+                    }
+                } catch (error) {
+                    console.error('Error fetching songs:', error);
                 }
             };
             fetchSongs(activeGenre);
         }
-    }, [activeGenre, view, songs]);      
+    }, [activeGenre, view, songs, isPodcastGenre]);
+
+    useEffect(() => {
+        if (view === 'songs' && isPodcastGenre && !podcasts[activeGenre]) {
+            const fetchPodcasts = async (genre) => {
+                try {
+                    const response = await fetch(`http://127.0.0.1:8000/filtrarPodcastsPorGenero/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ genero: genre })
+                    });
+                    const data = await response.json();
+                    if (response.ok && data.podcasts) {
+                        const podcastsWithDetails = data.podcasts.map((podcast) => ({
+                            ...podcast,
+                            foto: base64ToImageSrc(podcast.foto),
+                        }));
+                        setPodcasts(prev => ({
+                            ...prev,
+                            [genre]: podcastsWithDetails
+                        }));
+                    } else {
+                        console.error('Failed to fetch podcasts for genre:', genre, data);
+                    }
+                } catch (error) {
+                    console.error('Error fetching podcasts:', error);
+                }
+            };
+            fetchPodcasts(activeGenre);
+        }
+    }, [activeGenre, view, podcasts, isPodcastGenre]);
 
     const handleSongClick = (index, genre) => {
-        const song = songs[genre][index];
-        console.log("Navigating to song ID:", song.id); 
-        if(song.id) {
-            navigate(`/musifyc/${song.id}`);
+        if (isPodcastGenre) {
+            const podcast = podcasts[genre][index];
+            console.log("Navigating to podcast ID:", podcast.id); 
+            if(podcast.id) {
+                navigate(`/musifyp/${podcast.id}`);
+            } else {
+                console.error("Error: podcast ID is undefined.");
+            }
         } else {
-            console.error("Error: song ID is undefined.");
+            const song = songs[genre][index];
+            console.log("Navigating to song ID:", song.id); 
+            if(song.id) {
+                navigate(`/musifyc/${song.id}`);
+            } else {
+                console.error("Error: song ID is undefined.");
+            }
         }
     };
-    
 
     return (
         <CardsContainer>
@@ -89,28 +138,29 @@ export default function Cards() {
                             style={{ background: gradients[i % gradients.length] }}
                             onClick={() => {
                                 setActiveGenre(card.title);
+                                setIsPodcastGenre(!!card.isPodcast);
                                 setView('songs');
                             }}
                         >
                             <IconWrapper>{card.icon}</IconWrapper>
                             <CardTitle>{card.title}</CardTitle>
-                            <CardText>{'Clic para ver canciones'}</CardText>
+                            <CardText>{card.text || 'Descubre más aquí'}</CardText>
                         </Card>
                     ))}
                 </CardsWrapper>
             ) : (
                 <SongsWrapper>
-                    {songs[activeGenre] && songs[activeGenre].map((song, index) => (
+                    {(isPodcastGenre ? podcasts : songs)[activeGenre] && (isPodcastGenre ? podcasts : songs)[activeGenre].map((item, index) => (
                         <SongCard
                             key={index}
-                            onMouseEnter={() => setHoverIndex(-1)}
+                            onMouseEnter={() => setHoverIndex(index)}
                             onMouseLeave={() => setHoverIndex(-1)}
                             onClick={() => handleSongClick(index, activeGenre)}
                         >
-                            <SongImage src={song.foto} alt={song.nombre} />
-                            <SongName>{song.nombre}</SongName>
+                            <SongImage src={item.foto} alt={item.nombre} />
+                            <SongName>{item.nombre}</SongName>
                         </SongCard>
-                     ))}
+                    ))}
                 </SongsWrapper>
             )}
         </CardsContainer>
