@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useTrack } from "../TrackContext/trackContext";
+import { FaTrashAlt } from 'react-icons/fa';
 
 const base64ToImageSrc = (base64) => {
   const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
@@ -10,69 +11,50 @@ const base64ToImageSrc = (base64) => {
 export default function Body_cola() {
   const [songs, setSongs] = useState([]);
   const [message, setMessage] = useState('');
-  const { setTrackList } = useTrack();
+  const { setTrackList, setTrackIndex, updateTrack, play } = useTrack();
+
+  const startPlayingQueue = () => {
+    if (songs.length > 0) {
+      setTrackIndex(0);
+      updateTrack(songs[0]);
+      play();
+    }
+  };
 
   useEffect(() => {
     const fetchUserDetails = async () => {
-    const token = localStorage.getItem('userToken');
-    try {
+      const token = localStorage.getItem('userToken');
       const response = await fetch('http://127.0.0.1:8000/obtenerUsuarioSesionAPI/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          token: token,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
       });
       const data = await response.json();
-      if (response.ok) {
-        const email = data.correo;
-        fetchQueueSongs(email);
-      } else {
-        console.error('Failed to fetch user details:', data);
-      }
-    } catch (error) {
-      console.error('Error fetching user details:', error);
-    }
+      if (response.ok) fetchQueueSongs(data.correo);
     };
-    
-    if (localStorage.getItem('userToken')) {
-      fetchUserDetails();
-    }
-  }, []);
+
+    if (localStorage.getItem('userToken')) fetchUserDetails();
+  }, [setTrackList]);
 
   const fetchQueueSongs = async (email) => {
-    const response = await fetch(`http://127.0.0.1:8000/listarCola/`, {
+    const response = await fetch('http://127.0.0.1:8000/listarCola/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ correo: email })
+      body: JSON.stringify({ correo: email }),
     });
     const data = await response.json();
-    console.log("Respuesta del servidor:", data);
     if (response.ok) {
-      if (data.queue && data.queue.length > 0) {
-        console.log("Canciones recibidas:", data.queue);
-        const enrichedSongs = await Promise.all(data.queue.map(async (song) => {
-          const imageUrl = base64ToImageSrc(song.foto);
-          const artistas = await fetchArtistsForSong(song.id);
-          return {
-            ...song,
-            imageUrl,
-            artistas
-          };
-        }));
-        console.log("Canciones procesadas:", enrichedSongs);
-        setSongs(enrichedSongs);
-        setTrackList(enrichedSongs);
-      } else {
-        setMessage('No hay canciones en la cola de reproducción');
-      }
+      const enrichedSongs = data.queue.map(song => ({
+        ...song,
+        imageUrl: base64ToImageSrc(song.foto),
+      }));
+      setSongs(enrichedSongs);
+      setTrackList(enrichedSongs);
     } else {
-      console.error('Failed to fetch data for queue');
-      setMessage('Error al obtener las canciones de la cola de reproducción');
+      console.error('Failed to fetch queue songs');
     }
   };
+
   const fetchArtistsForSong = async (songId) => {
     const response = await fetch(`http://localhost:8000/listarArtistasCancion/`, {
       method: 'POST',
@@ -85,12 +67,51 @@ export default function Body_cola() {
     const data = await response.json();
     return response.ok ? data.artistas.map(artista => artista.nombre).join(', ') : 'Artista Desconocido';
   };
+
+  const removeSongFromQueue = async (songId) => {
+    const email = "zineb@gmail.com"; // Replace with actual email logic
+  
+    // Construct the payload
+    const payload = {
+      correo: email,
+      cancionId: songId,
+    };
+  
+    // Log the payload to the console
+    console.log("Sending payload to server:", payload);
+  
+    try {
+      const response = await fetch('http://127.0.0.1:8000/eliminarCancionCola/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add additional headers if needed
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      if (response.ok) {
+        // Successfully removed from queue
+        setSongs(prevSongs => prevSongs.filter(song => song.id !== songId));
+        setTrackList(prevSongs => prevSongs.filter(song => song.id !== songId));
+      } else {
+        console.error('Failed to delete song from queue:', await response.json());
+      }
+    } catch (error) {
+      console.error('Error deleting song from queue:', error);
+    }
+  };
+  
+  
+
   return (
     <Container>
         <div className="sonando">
           <div className="details">
             <h1 className="title">SONANDO</h1>
-
+            <div className="start-playback">
+              <button onClick={startPlayingQueue}>Play Queue</button>
+            </div>
           </div>
         </div>
         <div className="list">
@@ -111,33 +132,54 @@ export default function Body_cola() {
           </div>
         </div>
         <div className="tracks">
-                {songs.length > 0 ? (
-                    songs.map((song, index) => (
-                        <div className="row" key={song.id}>
-                            <div className="col"><span>{index + 1}</span></div>
-                            <div className="col detail">
-                                <div className="image">
-                                    <img src={song.imageUrl} alt={song.nombre} style={{ width: "50px", height: "auto" }} />
-                                </div>
-                                <div className="info">
-                                    <span className="name">{song.nombre}</span>
-                                    <span>{song.artistas || 'Artista Desconocido'}</span>
-                                </div>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <div className="row">{message}</div>
-                )}
-            </div>
-      </Container>
-    );
+            {songs.length > 0 ? (
+              songs.map((song, index) => (
+                <div className="row" key={song.id}>
+                  <div className="col"><span>{index + 1}</span></div>
+                  <div className="col detail">
+                    <div className="image">
+                      <img src={song.imageUrl} alt={song.nombre} style={{ width: "50px", height: "auto" }} />
+                    </div>
+                    <div className="info">
+                      <span className="name">{song.nombre}</span>
+                      <span>{song.artistas || 'Artista Desconocido'}</span>
+                    </div>
+                  </div>
+                  <div className="col">
+                    <FaTrashAlt
+                      onClick={() => removeSongFromQueue(song.id)} // Add onClick to delete the song
+                      style={{ cursor: 'pointer', color: 'red' }}
+                    />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="row">{message}</div>
+            )}
+          </div>
+        </Container>
+      );
   }
 
   const Container = styled.div`
   color: #fff;
   margin-top: 10px;
   margin-left: 10px;
+
+  .start-playback {
+    margin-bottom: 20px;
+    button {
+      background-color: #1db954;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1aa34a;
+    }
+  }
   .image {
       position: relative;
       img {

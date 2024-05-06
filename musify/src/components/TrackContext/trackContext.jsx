@@ -119,19 +119,21 @@ export const TrackProvider = ({ children }) => {
         actualizarEstadoCancion();
     };
     
-    const setTrackList = (list) => {
-        console.log("Setting track list:", list);  // Imprimir el listado de pistas
-        setTracks(list);
-        if (list.length > 0 && trackIndex === -1) {
-            setTrackIndex(0);
+    const updateTrack = (track) => {
+        const src = base64ToAudioSrc(track.archivoMp3);
+        if (src) {
+            audioRef.current.src = src;
+            setCurrentTrack({ ...track, src });
+        } else {
+            console.error('Invalid audio source:', track.archivoMp3);
         }
     };
 
-    const updateTrack = (track) => {
-        if (!currentTrack || currentTrack.src !== track.src) {
-            audioRef.current.src = track.src;
-            setCurrentTrack(track);
-            setCurrentTrackId(track.id);
+    const setTrackList = (list) => {
+        setTracks(list);
+        if (list.length > 0) {
+            setTrackIndex(0);
+            updateTrack(list[0]);
         }
     };
 
