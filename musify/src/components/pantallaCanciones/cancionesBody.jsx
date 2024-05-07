@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { AiFillClockCircle } from 'react-icons/ai';
 import { FaPlay, FaPause } from 'react-icons/fa';
+import { MdOutlineAddToPhotos } from 'react-icons/md';
 import Modal from '../agnadirCancionPlaylistModal/agnadirCancion';
 import { RiMenuAddFill } from "react-icons/ri";
 import { useTrack } from "../TrackContext/trackContext";
@@ -146,6 +147,37 @@ const SongDetails = () => {
         };
         fetchSongDetails();
     }, [cancionId]); 
+
+    const addToQueue = async (correo, cancionId) => {
+        try {
+            const response = await fetch('http://localhost:8000/agnadirCancionCola/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': 'S7CtjKi19jEVUdMkUxKEVridb15UBJOrWPet5s3Cyz39Zd0XY3rBmgiwgOQ4aiVZ', // Adjust as needed
+                    'accept': 'application/json'
+                },
+                body: JSON.stringify({ correo, cancionId })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert(data.message); // Notify the user of success
+            } else {
+                console.error('Failed to add song to queue:', data);
+                alert(data.error || 'Error adding song to queue.');
+            }
+        } catch (error) {
+            console.error('Error adding song to queue:', error);
+            alert('Error adding song to queue.');
+        }
+    };
+
+    const handleAddToQueue = async (songId) => {
+        // Replace with the actual email you want to use
+        const email = 'zineb@gmail.com';
+        await addToQueue(email, songId);
+    };
+    
 
 
     // Función para añadir una canción a la playlist
@@ -298,7 +330,16 @@ const SongDetails = () => {
                         </div>
                     </div>
                     <div className="col"><span>{album}</span></div>
-                    <div className="col"><span>{duration}</span></div>
+                    <div className="col"><span>{duration}
+                    <MdOutlineAddToPhotos // Add new icon here
+                                    size="1em"
+                                    style={{ cursor: 'pointer', marginLeft: '20px' }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAddToQueue(cancionId);
+                                    }}
+                                />
+                    </span></div>
                 </div>
             </div>
         </Container>

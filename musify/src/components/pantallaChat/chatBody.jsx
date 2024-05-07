@@ -32,7 +32,7 @@ function Chat() {
     useEffect(() => {
         // Cambia el host y puerto según tu configuración de Django y asegúrate de incluir el nombre de la sala
         // Por ejemplo, si tu servidor Django corre en localhost en el puerto 8000 y la sala se llama "public"
-        websocket.current = new WebSocket('ws://localhost:8000/ws/chatroom/public/');
+        websocket.current = new WebSocket('ws://localhost:8000/ws/chat/1/');
     
         websocket.current.onmessage = (event) => {
             const newMessage = JSON.parse(event.data);

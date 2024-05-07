@@ -25,15 +25,15 @@ const gradients = [
 export default function Cards() {
     const [cards] = useState([
         { title: 'Rap', icon: <FaMusic /> },
-        { title: 'Clásica', icon: <FaGuitar /> },
+        { title: 'Clasica', icon: <FaGuitar /> },
         { title: 'Electro', icon: <FaHeadphones /> },
         { title: 'Pop', icon: <FaRegSmileBeam /> },
         { title: 'Rock', icon: <FaRocketchat /> },
         { title: 'Reggaeton', icon: <FaRegGrinStars /> },
         { title: 'Ciencias', icon: <FaPodcast />, isPodcast: true },
         { title: 'Cultura', icon: <FaPodcast />, isPodcast: true },
-        { title: 'Inglés', icon: <FaPodcast />, isPodcast: true },
-        { title: 'Psicología', icon: <FaPodcast />, isPodcast: true }
+        { title: 'Ingles', icon: <FaPodcast />, isPodcast: true },
+        { title: 'Psicologia', icon: <FaPodcast />, isPodcast: true }
     ]);
     const [songs, setSongs] = useState({});
     const [podcasts, setPodcasts] = useState({});
