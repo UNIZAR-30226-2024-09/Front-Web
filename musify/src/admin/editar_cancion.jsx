@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import AniadirWindow from "./salir_sin_guardar";
+import { useAccordionButton } from "react-bootstrap";
 
 const base64ToImageSrc = (base64) => {
     const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
@@ -23,10 +24,11 @@ export default function EditarCancion() {
     const[nombre, setNombre] = useState('');
     const[artistas, setArtistas] = useState([]);
     const[album, setAlbum] = useState('');
-    const[genero, setGenero] = useState('');
+    const[generosCancion, setGenerosCancion] = useState({});
     const[foto, setFoto] = useState(null);
     const[audio, setAudio] = useState(null);
     const[duracion, setDuracion] = useState('');
+    const[generos, setGeneros] = useState([]);
 
     const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
     //const [modificado, setModificado] = useState(false);
@@ -54,7 +56,9 @@ export default function EditarCancion() {
                 setAudio(base64ToAudioSrc(data.cancion.archivoMp3));
                 fetchArtistas();
                 fetchAlbum(data.cancion.miAlbum);
-                fetchDuracion(base64ToAudioSrc(data.cancion.archivoMp3))
+                fetchGenerosCancion(cancionId);
+                fetchDuracion(base64ToAudioSrc(data.cancion.archivoMp3));
+                fetchGeneros();
             } catch (error) {
                 setError(error.message);
             } finally {
@@ -94,6 +98,42 @@ export default function EditarCancion() {
                 setAlbum(albumData.album.nombre);
             } catch (error) {
                 setError(`Failed to fetch album: ${error.message}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const fetchGenerosCancion = async (idCancion) => {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/listarGenerosCancion/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cancionId: idCancion })
+                });
+                if (!response.ok) throw new Error("Failed to fetch album");
+                const cancionData = await response.json();
+                const nombresGeneros = cancionData.generos.map(genero => genero.nombre);
+                setGenerosCancion(nombresGeneros);
+            } catch (error) {
+                setError(`Failed to fetch generos de la cancion: ${error.message}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const fetchGeneros = async () => {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/generosCanciones/`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                if (!response.ok) throw new Error("Failed to fetch album");
+                const generosData = await response.json();
+                const nombresGeneros = generosData.generos.map(genero => genero.nombre);
+                setGeneros(nombresGeneros);
+            } catch (error) {
+                setError(`Failed to fetch generos de canciones: ${error.message}`);
             } finally {
                 setLoading(false);
             }
@@ -168,6 +208,30 @@ export default function EditarCancion() {
         setArtistas(nuevosArtistas);
     };
 
+    const handleEliminarCancion = async () => {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/eliminarCancion/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ cancionId }),
+            });
+    
+            if (response.ok) {
+                // Borrado exitoso
+                navigate('/lista_canciones_admin');
+                console.log('Canción eliminada correctamente en la base de datos');
+            } else {
+                // Maneja errores de respuesta
+                console.error('Error al eliminar la canción en la base de datos');
+            }
+        } catch (error) {
+            // Maneja errores de red u otros
+            console.error('Error de red al eliminar la canción:', error);
+        }
+    }
+
     return (
         <>
           <Container>
@@ -211,12 +275,11 @@ export default function EditarCancion() {
                                 onChange={(e) => setDuracion(e.target.value)}
                                 />
                         </div>
-                        <select value={genero} onChange={e=>setGenero(e.target.value)} required>
+                        <select value={generosCancion} onChange={e=>setGenerosCancion(e.target.value)} required>
                             <option value="">Selecciona un género</option>
-                            <option value="Rock">Rock</option>
-                            <option value="Pop">Pop</option>
-                            <option value="Hip-Hop">Hip-Hop</option>
-                            {/* Otros géneros */}
+                            {generos.map((genero, index) => (
+                                <option key={index} value={genero}>{genero}</option>
+                            ))}
                         </select>
                     </div>
                     <div className="audio">
@@ -234,6 +297,7 @@ export default function EditarCancion() {
                     <div className="buttons-container">
                         <button type="button" className="cancel-button" onClick={handleExitWithoutSave}>Salir sin guardar</button>
                         {showModal && <AniadirWindow onClose={handleCloseModal} ruta={handleCloseModalNoSave} />}
+                        <button type="submit" className="delete-button" onClick={handleEliminarCancion}>Eliminar</button>
                         <button type="submit" className="save-button" onClick={handleCancionAniadida}>Guardar</button>
                     </div>
                 </form>
@@ -370,6 +434,11 @@ const Container = styled.div`
 
   .save-button {
     background-color: #4CAF50; /* Verde */
+    color: #fff;
+  }
+
+  .delete-button {
+    background-color: #808080; /* Gris */
     color: #fff;
   }
 `;

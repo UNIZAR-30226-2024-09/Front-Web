@@ -5,7 +5,7 @@ const AniadirWindow = ({ onClose, ruta }) => {
   return (
       <Backdrop onClick={onClose}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
-          <h5>¿Está seguro de que quiere salir sin gurdar la información sobre la canción?</h5>
+          <h5>¿Está seguro de que quiere salir sin gurdar la información?</h5>
             <ButtonContainer>
                 <NoButton onClick={onClose}>No</NoButton>
                 <SiButton onClick={ruta}>Sí</SiButton>

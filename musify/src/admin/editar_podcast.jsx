@@ -28,9 +28,10 @@ export default function EditarPodcasrAdmin() {
 
     const [nombre, setNombre] = useState('');
     const [presentadores, setPresentadores] = useState([]);
-    const [genero, setGenero] = useState([]);
+    const [generosPodcast, setGenerosPodcast] = useState([]);
     const [foto, setFoto] = useState(null);
     const [audio, setAudio] = useState(null);
+    const [generos, setGeneros] = useState([]);
 
     const [showModal, setShowModal] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -64,8 +65,8 @@ export default function EditarPodcasrAdmin() {
                     setFoto(base64ToImageSrc(podcastData.podcast.foto));
                     fetchPresentadores(idPodcast);
                     fetchCapitulos(podcastData.podcast.nombre);
-                    
-
+                    fetchGenerosPodcast(idPodcast);
+                    fetchGeneros();
                 }else {
                     const errorData = await response.text();
                     throw new Error(errorData || "Error al recibir datos");
@@ -87,13 +88,16 @@ export default function EditarPodcasrAdmin() {
                 if (!response.ok) throw new Error("Failed to fetch chapters");
                 const chaptersData = await response.json();
                 setCapitulos(chaptersData.capitulos);
-                chaptersData.capitulos.forEach((chapter, index) => {
-                    fetchAudioDuration(base64ToAudioSrc(chapter.archivoMp3))
-                        .then(duration => setDuraciones(prev => ({ ...prev, [index]: duration })))
-                        .catch(console.error);
-                });
-                const nombresCapitulos = chaptersData.capitulos.map(capitulo => capitulo.nombre);
-                setNomCapitulos(nombresCapitulos);
+                console.log(chaptersData.capitulos);
+                if (chaptersData.capitulos !== undefined) {
+                    chaptersData.capitulos.forEach((chapter, index) => {
+                        fetchAudioDuration(base64ToAudioSrc(chapter.archivoMp3))
+                            .then(duration => setDuraciones(prev => ({ ...prev, [index]: duration })))
+                            .catch(console.error);
+                    });
+                    const nombresCapitulos = chaptersData.capitulos.map(capitulo => capitulo.nombre);
+                    setNomCapitulos(nombresCapitulos);
+                }
             } catch (error) {
                 setError(`Failed to fetch chapters: ${error.message}`);
             } finally {
@@ -121,6 +125,44 @@ export default function EditarPodcasrAdmin() {
                 setError(`Failed to fetch presentadores: ${error.message}`);
             }
           };
+
+        const fetchGenerosPodcast = async (idPodcast) => {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/listarGenerosPodcast/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ podcastId: idPodcast })
+                });
+                if (!response.ok) throw new Error("Failed to fetch album");
+                const podcastData = await response.json();
+                if (podcastData.generos && podcastData.generos.length > 0) {
+                    const nombresGeneros = podcastData.generos.map(genero => genero.nombre);
+                    setGenerosPodcast(nombresGeneros);
+                    console.log(nombresGeneros);
+                }
+            } catch (error) {
+                setError(`Failed to fetch generos del podcast: ${error.message}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const fetchGeneros = async () => {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/generosPodcasts/`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                if (!response.ok) throw new Error("Failed to fetch album");
+                const generosData = await response.json();
+                const nombresGeneros = generosData.generos.map(genero => genero.nombre);
+                setGeneros(nombresGeneros);
+            } catch (error) {
+                setError(`Failed to fetch generos: ${error.message}`);
+            } finally {
+                setLoading(false);
+            }
+        };
 
         fetchPodcast();
     }, [idPodcast]);
@@ -176,7 +218,7 @@ export default function EditarPodcasrAdmin() {
             if (response.ok) {
                 // Actualización exitosa
                 navigate('/lista_podcast_admin');
-                console.log('Canción actualizada correctamente en la base de datos');
+                console.log('Podcast actualizada correctamente en la base de datos');
             } else {
                 // Maneja errores de respuesta
                 console.error('Error al actualizar la canción en la base de datos');
@@ -184,6 +226,30 @@ export default function EditarPodcasrAdmin() {
         } catch (error) {
             // Maneja errores de red u otros
             console.error('Error de red al actualizar la canción:', error);
+        }
+    }
+
+    const handleEliminarPodcast = async () => {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/eliminarPodcast/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ podcastId: idPodcast }),
+            });
+    
+            if (response.ok) {
+                // Borrado exitoso
+                navigate('/lista_podcast_admin');
+                console.log('Podcast eliminado correctamente en la base de datos');
+            } else {
+                // Maneja errores de respuesta
+                console.error('Error al eliminar el podcast en la base de datos');
+            }
+        } catch (error) {
+            // Maneja errores de red u otros
+            console.error('Error de red al eliminar el podcast:', error);
         }
     }
 
@@ -212,9 +278,15 @@ export default function EditarPodcasrAdmin() {
                                     "No hay presentadores"
                                 )}
                                 onChange={e=>setNombre(e.target.value)}
-                                placeholder="Presentadores" required 
+                                placeholder="Presentadores" 
                             />
                         </div>
+                        <select value={generosPodcast} onChange={e=>setGenerosPodcast(e.target.value)} >
+                            <option value="">Selecciona un género</option>
+                            {generos.map((genero, index) => (
+                                <option key={index} value={genero}>{genero}</option>
+                            ))}
+                        </select>
                     </div>
                     <div className="audio">
                         <h6>Archivo de audio (.mp3):</h6>
@@ -235,28 +307,35 @@ export default function EditarPodcasrAdmin() {
                         <div className="chapter-list-item">Editar</div>
                     </div>
                     <div className="chapter-list-container">
-                        <div className="chapter-list-body">
-                            {capitulos.map((capitulo, index) => (
+                    <div className="chapter-list-body">
+                        {capitulos !== undefined ? (
+                            capitulos.map((capitulo, index) => (
                                 <div key={capitulo.id} className="chapter-list-row">
                                     <div className="chapter-list-item">{index + 1}</div>
                                     <div className="chapter-list-item">{nomCapitulos[index]}</div>
                                     <div className="chapter-list-item">{formatDuration(duraciones[index])}</div>
                                     <div className="chapter-list-item">
-                                    <Link to={`/editar_capitulo/${capitulo.id}`}>
-                                        <FaCog className="capitulo__settings"/>
-                                    </Link>
+                                        <Link to={`/editar_capitulo/${capitulo.id}`}>
+                                            <FaCog className="capitulo__settings" />
+                                        </Link>
                                     </div>
                                 </div>
-                            ))}
-                            <button type="button" className="chapter-button">
-                                <IoAddCircle className="icon" onClick={handleAddCap}/>
-                            </button>
-                        </div>
+                            ))
+                        ) : (
+                            <div className="no-chapters-message">El podcast no tiene capítulos</div>
+                        )}
                     </div>
-
+                    <Link to={`/aniadir_capitulo/${idPodcast}`}>
+                        <button type="button" className="chapter-button" onClick={handleAddCap}>
+                            <IoAddCircle className="icon" />
+                            Añadir capítulo
+                        </button>
+                    </Link>
+                    </div>
                     <div className="buttons-container">
                         <button type="button" className="cancel-button" onClick={handleExitWithoutSave}>Salir sin guardar</button>
                         {showModal && <AniadirWindow onClose={handleCloseModal} ruta={handleCloseModalNoSave} />}
+                        <button type="submit" className="delete-button" onClick={handleEliminarPodcast}>Eliminar</button>
                         <button type="submit" className="save-button" onClick={handleActualizarPodcast}>Guardar</button>
                     </div>
                 </form>
@@ -377,7 +456,7 @@ const Container = styled.div`
     padding: 30px 20px;
   }
 
-  .cancel-button, .save-button {
+  .cancel-button, .save-button, .delete-button {
     padding: 10px 20px;
     border: 20px;
     border-radius: 20px;
@@ -396,6 +475,11 @@ const Container = styled.div`
     color: #fff;
   }
 
+  .delete-button {
+    background-color: #808080; /* Gris */
+    color: #fff;
+  }
+
 
 .chapter-list-header {
     display: flex;
@@ -405,6 +489,7 @@ const Container = styled.div`
     margin-left: 70px; 
     z-index: 1;
     gap: 140px;
+
 }
 
   .chapter-list-container {
@@ -434,6 +519,17 @@ const Container = styled.div`
         .chapter-list-item {
             flex: 1;
             text-align: center;
+        }
+
+        .chapter-button {
+            width: 200px;
+            height: 40px;
+            border: none;
+            background: #fff;
+            color: #000;
+            text-align: center;
+            border: 20px;
+            border-radius: 20px;
         }
     }
 

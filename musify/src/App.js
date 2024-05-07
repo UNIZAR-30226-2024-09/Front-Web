@@ -5,6 +5,8 @@ import LoginForm from './components/pantallaInicioSesion/inicioSesion';
 import RegisterMail from './components/pantallasRegistro/registro1';
 import RegisterPasswd from './components/pantallasRegistro/registro2';
 import RegisterInfo from './components/pantallasRegistro/registro3';
+import RegisterTerminosCondiciones from './components/pantallasRegistro/registro4';
+import RegisterPreguntas from './components/pantallasRegistro/preguntasRecomendacion';
 import Asistencia from './components/pantallaConfiguracion/configuracion';
 import Profile from './components/pantallaEditarPerfil/editarPerfil';
 import Busqueda from './components/pantallaBuscar/buscar';
@@ -42,6 +44,8 @@ export default class App extends React.Component {
             <Route path="/register_1" element={<RegisterMail />} />
             <Route path="/register_2" element={<RegisterPasswd />} />
             <Route path="/register_3" element={<RegisterInfo />} />
+            <Route path="/register_4" element={<RegisterTerminosCondiciones />} />
+            <Route path="/register_5" element={<RegisterPreguntas />} />
             <Route path="/musify/:playlistId" element={<Musify />} />
             <Route path="/perfilAmigo/:correoAmigo" element={<PerfilA />} />
             <Route path="/musifyp/:podcastId" element={<MusifyP />} />
@@ -67,7 +71,7 @@ export default class App extends React.Component {
             <Route path="/lista_podcast_admin" element={<ListaPodcastAdmin />} />
             <Route path="/aniadir_podcast" element={<AniadirPodcastAdmin />} />
             <Route path="/editar_podcast/:idPodcast" element={<EditarPodcastAdmin />} />
-            <Route path="/aniadir_capitulo" element={<AniadirCapituloAdmin />} />
+            <Route path="/aniadir_capitulo/:miPodcast" element={<AniadirCapituloAdmin />} />
             <Route path="/editar_capitulo/:idCap" element={<EditarCapAdmin />} />
             <Route path="/historial" element={<Historial />} />
             <Route path="/historial/:correo" element={<Historial />} />

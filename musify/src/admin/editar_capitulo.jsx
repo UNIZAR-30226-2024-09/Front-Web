@@ -17,7 +17,7 @@ export default function EditCapitulo() {
   const [podcast, setPodcast] = useState('');
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [duracion, setDuracion] = useState('');
+  const [duracion, setDuracion] = useState(0);
 
   const [showModal, setShowModal] = useState(false);
   const [capituloValid, setCapituloValid] = useState(false);
@@ -43,7 +43,7 @@ export default function EditCapitulo() {
             setDescripcion(capituloData.capitulo.descripcion);
             setPodcast(capituloData.capitulo.miPodcast);
             fetchNomPodcast(capituloData.capitulo.miPodcast)
-            fetchDuracion(base64ToAudioSrc(capituloData.capitulo.archivoMp3));
+            //fetchDuracion(base64ToAudioSrc(capituloData.capitulo.archivoMp3));
         } catch (error) {
             setError(error.message);
         } finally {
@@ -100,7 +100,7 @@ export default function EditCapitulo() {
   };
 
   const handleCloseModalNoSave = () => {
-      navigate(`/editar_podcast/${podcast}`); //Vuelve a la lista de canciones
+      navigate(`/editar_podcast/${podcast}`); 
   };
 
     const handleCapituloEditado = async () => {
@@ -115,21 +115,46 @@ export default function EditCapitulo() {
     
             if (response.ok) {
                 // Actualización exitosa
-                console.log('Canción actualizada correctamente en la base de datos');
+                console.log('Capitulo actualizada correctamente en la base de datos');
                 navigate(`/editar_podcast/${podcast}`);
             } else {
                 // Maneja errores de respuesta
-                console.error('Error al actualizar la canción en la base de datos');
+                console.error('Error al actualizar el capítulo en la base de datos');
             }
         } catch (error) {
             // Maneja errores de red u otros
-            console.error('Error de red al actualizar la canción:', error);
+            console.error('Error de red al actualizar el capítulo:', error);
         }
     };
 
     const handleDescripcionChange = (e) => {
         setDescripcion(e.target.value);
     };
+
+    const handleEliminarCapitulo = async () => {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/eliminarCapitulo/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ capituloId: idCap }),
+            });
+    
+            if (response.ok) {
+                // Borrado exitoso
+                navigate('/lista_podcast_admin');
+                console.log('Capitulo eliminado correctamente en la base de datos');
+            } else {
+                // Maneja errores de respuesta
+                console.error('Error al eliminar el capítulo de la base de datos');
+            }
+        } catch (error) {
+            // Maneja errores de red u otros
+            console.error('Error de red al eliminar el capítulo:', error);
+        }
+    }
+
   return (
     <>
         <Container>
@@ -160,6 +185,7 @@ export default function EditCapitulo() {
                 <div className="buttons-container">
                     <button type="button" className="cancel-button" onClick={handleExitWithoutSave}>Salir sin guardar</button>
                     {showModal && <AniadirWindow onClose={handleCloseModal} ruta={handleCloseModalNoSave} />}
+                    <button type="submit" className="delete-button" onClick={handleEliminarCapitulo}>Eliminar</button>
                     <button type="submit" className="save-button" onClick={handleCapituloEditado}>Guardar</button>
                 </div>
             </form>
@@ -240,7 +266,7 @@ const Container = styled.div`
     padding: 0 20px;
   }
 
-  .cancel-button, .save-button {
+  .cancel-button, .save-button, .delete-button {
     padding: 10px 20px;
     border: none;
     border-radius: 20px;
@@ -258,4 +284,10 @@ const Container = styled.div`
     background-color: #4CAF50; /* Verde */
     color: #fff;
   }
+  
+  .delete-button {
+    background-color: #808080; /* Gris */
+    color: #fff;
+  }
+
 `;
