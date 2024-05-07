@@ -52,7 +52,7 @@ export default class App extends React.Component {
             <Route path="/musifyc/:cancionId" element={<MusifyC />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path="/inicio" element={<PantallaInicio />} />
-            <Route path="/chat" element={<Chat />} />
+            <Route path="/chat/:salaId" element={<Chat />} />
             <Route path="/asistencia" element={<Asistencia />} />
             <Route path="/busqueda" element={<Busqueda />} />
             <Route path="/perfil" element={<Profile />} />

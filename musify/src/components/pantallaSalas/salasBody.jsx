@@ -1,28 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 
 const Salas = () => {
-  const [salas, setSalas] = useState([
-    { id: 1, nombre: 'Sala Rock' },
-    { id: 2, nombre: 'Sala Pop' },
-    { id: 3, nombre: 'Sala Indie' },
-  ]);
+  const [salas, setSalas] = useState([]);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [nombreSala, setNombreSala] = useState('');
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const nuevaSala = { id: salas.length + 1, nombre: nombreSala };
-    setSalas([...salas, nuevaSala]);
-    setNombreSala('');
-    setMostrarModal(false);
+  const navigate = useNavigate(); 
+
+  const handleJoinRoom = (salaId) => {
+    navigate(`/chat/${salaId}`);
   };
+
+  useEffect(() => {
+    const fetchSalas = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/listarSalas/', {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        const data = await response.json();
+        setSalas(data.salas);
+        setCargando(false);
+      } catch (error) {
+        setError(error.message);
+        setCargando(false);
+      }
+    };
+
+    fetchSalas();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:8000/crearSalaAPI/', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'X-CSRFToken': 'tu_token_csrf_aquí'
+        },
+        body: JSON.stringify({ nombre: nombreSala })
+      });
+      if (response.ok) {
+        const nuevaSala = await response.json();
+        setSalas([...salas, { id: salas.length + 1, nombre: nombreSala }]);
+        setNombreSala('');
+        setMostrarModal(false);
+      } else {
+        throw new Error('Error al crear la sala');
+      }
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  if (cargando) return <div>Cargando...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <SalasContainer>
       <Titulo>Salas</Titulo>
       {salas.map((sala) => (
-        <Sala key={sala.id}>
+        <Sala key={sala.id} onClick={() => handleJoinRoom(sala.id)}>
           <NombreSala>{sala.nombre}</NombreSala>
           <UnirseAhora>Únete ahora</UnirseAhora>
         </Sala>
