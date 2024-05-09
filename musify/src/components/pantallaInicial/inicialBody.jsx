@@ -4,10 +4,6 @@ import { FaChevronLeft, FaChevronRight, FaPlay, FaPause } from 'react-icons/fa';
 import { useTrack } from "../../TrackContext/trackContext";
 import { useNavigate } from 'react-router-dom';
 
-const base64ToImageSrc = (base64) => {
-    const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
-    return `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
-};
 
 const base64ToAudioSrc = (base64) => {
     const base64WithoutPrefix = base64.replace(/^data:audio\/mp3;base64,/, '').replace(/^data:[^;]+;base64,/, '');
@@ -72,7 +68,7 @@ export default function Body_inicio() {
         fetchData();
     }, []);
 
-    
+
     const fetchArtistsForSong = async (songId) => {
         const response = await fetch(`http://localhost:8000/listarArtistasCancion/`, {
             method: 'POST',
@@ -93,22 +89,51 @@ export default function Body_inicio() {
     if (!canciones.length) return <p>No hay canciones disponibles</p>;
 
     const PodcastRow = ({ podcasts, onSelectPodcast }) => {
+        const containerRef = useRef(null);
+        const [isHovered, setIsHovered] = useState(false);
+        const [scrollPosition, setScrollPosition] = useState(0);
+    
+        const handleMouseEnter = () => {
+            setIsHovered(true);
+        };
+    
+        const handleMouseLeave = () => {
+            setIsHovered(false);
+        };
+    
+        const handleScroll = (e) => {
+            const scrollWidth = e.target.scrollWidth;
+            const clientWidth = e.target.clientWidth;
+            const maxScroll = scrollWidth - clientWidth;
+            const scrollPercentage = (e.target.scrollLeft / maxScroll) * 100;
+            setScrollPosition(scrollPercentage);
+        };
+    
         return (
             <div>
                 <SectionTitle>Podcasts</SectionTitle>
-                <ImagesContainer>
-                    {podcasts.map((podcast, index) => (
-                        <ImageBox key={index} onClick={() => onSelectPodcast(podcast.id)}>
-                            <ImgContainer>
-                                <img src={podcast.foto} alt={podcast.nombre} />
-                            </ImgContainer>
-                            <p>{podcast.nombre}</p>
-                        </ImageBox>
-                    ))}
-                </ImagesContainer>
+                <ScrollContainer
+                    ref={containerRef}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    onScroll={handleScroll}
+                >
+                    <ScrollContent style={{ transform: `translateX(-${scrollPosition}%)` }}>
+                        {podcasts.map((podcast, index) => (
+                            <ImageBox key={index} onClick={() => onSelectPodcast(podcast.id)}>
+                                <ImgContainer>
+                                    <img src={podcast.foto} alt={podcast.nombre} />
+                                </ImgContainer>
+                                <p>{podcast.nombre}</p>
+                            </ImageBox>
+                        ))}
+                    </ScrollContent>
+                </ScrollContainer>
             </div>
         );
-    };  
+    };
+    
+    
 
     const onSelectPodcast = (podcastId) => {
         navigate(`/musifyp/${podcastId}`);
@@ -116,13 +141,9 @@ export default function Body_inicio() {
     
     return (
         <Container>
-            <SectionTitle>Has escuchado recientemente</SectionTitle>
+            <SectionTitle>Canciones</SectionTitle>
             <SongRow canciones={canciones.slice(0, 7)} />
             <PodcastRow podcasts={podcasts} onSelectPodcast={onSelectPodcast} />
-            <SectionTitle>Hecho para Usuario</SectionTitle>
-            <SongRow canciones={canciones.slice(3, 7)} />
-            <SectionTitle>Top Canciones</SectionTitle>
-            <SongRow canciones={canciones.slice(3, 7)} />
         </Container>
     );    
 }
@@ -133,10 +154,24 @@ const SongRow = ({ canciones }) => {
     const [playingIndex, setPlayingIndex] = useState(-1); // Índice de la canción actualmente en reproducción
     const [hoverIndex, setHoverIndex] = useState(-1); // Índice de la canción sobre la que se encuentra el mouse
     const audioRefs = useRef([]);
+    const containerRef = useRef(null);
+    const [isHovered, setIsHovered] = useState(false);
+    const [scrollPosition, setScrollPosition] = useState(0);
 
-    const handleScroll = (direction) => {
-        const distance = direction === 'left' ? -100 : 100;
-        scrollSmoothly(scrollRef, distance);
+    const handleMouseEnter = () => {
+        setIsHovered(true);
+    };
+
+    const handleMouseLeave = () => {
+        setIsHovered(false);
+    };
+
+    const handleScroll = (e) => {
+        const scrollWidth = e.target.scrollWidth;
+        const clientWidth = e.target.clientWidth;
+        const maxScroll = scrollWidth - clientWidth;
+        const scrollPercentage = (e.target.scrollLeft / maxScroll) * 100;
+        setScrollPosition(scrollPercentage);
     };
 
     const togglePlayPause = async (index) => {
@@ -178,32 +213,29 @@ const SongRow = ({ canciones }) => {
     
     return (
         <RowContainer>
-            <ArrowButton onClick={() => handleScroll('left')}>
-                <FaChevronLeft />
-            </ArrowButton>
-            <ImagesContainer ref={scrollRef}>
-                {canciones.map((cancion, index) => (
-                    <ImageBox key={index}
-                              onMouseEnter={() => setHoverIndex(index)}
-                              onMouseLeave={() => setHoverIndex(-1)}
-                              onClick={() => togglePlayPause(index)}>
-                        <ImgContainer>
-                            <img src={cancion.foto} alt={cancion.nombre || 'Desconocido'} />
-                            {hoverIndex === index && (
-                                <PlayIconContainer isVisible={true}>
-                                    {/* Mostrar el ícono de pausa solo si el índice coincide y está en reproducción */}
-                                    {playingIndex === index && isPlaying ? <FaPause size="3em" /> : <FaPlay size="3em" />}
-                                </PlayIconContainer>
-                            )}
-                            <audio ref={(el) => audioRefs.current[index] = el} src={cancion.archivoMp3} />
-                        </ImgContainer>
-                        <p>{cancion.nombre}</p>
-                    </ImageBox>
-                ))}
-            </ImagesContainer>
-            <ArrowButton onClick={() => handleScroll('right')}>
-                <FaChevronRight />
-            </ArrowButton>
+            <ScrollContainer
+                ref={containerRef}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                onScroll={handleScroll}
+            >
+                <ScrollContent style={{ transform: `translateX(-${scrollPosition}%)` }}>
+                    {canciones.map((cancion, index) => (
+                        <ImageBox key={index} onMouseEnter={() => setHoverIndex(index)} onMouseLeave={() => setHoverIndex(-1)} onClick={() => togglePlayPause(index)}>
+                            <ImgContainer>
+                                <img src={cancion.foto} alt={cancion.nombre || 'Desconocido'} />
+                                {hoverIndex === index && (
+                                    <PlayIconContainer isVisible={true}>
+                                        {playingIndex === index && isPlaying ? <FaPause size="3em" /> : <FaPlay size="3em" />}
+                                    </PlayIconContainer>
+                                )}
+                                <audio ref={(el) => audioRefs.current[index] = el} src={cancion.archivoMp3} />
+                            </ImgContainer>
+                            <p>{cancion.nombre}</p>
+                        </ImageBox>
+                    ))}
+                </ScrollContent>
+            </ScrollContainer>
         </RowContainer>
     );
 };
@@ -261,7 +293,6 @@ const ImageBox = styled.div`
     }
 `;
 
-
 const ArrowButton = styled.button`
     background: #575151;
     border: none;
@@ -291,6 +322,7 @@ const ButtonContainer = styled.div`
 `;
 
 const SectionTitle = styled.h2`
+margin-top: 50px;
     color: #fff;
     font-size: 16px;
     margin-left: 1rem;
@@ -344,4 +376,22 @@ const PlayIconContainer = styled.div`
     left: 50%;
     transform: translate(-50%, -50%);
     display: ${({ isVisible }) => isVisible ? 'block' : 'none'}; // Esto controla la visibilidad del ícono
+`;
+
+const ScrollContainer = styled.div`
+    overflow-x: hidden;
+    overflow-y: hidden;
+    position: relative;
+    cursor: grab;
+    transition: scroll 0.2s ease;
+
+    &:hover {
+        overflow-x: auto;
+    }
+`;
+
+const ScrollContent = styled.div`
+    display: flex;
+    gap: 20px;
+    padding-bottom: 20px; // Agrega espacio al final para evitar que el último elemento quede oculto bajo la barra de desplazamiento
 `;

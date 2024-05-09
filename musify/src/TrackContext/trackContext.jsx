@@ -29,8 +29,33 @@ export const TrackProvider = ({ children }) => {
         }
     }, [trackIndex, tracks]);
     
+    const addToHistory = async (trackId) => {
+        const url = 'http://localhost:8000/agnadirCancionHistorial/';
+        const correo = "zineb@gmail.com"; // Este valor podría ser dinámico, dependiendo del usuario logueado
+    
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': 'UnjuTS7rMXrft4KWKiqLVILmhWpy1ezsY5VuFAS2bdQty4YzOO7ImxLFmJaIANG0' 
+                },
+                body: JSON.stringify({ correo, cancionId: trackId })
+            });
+    
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || "Error al agregar la canción al historial");
+            console.log("Canción añadida al historial:", data);
+        } catch (error) {
+            console.error("Error al añadir la canción al historial:", error);
+        }
+    };    
 
     const play = () => {
+        if (currentTrackId) {
+            addToHistory(currentTrackId);
+        }
         audioRef.current.play();
         setIsPlaying(true);
     };
@@ -130,11 +155,16 @@ export const TrackProvider = ({ children }) => {
                 if (cancionResponse.ok) {
                     const { cancion } = cancionData;
 
+                     // Obtener la lista de artistas para la canción
+                    const artistas = await fetchArtistsForSong(ultima_cancion);
+
                     // Tercero, actualizamos el reproductor con la nueva canción y el tiempo guardado
                     updateTrack({
                         id: cancion.id,
                         src: base64ToAudioSrc(cancion.archivoMp3),
-                        nombre: cancion.nombre
+                        nombre: cancion.nombre,
+                        imagen: getImageUrl(cancion.id),
+                        artistas: artistas
                     });
                     audioRef.current.currentTime = ultima_minutos;
                     console.log("Canción cargada y lista para reproducirse desde el último punto guardado.");
