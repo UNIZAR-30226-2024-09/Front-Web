@@ -5,7 +5,7 @@ import { CgPlayTrackNext, CgPlayTrackPrev } from "react-icons/cg";
 import { FiRepeat } from "react-icons/fi";
 import { PiMicrophoneStageFill } from "react-icons/pi";
 import Progress from "../Progress/progress";
-import { useTrack } from '../TrackContext/trackContext'; 
+import { useTrack } from '../../TrackContext/trackContext'; 
 import LyricsWindow from '../lyricsModal/lyricsVentana';
 import { FaHeart } from "react-icons/fa";
 

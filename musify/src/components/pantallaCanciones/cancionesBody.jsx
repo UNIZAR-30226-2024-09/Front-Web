@@ -6,7 +6,7 @@ import { FaPlay, FaPause } from 'react-icons/fa';
 import { MdOutlineAddToPhotos } from 'react-icons/md';
 import Modal from '../agnadirCancionPlaylistModal/agnadirCancion';
 import { RiMenuAddFill } from "react-icons/ri";
-import { useTrack } from "../TrackContext/trackContext";
+import { useTrack } from "../../TrackContext/trackContext";
 import { CiShare1 } from "react-icons/ci";
 
 const base64ToImageSrc = (base64) => {

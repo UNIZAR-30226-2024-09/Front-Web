@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { AiFillClockCircle } from 'react-icons/ai';
 import { FaPlay, FaPause } from 'react-icons/fa';
-import { useTrack } from "../TrackContext/trackContext";
+import { useTrack } from "../../TrackContext/trackContext";
 
 const base64ToImageSrc = (base64) => {
     const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from "styled-components";
 import { FaChevronLeft, FaChevronRight, FaPlay, FaPause } from 'react-icons/fa';
-import { useTrack } from "../TrackContext/trackContext";
+import { useTrack } from "../../TrackContext/trackContext";
 import { useNavigate } from 'react-router-dom';
 
 const base64ToImageSrc = (base64) => {
@@ -28,7 +28,7 @@ export default function Body_inicio() {
             setLoading(true);
             try {
                 const [songsResponse, podcastsResponse] = await Promise.all([
-                    fetch('http://127.0.0.1:8000/listarCanciones/', {
+                    fetch('http://127.0.0.1:8000/listarPocasCanciones/', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'}
                     }),

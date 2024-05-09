@@ -105,9 +105,9 @@ function Chat() {
         if (input.trim()) {
             const messageToSend = JSON.stringify({
                 cuerpo: {
-                    salaid: salaId,
+                    mensaje: input,
                     emisorid: 'zineb@gmail.com',
-                    mensaje: input
+                    salaid: salaId
                 }
             });
     

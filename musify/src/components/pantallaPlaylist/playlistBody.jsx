@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { AiFillClockCircle } from 'react-icons/ai';
 import { FaPlay, FaPause, FaLock, FaUnlock, FaUserPlus, FaTrash } from 'react-icons/fa';
 import { MdOutlineAddToPhotos } from 'react-icons/md';
-import { useTrack } from "../TrackContext/trackContext";
+import { useTrack } from "../../TrackContext/trackContext";
 import Modal from '../agnadirColaboradorModal/agnadirColaborador';
 
 const base64ToImageSrc = (base64) => {

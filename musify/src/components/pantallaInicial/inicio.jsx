@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { TrackProvider } from "../TrackContext/trackContext";
+import { TrackProvider } from "../../TrackContext/trackContext";
 import Sidebar from "../Sidebar/sidebar";
 import Footer from "../Footer/footer";
 import Body_inicio from "./inicialBody";

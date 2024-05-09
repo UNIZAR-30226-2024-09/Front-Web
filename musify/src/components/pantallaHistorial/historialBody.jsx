@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import { useTrack } from "../TrackContext/trackContext";
+import { useTrack } from "../../TrackContext/trackContext";
 
 const base64ToImageSrc = (base64) => {
     const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');

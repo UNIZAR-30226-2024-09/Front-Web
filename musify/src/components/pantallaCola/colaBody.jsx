@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useTrack } from "../TrackContext/trackContext";
+import { useTrack } from "../../TrackContext/trackContext";
 import { FaTrashAlt } from 'react-icons/fa';
 
 const base64ToImageSrc = (base64) => {
