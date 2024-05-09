@@ -1,17 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import styled from "styled-components";
 import { useTrack } from "../../TrackContext/trackContext";
-import { FaStar } from "react-icons/fa";
 
 export default function CurrentTrack() {
     const { currentTrack } = useTrack();
-    const [rating, setRating] = useState(0);
 
     if (!currentTrack) return <div>No track selected</div>;
-
-    const handleRating = (index) => {
-        setRating(index);
-    };
 
     return (
         <Container>
@@ -22,20 +16,6 @@ export default function CurrentTrack() {
                 <div className="track__info">
                     <h4>{currentTrack.nombre}</h4>
                     <h6>{currentTrack.artista || 'Artista Desconocido'}</h6>
-                    <div className="rating">
-                        {[...Array(5)].map((star, index) => {
-                            index += 1;
-                            return (
-                                <button
-                                    key={index}
-                                    onClick={() => handleRating(index)}
-                                    style={{ color: index <= rating ? "#ffc107" : "#e4e5e9" }}
-                                >
-                                    <FaStar />
-                                </button>
-                            );
-                        })}
-                    </div>
                 </div>
             </div>
         </Container>
@@ -68,20 +48,6 @@ const Container = styled.div`
                 margin: 0;
                 margin-top: 0rem;
                 color: #fff; 
-            }
-
-            .rating {
-                display: flex;
-                button {
-                    background: none;
-                    border: none;
-                    cursor: pointer;
-                    color: #e4e5e9;
-
-                    &:hover {
-                        color: #ffc107; 
-                    }
-                }
             }
         }
         

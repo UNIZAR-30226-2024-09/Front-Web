@@ -64,6 +64,20 @@ export default function PlayerControls() {
         }
     }, [currentTrackId]);
 
+    useEffect(() => {
+        const audio = audioRef.current;
+    
+        const onCanPlay = () => {
+            if (isPlaying) play();  // Reproducir solo si el estado previo era 'reproduciendo'
+        };
+    
+        audio.addEventListener('canplay', onCanPlay);
+    
+        return () => {
+            audio.removeEventListener('canplay', onCanPlay);
+        };
+    }, [isPlaying, play, audioRef]);
+    
     const handleFavorite = () => {
         const email = "zineb@gmail.com";
         const cancionId = currentTrackId;
@@ -102,7 +116,9 @@ export default function PlayerControls() {
         });
     };
     
-    
+    const toggleRepeat = () => {
+        setIsRepeating(!isRepeating);  // Cambia el estado de isRepeating
+    };
     
     const togglePlayPause = () => {
         if (isPlaying) {
@@ -112,16 +128,13 @@ export default function PlayerControls() {
         }
     };
 
-    const handlePrevTrack = () => {
-        changeTrack(false);
-    };
-
     const handleNextTrack = () => {
-        const newIndex = (trackIndex + 1) % tracks.length;
-        setTrackIndex(newIndex);
-        updateTrack(tracks[newIndex]);
+        changeTrack(true);  // Este método ya debería manejar el cambio de pista
     };
     
+    const handlePrevTrack = () => {
+        changeTrack(false);  // Este método ya debería manejar el cambio a la pista anterior
+    };
 
     useEffect(() => {
         console.log("Current Track ID:", currentTrackId);  // Imprimir el ID de la pista actual
@@ -194,7 +207,10 @@ export default function PlayerControls() {
     
         const onEnded = () => {
             if (isRepeating) {
-                play();
+                audio.currentTime = 0;
+                play();  // Reproduce la misma canción de nuevo
+            } else {
+                handleNextTrack();  // Pasa a la siguiente pista automáticamente
             }
         };
     
@@ -203,11 +219,7 @@ export default function PlayerControls() {
         return () => {
             audio.removeEventListener('ended', onEnded);
         };
-    }, [audioRef, isRepeating, play]);
-
-    const toggleRepeat = () => {
-        setIsRepeating(!isRepeating);
-    };
+    }, [audioRef, isRepeating, play, handleNextTrack]); // Añade handleNextTrack a la lista de dependencias
     
     const repeatIconStyle = isRepeating ? { color: 'red' } : { color: 'grey' };
 

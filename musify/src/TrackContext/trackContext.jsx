@@ -37,7 +37,7 @@ export const TrackProvider = ({ children }) => {
 
     const actualizarEstadoCancion = async () => {
         const tiempo = Math.floor(audioRef.current.currentTime);
-        const correo = "saineb@gmail.com";
+        const correo = "zineb@gmail.com";
         const cancionID = currentTrackId;
         const url = 'http://localhost:8000/actualizarEstadoCancionesAPI/';
     
@@ -62,9 +62,42 @@ export const TrackProvider = ({ children }) => {
         obtenerUltimoEstadoYReproducir();
     }, []);
     
+    const fetchArtistsForSong = async (songId) => {
+        try {
+            const response = await fetch(`http://localhost:8000/listarArtistasCancion/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': 'tu_token_csrf'  // Ensure this token is dynamically obtained or managed securely
+                },
+                body: JSON.stringify({ cancionId: songId })
+            });
+    
+            const data = await response.json();
+    
+            if (response.ok) {
+                if (data.artistas && data.artistas.length > 0) {
+                    return data.artistas.map(artista => artista.nombre).join(', ');
+                } else {
+                    console.error('No artists found in response:', data);
+                    return 'Artista Desconocido';
+                }
+            } else {
+                throw new Error('API responded with an error: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Error fetching artists for song:', error);
+            return 'Artista Desconocido';  // Return default or error-specific message
+        }
+    };
+
+    const getImageUrl = (songId) => {
+    return `http://localhost:8000/imagenCancion/${songId}/`;
+};
+
     // Función para obtener la última canción y su estado
     const obtenerUltimoEstadoYReproducir = async () => {
-        const correo = "saineb@gmail.com";  // Asumiendo que tienes esta información de la sesión del usuario
+        const correo = "zineb@gmail.com";  // Asumiendo que tienes esta información de la sesión del usuario
         const obtenerEstadoUrl = 'http://localhost:8000/obtenerEstadoCancionesAPI/';
         const devolverCancionUrl = 'http://localhost:8000/devolverCancion/';
 
@@ -118,14 +151,28 @@ export const TrackProvider = ({ children }) => {
         setIsPlaying(false);
         actualizarEstadoCancion();
     };
+
+    const updateTrackDetails = async (track) => {
+        if (!track.id) return;
+        // Fetch artist name if missing
+        if (!track.artista) {
+            track.artista = await fetchArtistsForSong(track.id);
+        }
+        // Fetch image if missing
+        if (!track.imagen) {
+            track.imagen = await getImageUrl(track.id);
+        }
+        updateTrack(track);
+    };
     
     const updateTrack = (track) => {
-        const src = base64ToAudioSrc(track.archivoMp3);
-        if (src) {
-            audioRef.current.src = src;
-            setCurrentTrack({ ...track, src });
+        if (track.src) {
+            audioRef.current.src = track.src;
+            audioRef.current.load();
+            setCurrentTrack(track);
+            setCurrentTrackId(track.id);
         } else {
-            console.error('Invalid audio source:', track.archivoMp3);
+            console.error('Invalid audio source:', track.src);
         }
     };
 
@@ -137,19 +184,22 @@ export const TrackProvider = ({ children }) => {
         }
     };
 
-    const changeTrack = (forward = true) => {
-        let newIndex;
-        if (isShuffling) {
-            newIndex = Math.floor(Math.random() * tracks.length);
-        } else {
-            const indexIncrement = forward ? 1 : -1;
-            newIndex = (trackIndex + indexIncrement + tracks.length) % tracks.length;
+    const changeTrack = async (forward = true) => {
+        let newIndex = trackIndex + (forward ? 1 : -1);
+        if (newIndex >= tracks.length) {
+            newIndex = 0;  // Loop to start
+        } else if (newIndex < 0) {
+            newIndex = tracks.length - 1;  // Loop to end
         }
+        await updateTrackDetails(tracks[newIndex]);
         setTrackIndex(newIndex);
-        updateTrack(tracks[newIndex]);
-        play();
     };
 
+    useEffect(() => {
+        if (trackIndex >= 0 && trackIndex < tracks.length) {
+            updateTrackDetails(tracks[trackIndex]);
+        }
+    }, [trackIndex, tracks]);
 
     const adjustVolume = (newVolume) => {
         audioRef.current.volume = newVolume; // Ajusta el volumen del elemento audio

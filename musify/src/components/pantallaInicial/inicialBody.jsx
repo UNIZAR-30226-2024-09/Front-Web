@@ -14,11 +14,14 @@ const base64ToAudioSrc = (base64) => {
     return `data:audio/mp3;base64,${atob(base64WithoutPrefix)}`;
 };
 
+const getImageSrc = (type, id) => {
+    return `http://localhost:8000/imagen${type}/${id}`;
+};
+
 export default function Body_inicio() {
     const [canciones, setCanciones] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [message, setMessage] = useState('');
     const [podcasts, setPodcasts] = useState([]);
     const { updateTrack, play, pause, isPlaying, currentTrack, audioRef } = useTrack();
     const navigate = useNavigate();
@@ -28,11 +31,11 @@ export default function Body_inicio() {
             setLoading(true);
             try {
                 const [songsResponse, podcastsResponse] = await Promise.all([
-                    fetch('http://127.0.0.1:8000/listarPocasCanciones/', {
+                    fetch('http://localhost:8000/listarPocasCanciones/', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'}
                     }),
-                    fetch('http://127.0.0.1:8000/listarPodcasts/', {
+                    fetch('http://localhost:8000/listarPocosPodcasts/', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'}
                     })
@@ -45,25 +48,21 @@ export default function Body_inicio() {
                 const songsData = await songsResponse.json();
                 const podcastsData = await podcastsResponse.json();
     
-                const songsWithArtists = await Promise.all(songsData.canciones.slice(0, 3).map(async cancion => {
-                    const artistas = await fetchArtistsForSong(cancion.id);
-                    return {
-                        id: cancion.id,
-                        foto: base64ToImageSrc(cancion.foto),
-                        nombre: cancion.nombre,
-                        artista: artistas
-                    };
+                const songsWithImages = songsData.canciones.map(cancion => ({
+                    id: cancion.id,
+                    foto: getImageSrc('Cancion', cancion.id),
+                    nombre: cancion.nombre,
+                    artista: 'Artista Desconocido' // Asumiendo que no tenemos esta info
                 }));
     
-                const podcasts = podcastsData.podcasts.map(podcast => ({
+                const podcastsFormatted = podcastsData.podcasts.map(podcast => ({
                     id: podcast.id,
                     nombre: podcast.nombre,
-                    foto: base64ToImageSrc(podcast.foto)
+                    foto: getImageSrc('Podcast', podcast.id)
                 }));
     
-                setCanciones(songsWithArtists);
-                setPodcasts(podcasts);  // Asumiendo que tienes un estado para podcasts
-                setTrackList(songsWithArtists);
+                setCanciones(songsWithImages);
+                setPodcasts(podcastsFormatted);
             } catch (error) {
                 setError(error.message);
             } finally {
@@ -73,6 +72,7 @@ export default function Body_inicio() {
         fetchData();
     }, []);
 
+    
     const fetchArtistsForSong = async (songId) => {
         const response = await fetch(`http://localhost:8000/listarArtistasCancion/`, {
             method: 'POST',
