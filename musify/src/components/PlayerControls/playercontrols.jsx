@@ -67,6 +67,27 @@ export default function PlayerControls() {
     useEffect(() => {
         const audio = audioRef.current;
     
+        const onLoadedMetadata = () => {
+            setDuration(audio.duration);
+        };
+    
+        const onTimeUpdate = () => {
+            setCurrentTime(audio.currentTime);
+        };
+    
+        audio.addEventListener('loadedmetadata', onLoadedMetadata);
+        audio.addEventListener('timeupdate', onTimeUpdate);
+    
+        return () => {
+            audio.removeEventListener('loadedmetadata', onLoadedMetadata);
+            audio.removeEventListener('timeupdate', onTimeUpdate);
+        };
+    }, [audioRef]);  // Asegúrate de que este useEffect corre cuando audioRef cambia
+    
+
+    useEffect(() => {
+        const audio = audioRef.current;
+    
         const onCanPlay = () => {
             if (isPlaying) play();  // Reproducir solo si el estado previo era 'reproduciendo'
         };
