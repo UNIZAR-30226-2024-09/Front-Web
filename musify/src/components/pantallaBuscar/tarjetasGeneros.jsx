@@ -30,9 +30,9 @@ export default function Cards() {
         { title: 'Ingles', icon: <FaPodcast />, isPodcast: true },
         { title: 'Psicologia', icon: <FaPodcast />, isPodcast: true },
         // Añadir tarjetas para playlists predefinidas
-        { title: 'Canciones Coche', icon: <FaCar />, id: 'idCoche' },
-        { title: 'Canciones Gym', icon: <FaDumbbell />, id: 'idGym' },
-        { title: 'Canciones Relax', icon: <FaSpa />, id: 'idRelax' }
+        { title: 'Canciones Coche', icon: <FaCar />, id: '62' },
+        { title: 'Canciones Gym', icon: <FaDumbbell />, id: '63' },
+        { title: 'Canciones Relax', icon: <FaSpa />, id: '64' }
     ]);
     const [songs, setSongs] = useState({});
     const [podcasts, setPodcasts] = useState({});

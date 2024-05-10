@@ -7,7 +7,6 @@ import { PiMicrophoneStageFill } from "react-icons/pi";
 import Progress from "../Progress/progress";
 import { useTrack } from '../../TrackContext/trackContext'; 
 import LyricsWindow from '../lyricsModal/lyricsVentana';
-import { FaHeart } from "react-icons/fa";
 
 export default function PlayerControls() {
     const {
@@ -17,10 +16,6 @@ export default function PlayerControls() {
         audioRef,
         currentTrackId,
         changeTrack,
-        trackIndex,
-        tracks, 
-        setTrackIndex,
-        updateTrack,
         isShuffling,
         toggleShuffle,
     } = useTrack();
@@ -32,57 +27,6 @@ export default function PlayerControls() {
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
     const [isFavorited, setIsFavorited] = useState(false);
-
-    const checkIfFavorited = async () => {
-        const email = "zineb@gmail.com";
-        const cancionId = currentTrackId;
-        const url = 'http://localhost:8000/esFavorita/';
-
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': 'xsxNP3cl2YT0BaNA3CcZXs9baPGpgJR4Ba9NBLXWreieGa1d78TWoh9ufCrzPiYC'
-                },
-                body: JSON.stringify({ correo: email, cancionId: cancionId })
-            });
-            const data = await response.json();
-            if (response.ok) {
-                setIsFavorited(data.esFavorita);  // Asumiendo que la API responde con un campo booleano `esFavorita`
-            }
-        } catch (error) {
-            console.error('Error al verificar si la canción es favorita:', error);
-        }
-    };
-
-    // Efecto para verificar el estado favorito cada vez que cambia currentTrackId
-    useEffect(() => {
-        if (currentTrackId) {
-            checkIfFavorited();
-        }
-    }, [currentTrackId]);
-
-    useEffect(() => {
-        const audio = audioRef.current;
-    
-        const onLoadedMetadata = () => {
-            setDuration(audio.duration);
-        };
-    
-        const onTimeUpdate = () => {
-            setCurrentTime(audio.currentTime);
-        };
-    
-        audio.addEventListener('loadedmetadata', onLoadedMetadata);
-        audio.addEventListener('timeupdate', onTimeUpdate);
-    
-        return () => {
-            audio.removeEventListener('loadedmetadata', onLoadedMetadata);
-            audio.removeEventListener('timeupdate', onTimeUpdate);
-        };
-    }, [audioRef]);  // Asegúrate de que este useEffect corre cuando audioRef cambia
     
 
     useEffect(() => {
@@ -98,44 +42,6 @@ export default function PlayerControls() {
             audio.removeEventListener('canplay', onCanPlay);
         };
     }, [isPlaying, play, audioRef]);
-    
-    const handleFavorite = () => {
-        const email = "zineb@gmail.com";
-        const cancionId = currentTrackId;
-        const shouldBeFavorited = !isFavorited;
-    
-        setIsFavorited(shouldBeFavorited);
-    
-        const url = 'http://localhost:8000/editarCancionFavoritos/';
-        const body = {
-            correo: email,
-            cancionId: cancionId,
-            favorito: shouldBeFavorited ? "True" : "False"
-        };
-    
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'accept': 'application/json',
-                'Content-Type': 'application/json',
-                'X-CSRFToken': 'xsxNP3cl2YT0BaNA3CcZXs9baPGpgJR4Ba9NBLXWreieGa1d78TWoh9ufCrzPiYC'
-            },
-            body: JSON.stringify(body)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.message.includes("éxito")) {
-                // Si hay un problema, revertir el estado visual
-                setIsFavorited(!shouldBeFavorited);
-                console.error('Error de la API:', data.message);
-            }
-        })
-        .catch(error => {
-            // Revertir el estado en caso de error de red
-            setIsFavorited(!shouldBeFavorited);
-            console.error('Error al comunicarse con la API:', error);
-        });
-    };
     
     const toggleRepeat = () => {
         setIsRepeating(!isRepeating);  // Cambia el estado de isRepeating
@@ -199,10 +105,8 @@ export default function PlayerControls() {
     }, [audioRef, isRepeating, play, changeTrack]); // Añade changeTrack a la lista de dependencias
     
     
-    
     const handleShowLyrics = () => setShowLyrics(true);
     const handleCloseLyrics = () => setShowLyrics(false);
-
 
     useEffect(() => {
         const audio = audioRef.current;
@@ -248,11 +152,6 @@ export default function PlayerControls() {
         <Container>
             <div className="shuffle" onClick={toggleShuffle}>
                 <BsShuffle style={{ color: isShuffling ? 'red' : 'grey' }} />
-            </div>
-            <div className="track__actions">
-                    <div onClick={handleFavorite}>
-                        {isFavorited ? <FaHeart color="red" /> : <FaHeart color="white" />}
-                    </div>
             </div>
             <div className="previous" onClick={handlePrevTrack}><CgPlayTrackPrev /></div>
             <div className="state" onClick={togglePlayPause}>

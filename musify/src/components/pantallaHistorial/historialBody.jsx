@@ -3,11 +3,6 @@ import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { useTrack } from "../../TrackContext/trackContext";
 
-const base64ToImageSrc = (base64) => {
-    const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
-    return `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
-};
-
 export default function Body_historial() {
     const { correo } = useParams();
     const [songs, setSongs] = useState([]);
@@ -45,9 +40,6 @@ export default function Body_historial() {
             fetchHistorySongs(correo);
         }
     }, [correo]);
-
-
-    
 
     useEffect(() => {
         if (correo) {
@@ -87,7 +79,7 @@ export default function Body_historial() {
             if (data.historial && data.historial.length > 0) {
                 console.log("Canciones recibidas:", data.historial);
                 const enrichedSongs = await Promise.all(data.historial.map(async (song) => {
-                    const imageUrl = base64ToImageSrc(song.foto);
+                    const imageUrl = `http://localhost:8000/imagenCancion/${song.id}`;
                     const artistas = await fetchArtistsForSong(song.id);  // Llamada a la función para obtener los artistas
                     return {
                         ...song,
@@ -106,7 +98,6 @@ export default function Body_historial() {
             setMessage('Error al cargar las canciones del historial.');
         }
     };
-    
 
     const fetchArtistsForSong = async (songId) => {
         const response = await fetch(`http://localhost:8000/listarArtistasCancion/`, {

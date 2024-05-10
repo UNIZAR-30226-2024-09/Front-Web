@@ -31,11 +31,6 @@ export default function Body_inicio() {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'}
                     }),
-                    fetch('http://127.0.0.1:8000/listarPocosPodcasts/', {
-                    fetch('http://localhost:8000/listarPocasCanciones/', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'}
-                    }),
                     fetch('http://localhost:8000/listarPocosPodcasts/', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'}
