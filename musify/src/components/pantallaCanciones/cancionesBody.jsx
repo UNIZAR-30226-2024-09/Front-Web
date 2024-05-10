@@ -3,15 +3,11 @@ import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { AiFillClockCircle } from 'react-icons/ai';
 import { FaPlay, FaPause } from 'react-icons/fa';
+import { MdOutlineAddToPhotos } from 'react-icons/md';
 import Modal from '../agnadirCancionPlaylistModal/agnadirCancion';
 import { RiMenuAddFill } from "react-icons/ri";
-import { useTrack } from "../TrackContext/trackContext";
+import { useTrack } from "../../TrackContext/trackContext";
 import { CiShare1 } from "react-icons/ci";
-
-const base64ToImageSrc = (base64) => {
-    const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
-    return `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
-};
 
 const base64ToAudioSrc = (base64) => {
     const base64WithoutPrefix = base64.replace(/^data:audio\/mp3;base64,/, '').replace(/^data:[^;]+;base64,/, '');
@@ -112,13 +108,15 @@ const SongDetails = () => {
                 const response = await fetch(`http://127.0.0.1:8000/devolverCancion/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cancionId }) 
+                    body: JSON.stringify({ cancionId })
                 });
                 const data = await response.json();
                 if (!response.ok) {
                     throw new Error(`Server responded with status ${response.status}: ${data.detail || JSON.stringify(data)}`);
                 }
-                setSongImage(base64ToImageSrc(data.cancion.foto));
+                // Actualizar para usar URL directa para la imagen de la canción
+                setSongImage(`http://localhost:8000/imagenCancion/${data.cancion.id}`);
+    
                 setSongName(data.cancion.nombre);
                 const audioSrc = base64ToAudioSrc(data.cancion.archivoMp3);
                 setSongMp3(audioSrc);
@@ -145,7 +143,39 @@ const SongDetails = () => {
             }
         };
         fetchSongDetails();
-    }, [cancionId]); 
+    }, [cancionId]);
+    
+
+    const addToQueue = async (correo, cancionId) => {
+        try {
+            const response = await fetch('http://localhost:8000/agnadirCancionCola/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': 'S7CtjKi19jEVUdMkUxKEVridb15UBJOrWPet5s3Cyz39Zd0XY3rBmgiwgOQ4aiVZ', // Adjust as needed
+                    'accept': 'application/json'
+                },
+                body: JSON.stringify({ correo, cancionId })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert(data.message); // Notify the user of success
+            } else {
+                console.error('Failed to add song to queue:', data);
+                alert(data.error || 'Error adding song to queue.');
+            }
+        } catch (error) {
+            console.error('Error adding song to queue:', error);
+            alert('Error adding song to queue.');
+        }
+    };
+
+    const handleAddToQueue = async (songId) => {
+        // Replace with the actual email you want to use
+        const email = 'zineb@gmail.com';
+        await addToQueue(email, songId);
+    };
+    
 
 
     // Función para añadir una canción a la playlist
@@ -183,7 +213,10 @@ const SongDetails = () => {
             });
             const data = await response.json();
             if (response.ok) {
-                setArtistas(data.artistas.map(artista => artista.nombre).join(', '));
+                setArtistas(data.artistas.map(artista => ({
+                    nombre: artista.nombre,
+                    imagen: `http://localhost:8000/imagenArtista/${artista.id}`
+                })));
             } else {
                 throw new Error('Failed to fetch artists');
             }
@@ -204,14 +237,19 @@ const SongDetails = () => {
             });
             const data = await response.json();
             if (response.ok) {
-                setAlbum(data.album.nombre);
+                setAlbum({
+                    nombre: data.album.nombre,
+                    imagen: `http://localhost:8000/imagenAlbum/${data.album.id}`
+                });
             } else {
                 throw new Error('Failed to fetch album');
             }
         } catch (error) {
             console.error('Failed to fetch album:', error);
         }
-    };    
+    };
+    
+    
 
     const formatDuration = (duration) => {
         if (!duration) return 'N/A';
@@ -294,11 +332,20 @@ const SongDetails = () => {
                         </div>
                         <div className="info">
                             <span className="name">{songName}</span>
-                            <span>{artistas}</span>
+                            <span>{artistas.nombre}</span>
                         </div>
                     </div>
-                    <div className="col"><span>{album}</span></div>
-                    <div className="col"><span>{duration}</span></div>
+                    <div className="col"><span>{album.nombre}</span></div>
+                    <div className="col"><span>{duration}
+                    <MdOutlineAddToPhotos // Add new icon here
+                                    size="1em"
+                                    style={{ cursor: 'pointer', marginLeft: '20px' }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAddToQueue(cancionId);
+                                    }}
+                                />
+                    </span></div>
                 </div>
             </div>
         </Container>

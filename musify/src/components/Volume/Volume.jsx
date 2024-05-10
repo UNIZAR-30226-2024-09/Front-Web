@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FiVolume2 } from 'react-icons/fi';
 import { MdQueueMusic } from "react-icons/md";
-import { useTrack } from '../TrackContext/trackContext';  // Asegúrate de importar useTrack desde su ubicación correcta
+import { useTrack } from '../../TrackContext/trackContext';  // Asegúrate de importar useTrack desde su ubicación correcta
 import LyricsWindow from '../lyricsModal/lyricsVentana';
 import { Link } from 'react-router-dom';
 

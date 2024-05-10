@@ -34,10 +34,12 @@ import EditarPodcastAdmin from './admin/editar_podcast';
 import AniadirCapituloAdmin from './admin/aniadir_capitulo';
 import EditarCapAdmin from './admin/editar_capitulo';
 import Historial from './components/pantallaHistorial/historialReproducción';
+import { TrackProvider } from './TrackContext/trackContext';
 
 export default class App extends React.Component {
   render() {
     return (
+      <TrackProvider>
       <BrowserRouter>
         <UserProvider>
           <Routes>
@@ -52,7 +54,7 @@ export default class App extends React.Component {
             <Route path="/musifyc/:cancionId" element={<MusifyC />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path="/inicio" element={<PantallaInicio />} />
-            <Route path="/chat" element={<Chat />} />
+            <Route path="/chat/:salaId" element={<Chat />} />
             <Route path="/asistencia" element={<Asistencia />} />
             <Route path="/busqueda" element={<Busqueda />} />
             <Route path="/perfil" element={<Profile />} />
@@ -75,10 +77,10 @@ export default class App extends React.Component {
             <Route path="/editar_capitulo/:idCap" element={<EditarCapAdmin />} />
             <Route path="/historial" element={<Historial />} />
             <Route path="/historial/:correo" element={<Historial />} />
-
           </Routes>
         </UserProvider>
       </BrowserRouter>
+      </TrackProvider>
     );
   }
 }

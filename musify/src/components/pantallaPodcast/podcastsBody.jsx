@@ -3,12 +3,8 @@ import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { AiFillClockCircle } from 'react-icons/ai';
 import { FaPlay, FaPause } from 'react-icons/fa';
-import { useTrack } from "../TrackContext/trackContext";
+import { useTrack } from "../../TrackContext/trackContext";
 
-const base64ToImageSrc = (base64) => {
-    const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
-    return `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
-};
 
 const base64ToAudioSrc = (base64) => {
     const base64WithoutPrefix = base64.replace(/^data:audio\/mp3;base64,/, '').replace(/^data:[^;]+;base64,/, '');
@@ -36,7 +32,8 @@ const PodcastDetails = () => {
                 });
                 if (!response.ok) throw new Error("Failed to fetch podcast details");
                 const data = await response.json();
-                setPodcastImage(data.podcast.foto);
+                // Construye la URL de la imagen usando el servidor como base
+                setPodcastImage(`http://127.0.0.1:8000/imagenPodcast/${podcastId}/`);
                 setPodcastName(data.podcast.nombre);
                 fetchChapters(data.podcast.nombre);
             } catch (error) {
@@ -113,7 +110,7 @@ const PodcastDetails = () => {
         <Container>
             <div className="playlist">
             <div className="image">
-            <img src={base64ToImageSrc(podcastImage)} />
+            <img src={podcastImage} alt={podcastName} />
             </div>
             <div className="details">
                 <span className="type">PODCAST</span>
@@ -137,14 +134,14 @@ const PodcastDetails = () => {
                             onClick={() => togglePlayPause(index)}>
                             <div className="col"><span>{index + 1}</span></div>
                             <div className="col detail">
-                                <div className="image">
-                                    <img src={base64ToImageSrc(podcastImage)} alt={chapter.nombre} style={{ width: "50px", height: "auto" }} />
-                                    {hoverIndex === index && (
-                                        <div className="play-icon">
-                                            {isPlaying && currentTrack.id === chapter.id ? <FaPause size="2em" /> : <FaPlay size="2em" />}
-                                        </div>
-                                    )}
-                                </div>
+                            <div className="image">
+                                <img src={podcastImage} alt={chapter.nombre} style={{ width: "50px", height: "auto" }} />
+                                {hoverIndex === index && (
+                                    <div className="play-icon">
+                                        {isPlaying && currentTrack.id === chapter.id ? <FaPause size="2em" /> : <FaPlay size="2em" />}
+                                    </div>
+                                )}
+                            </div>
                                 <div className="info">
                                     <span className="name">{chapter.nombre}</span>
                                 </div>

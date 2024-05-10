@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import "@madzadev/audio-player/dist/index.css";
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { TrackProvider } from './components/TrackContext/trackContext';
+import { TrackProvider } from './TrackContext/trackContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

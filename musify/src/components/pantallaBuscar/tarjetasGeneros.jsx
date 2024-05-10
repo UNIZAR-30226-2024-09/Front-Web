@@ -1,12 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { FaMusic, FaGuitar, FaHeadphones, FaRegSmileBeam, FaRocketchat, FaRegGrinStars, FaPodcast } from 'react-icons/fa';
+import { FaMusic, FaGuitar, FaHeadphones, FaRegSmileBeam, FaRocketchat, FaRegGrinStars, FaPodcast, FaSpa, FaDumbbell, FaCar } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-
-const base64ToImageSrc = (base64) => {
-    const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
-    return `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
-};
 
 const base64ToAudioSrc = (base64) => {
     const base64WithoutPrefix = base64.replace(/^data:audio\/mp3;base64,/, '').replace(/^data:[^;]+;base64,/, '');
@@ -25,15 +20,19 @@ const gradients = [
 export default function Cards() {
     const [cards] = useState([
         { title: 'Rap', icon: <FaMusic /> },
-        { title: 'Clásica', icon: <FaGuitar /> },
+        { title: 'Clasica', icon: <FaGuitar /> },
         { title: 'Electro', icon: <FaHeadphones /> },
         { title: 'Pop', icon: <FaRegSmileBeam /> },
         { title: 'Rock', icon: <FaRocketchat /> },
         { title: 'Reggaeton', icon: <FaRegGrinStars /> },
         { title: 'Ciencias', icon: <FaPodcast />, isPodcast: true },
         { title: 'Cultura', icon: <FaPodcast />, isPodcast: true },
-        { title: 'Inglés', icon: <FaPodcast />, isPodcast: true },
-        { title: 'Psicología', icon: <FaPodcast />, isPodcast: true }
+        { title: 'Ingles', icon: <FaPodcast />, isPodcast: true },
+        { title: 'Psicologia', icon: <FaPodcast />, isPodcast: true },
+        // Añadir tarjetas para playlists predefinidas
+        { title: 'Canciones Coche', icon: <FaCar />, id: 'idCoche' },
+        { title: 'Canciones Gym', icon: <FaDumbbell />, id: 'idGym' },
+        { title: 'Canciones Relax', icon: <FaSpa />, id: 'idRelax' }
     ]);
     const [songs, setSongs] = useState({});
     const [podcasts, setPodcasts] = useState({});
@@ -44,66 +43,66 @@ export default function Cards() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (view === 'songs' && !isPodcastGenre && !songs[activeGenre]) {
-            const fetchSongs = async (genre) => {
-                try {
-                    const response = await fetch(`http://127.0.0.1:8000/filtrarCancionesPorGenero/`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ genero: genre })
-                    });
-                    const data = await response.json();
-                    if (response.ok && data.canciones) {
-                        const songsWithArtists = data.canciones.map((song) => ({
-                            ...song,
-                            foto: base64ToImageSrc(song.foto),
-                            archivoMp3: base64ToAudioSrc(song.archivoMp3),
-                        }));
-                        setSongs(prev => ({
-                            ...prev,
-                            [genre]: songsWithArtists
-                        }));
-                    } else {
-                        console.error('Failed to fetch songs for genre:', genre, data);
-                    }
-                } catch (error) {
-                    console.error('Error fetching songs:', error);
+        const fetchSongs = async (genre) => {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/filtrarCancionesPorGenero/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ genero: genre })
+                });
+                const data = await response.json();
+                if (response.ok && data.canciones) {
+                    const songsWithArtists = data.canciones.map((song) => ({
+                        ...song,
+                        foto: `http://localhost:8000/imagenCancion/${song.id}/`, // Usando ID para construir la URL
+                        archivoMp3: base64ToAudioSrc(song.archivoMp3),
+                    }));
+                    setSongs(prev => ({
+                        ...prev,
+                        [genre]: songsWithArtists
+                    }));
+                } else {
+                    console.error('Failed to fetch songs for genre:', genre, data);
                 }
-            };
+            } catch (error) {
+                console.error('Error fetching songs:', error);
+            }
+        };
+        if (view === 'songs' && !isPodcastGenre && !songs[activeGenre]) {
             fetchSongs(activeGenre);
         }
     }, [activeGenre, view, songs, isPodcastGenre]);
-
+    
     useEffect(() => {
-        if (view === 'songs' && isPodcastGenre && !podcasts[activeGenre]) {
-            const fetchPodcasts = async (genre) => {
-                try {
-                    const response = await fetch(`http://127.0.0.1:8000/filtrarPodcastsPorGenero/`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ genero: genre })
-                    });
-                    const data = await response.json();
-                    if (response.ok && data.podcasts) {
-                        const podcastsWithDetails = data.podcasts.map((podcast) => ({
-                            ...podcast,
-                            foto: base64ToImageSrc(podcast.foto),
-                        }));
-                        setPodcasts(prev => ({
-                            ...prev,
-                            [genre]: podcastsWithDetails
-                        }));
-                    } else {
-                        console.error('Failed to fetch podcasts for genre:', genre, data);
-                    }
-                } catch (error) {
-                    console.error('Error fetching podcasts:', error);
+        const fetchPodcasts = async (genre) => {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/filtrarPodcastsPorGenero/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ genero: genre })
+                });
+                const data = await response.json();
+                if (response.ok && data.podcasts) {
+                    const podcastsWithDetails = data.podcasts.map((podcast) => ({
+                        ...podcast,
+                        foto: `http://localhost:8000/imagenPodcast/${podcast.id}/`, // Usando ID para construir la URL
+                    }));
+                    setPodcasts(prev => ({
+                        ...prev,
+                        [genre]: podcastsWithDetails
+                    }));
+                } else {
+                    console.error('Failed to fetch podcasts for genre:', genre, data);
                 }
-            };
+            } catch (error) {
+                console.error('Error fetching podcasts:', error);
+            }
+        };
+        if (view === 'songs' && isPodcastGenre && !podcasts[activeGenre]) {
             fetchPodcasts(activeGenre);
         }
     }, [activeGenre, view, podcasts, isPodcastGenre]);
@@ -128,38 +127,47 @@ export default function Cards() {
         }
     };
 
+    const handleCardClick = (card) => {
+        if (card.isPodcast) {
+            setIsPodcastGenre(true);
+            setView('songs');
+        } else if (card.id) {  // Manejar click en playlists predefinidas
+            navigate(`/musify/${card.id}`);
+        } else {
+            setIsPodcastGenre(false);
+            setView('songs');
+        }
+        setActiveGenre(card.title);
+    };
+
     return (
         <CardsContainer>
             {view === 'cards' ? (
                 <CardsWrapper>
                     {cards.map((card, i) => (
                         <Card
-                            key={i}
-                            style={{ background: gradients[i % gradients.length] }}
-                            onClick={() => {
-                                setActiveGenre(card.title);
-                                setIsPodcastGenre(!!card.isPodcast);
-                                setView('songs');
-                            }}
-                        >
-                            <IconWrapper>{card.icon}</IconWrapper>
-                            <CardTitle>{card.title}</CardTitle>
-                            <CardText>{card.text || 'Descubre más aquí'}</CardText>
-                        </Card>
+                        key={i}
+                        style={{ background: gradients[i % gradients.length] }}
+                        onClick={() => handleCardClick(card)}  // Modificado para usar la nueva función de manejo
+                    >
+                        <IconWrapper>{card.icon}</IconWrapper>
+                        <CardTitle>{card.title}</CardTitle>
+                        <CardText>{card.text || 'Descubre más aquí'}</CardText>
+                    </Card>
                     ))}
                 </CardsWrapper>
             ) : (
                 <SongsWrapper>
                     {(isPodcastGenre ? podcasts : songs)[activeGenre] && (isPodcastGenre ? podcasts : songs)[activeGenre].map((item, index) => (
                         <SongCard
-                            key={index}
-                            onMouseEnter={() => setHoverIndex(index)}
-                            onMouseLeave={() => setHoverIndex(-1)}
-                            onClick={() => handleSongClick(index, activeGenre)}
-                        >
-                            <SongImage src={item.foto} alt={item.nombre} />
-                            <SongName>{item.nombre}</SongName>
-                        </SongCard>
+                        key={index}
+                        onMouseEnter={() => setHoverIndex(index)}
+                        onMouseLeave={() => setHoverIndex(-1)}
+                        onClick={() => handleSongClick(index, activeGenre)}
+                    >
+                        <SongImage src={item.foto} alt={item.nombre} />
+                        <SongName>{item.nombre}</SongName>
+                    </SongCard>
                     ))}
                 </SongsWrapper>
             )}

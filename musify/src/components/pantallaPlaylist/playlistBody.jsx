@@ -4,13 +4,8 @@ import styled from 'styled-components';
 import { AiFillClockCircle } from 'react-icons/ai';
 import { FaPlay, FaPause, FaLock, FaUnlock, FaUserPlus, FaTrash } from 'react-icons/fa';
 import { MdOutlineAddToPhotos } from 'react-icons/md';
-import { useTrack } from "../TrackContext/trackContext";
+import { useTrack } from "../../TrackContext/trackContext";
 import Modal from '../agnadirColaboradorModal/agnadirColaborador';
-
-const base64ToImageSrc = (base64) => {
-    const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
-    return `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
-};
 
 const base64ToAudioSrc = (base64) => {
     const base64WithoutPrefix = base64.replace(/^data:audio\/mp3;base64,/, '').replace(/^data:[^;]+;base64,/, '');
@@ -29,11 +24,20 @@ export default function Body() {
     const [isAddingCollaborator, setIsAddingCollaborator] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [songToDelete, setSongToDelete] = useState(null);
+    const [loadingSongs, setLoadingSongs] = useState(true);
+    const [loadingArtists, setLoadingArtists] = useState(false);
+    const [loadingAlbums, setLoadingAlbums] = useState(false);
+
 
     const confirmDelete = (songId) => {
         setSongToDelete(songId);
         setShowDeleteConfirm(true);
-    };    
+    };
+    
+    const getImageUrl = (type, filename) => {
+        return `http://localhost:8000/imagen${type}/${filename}/`;
+    };
+    
 
     const handleAddCollaborator = async () => {
         if (!collaboratorEmail) {
@@ -65,13 +69,13 @@ export default function Body() {
             const data = await response.json();
             if (response.ok && data.canciones) {
                 const enrichedSongs = await Promise.all(data.canciones.map(async song => {
-                    const imageUrl = base64ToImageSrc(song.foto);
+                    const imageUrl = getImageUrl('Cancion', song.id);
                     const audioUrl = base64ToAudioSrc(song.archivoMp3);
                     const artistas = await fetchArtistsForSong(song.id);
                     const album = await fetchAlbumForSong(song.miAlbum);
                     const duration = await fetchAudioDuration(audioUrl).catch(() => 'Duración Desconocida');
                     return { ...song, imageUrl, audioUrl, artistas, album, duration: formatDuration(duration) };
-                }));
+                }));                
                 setSongs(enrichedSongs);
             } else {
                 console.error('Error fetching playlist songs:', data);
@@ -264,7 +268,11 @@ export default function Body() {
         } else {
             updateTrack({
                 ...song,
-                src: song.audioUrl 
+                id: song.id, // Asegúrate de tener un identificador único
+                src: song.audioUrl, // URL del archivo de audio
+                imagen: song.imageUrl, // URL de la imagen de la canción
+                nombre: song.nombre, // Nombre de la canción
+                artista: song.artistas // Nombre(s) de los artistas
             });
             play();
         }
@@ -317,7 +325,7 @@ export default function Body() {
                             <div className="col"><span>{index + 1}</span></div>
                             <div className="col detail">
                                 <div className="image">
-                                    <img src={song.imageUrl} alt={song.nombre} style={{ width: "50px", height: "auto" }} />
+                                <img src={song.imageUrl} alt={song.nombre} style={{ width: "50px", height: "auto" }} />
                                     {hoverIndex === index && (
                                         <div className="play-icon">
                                             {isPlaying && currentTrack.id === song.id ? <FaPause size="2em" /> : <FaPlay size="2em" />}

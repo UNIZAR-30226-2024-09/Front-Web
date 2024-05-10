@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef} from 'react';
 import styled from 'styled-components';
+import { useParams } from 'react-router-dom';
 import { IoIosArrowBack } from 'react-icons/io';
 import { FaUserCircle } from 'react-icons/fa';
 
@@ -18,6 +19,7 @@ function useExternalScript(url) {
 }
 
 function Chat() {
+    const { salaId } = useParams();
     useExternalScript("https://unpkg.com/htmx.org@1.9.12/dist/ext/ws.js");
     const [messages, setMessages] = useState([
         { id: 1, text: "Hey everyone, how's the project going?", type: 'received' },
@@ -32,7 +34,7 @@ function Chat() {
     useEffect(() => {
         // Cambia el host y puerto según tu configuración de Django y asegúrate de incluir el nombre de la sala
         // Por ejemplo, si tu servidor Django corre en localhost en el puerto 8000 y la sala se llama "public"
-        websocket.current = new WebSocket('ws://localhost:8000/ws/chatroom/public/');
+        websocket.current = new WebSocket(`ws://localhost:8000/ws/chat/${salaId}/`);
     
         websocket.current.onmessage = (event) => {
             const newMessage = JSON.parse(event.data);
@@ -57,19 +59,84 @@ function Chat() {
                 websocket.current.close();
             }
         };
-    }, []);
+    }, [salaId]);
 
     useEffect(() => {
         const messageList = document.getElementById("messagesList");
         messageList.scrollTop = messageList.scrollHeight;
     }, [messages]);
 
-    const sendMessage = (e) => {
+    useEffect(() => {
+        async function cargarMensajes() {
+            try {
+                const response = await fetch(`http://localhost:8000/cargarMensajesAPI/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRFToken': 'tu_token_csrf_aquí'
+                    },
+                    body: JSON.stringify({ salaid: salaId })
+                });
+                if (response.ok) {
+                    const mensajesApi = await response.json();
+                    const mensajesFormat = mensajesApi.map(msg => ({
+                        id: msg.id,
+                        text: msg.texto,
+                        type: msg.miUsuario === 'zineb@gmail.com' ? 'sent' : 'received', // Cambia 'zineb@gmail.com' por el email del usuario actual
+                        fecha: msg.fecha
+                    }));
+                    mensajesFormat.sort((a, b) => new Date(a.fecha) - new Date(b.fecha)); // Ordena mensajes por fecha
+                    setMessages(mensajesFormat);
+                } else {
+                    throw new Error('No se pudo cargar los mensajes.');
+                }
+            } catch (error) {
+                console.error("Error al cargar mensajes: ", error);
+            }
+        }
+    
+        cargarMensajes();
+    }, [salaId]);  // Dependencia para que se ejecute cada vez que cambia el ID de la sala.
+    
+
+    const sendMessage = async (e) => {
         e.preventDefault();
-        if (input.trim() && websocket.current.readyState === WebSocket.OPEN) {
-            const messageToSend = JSON.stringify({ text: input, type: 'sent' });
-            websocket.current.send(messageToSend);
-            setInput('');
+        if (input.trim()) {
+            const messageToSend = JSON.stringify({
+                cuerpo: {
+                    mensaje: input,
+                    emisorid: 'zineb@gmail.com',
+                    salaid: salaId
+                }
+            });
+    
+            try {
+                const response = await fetch('http://localhost:8000/registrarMensajeAPI/', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': 'tu_token_csrf_aquí'
+                    },
+                    body: JSON.stringify({ 
+                        salaid: salaId,
+                        emisorid: 'zineb@gmail.com',
+                        mensaje: input 
+                    })
+                });
+    
+                if (response.ok) {
+                    if (websocket.current.readyState === WebSocket.OPEN) {
+                        websocket.current.send(messageToSend);
+                        setInput('');
+                    }
+                } else {
+                    throw new Error('Error al enviar mensaje.');
+                }
+            } catch (error) {
+                console.error("Error al registrar mensaje: ", error);
+            }
         }
     };
 
