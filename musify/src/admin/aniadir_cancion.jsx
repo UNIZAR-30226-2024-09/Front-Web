@@ -10,8 +10,8 @@ export default function AniadirCancionesAdmin() {
     const [titulo, setTitulo] = useState('');
     const [artista, setArtista] = useState('');
     const [album, setAlbum] = useState('');
-    const [duracion, setDuracion] = useState('');
-    const [generos, setGeneros] = useState('');
+    const [genero, setGenero] = useState('');
+    const [generos, setGenerosCanciones] = useState('');
     const [imagen, setImagen] = useState(null);
     const [audio, setAudio] = useState(null);
     const [cancionValid, setCancionValid] = useState(false);
@@ -37,7 +37,7 @@ export default function AniadirCancionesAdmin() {
                 if (!response.ok) throw new Error("Failed to fetch album");
                 const generosData = await response.json();
                 const nombresGeneros = generosData.generos.map(genero => genero.nombre);
-                setGeneros(nombresGeneros);
+                setGenerosCanciones(nombresGeneros);
             } catch (error) {
                 setError(`Failed to fetch generos: ${error.message}`);
             } finally {
@@ -112,7 +112,7 @@ export default function AniadirCancionesAdmin() {
                                 onChange={e=>setAlbum(e.target.value)}
                                 placeholder="Album" required />
                         </div>
-                        <select value={generos} onChange={e=>setGeneros(e.target.value)} required>
+                        <select value={genero} onChange={e=>setGenero(e.target.value)} required>
                             <option value="">Selecciona un género</option>
                             {generos.map((genero, index) => (
                                 <option key={index} value={genero}>{genero}</option>
@@ -157,21 +157,37 @@ const Container = styled.div`
 
 .info {
     width: 100%;
-    height: 500px;
+    height: 400px;
     padding: 30px;
 
     .titulo {
         width: 400px;
         height: 80px;
+        margin-top: 35px;
         margin-bottom: 20px;
     }
     
-    .input-box, select{
+    .input-box {
         position: relative;
         width: 400px;
         height: 40px;
         margin: 30px 0;
     }
+
+    select {
+        position: relative;
+        width: 400px;
+        height: 40px;
+        margin-top: 35px;
+        background: none;
+        border: 2px solid #fff;
+        border-radius: 20px;
+        color: #fff;
+    }
+    select option {
+        color: #000;
+    }
+
     input{
         width: 100%;
         height: 100%;
@@ -197,11 +213,12 @@ const Container = styled.div`
 
 .audio{
     position: absolute;
-    bottom: 180px;
+    bottom: 220px;
     right: 40px;
     width: 300px;
     height: 50px;
     outline: none;
+    text-align: center;
     input {
         width: 100%;
         height: 100%;
@@ -211,7 +228,7 @@ const Container = styled.div`
 
 .image {
     position: absolute;
-    top: 30px;
+    top: 60px;
     right: 40px;
     width: 300px;
     height: 200px;
@@ -233,7 +250,7 @@ const Container = styled.div`
   .buttons-container {
     display: flex;
     justify-content: space-between;
-    padding: 0 20px;
+    padding: 90px 30px;
   }
 
   .cancel-button, .save-button {

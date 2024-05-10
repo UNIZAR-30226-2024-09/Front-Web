@@ -32,7 +32,7 @@ export default function ListaCancionesAdmin() {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const response = await fetch('http://127.0.0.1:8000/listarCanciones/', {
+                const response = await fetch('http://127.0.0.1:8000/listarPocasCanciones/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -42,21 +42,20 @@ export default function ListaCancionesAdmin() {
                 if (response.ok) {
                     const data = await response.json();
                     console.log(data);
-                    const updatedCanciones = data.canciones.slice(0, 3).map(cancion => ({
+                    const updatedCanciones = data.canciones.map(cancion => ({
                         id: cancion.id,
                         foto: base64ToImageSrc(cancion.foto),
                         nombre: cancion.nombre,
                         album: cancion.miAlbum
                     }));
                     setCanciones(updatedCanciones);
-                    const fetchAlbumPromises = updatedCanciones.map(cancion => fetchAlbum(cancion.album));
+                    console.log(updatedCanciones);
+                    const albumIds = updatedCanciones.map(cancion => cancion.album);
+                    const fetchAlbumPromises = albumIds.map(id => fetchAlbum(id));
                     const albumsData = await Promise.all(fetchAlbumPromises);
-                    const updatedAlbums = albumsData.reduce((acc, album, index) => {
-                        acc[index] = album;
-                        return acc;
-                    }, {});
-                    setAlbums(updatedAlbums);
-                    console.log(updatedAlbums);
+                    setAlbums(albumsData);
+                    console.log(albumIds);
+                    console.log(albums);
                 }else {
                     const errorData = await response.text();
                     throw new Error(errorData || "Error al recibir datos");
@@ -69,21 +68,29 @@ export default function ListaCancionesAdmin() {
         };
 
         const fetchAlbum = async (idAlbum) => {
-          try {
-              const response = await fetch(`http://127.0.0.1:8000/devolverAlbum/`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ albumId: idAlbum })
-              });
-              if (!response.ok) throw new Error("Failed to fetch album");
-              const albumData = await response.json();
-              //console.log(albumData);
-              //console.log(albumData.album.nombre);
-              return albumData.album.nombre;
-          } catch (error) {
-            console.log(error);
-              setError(`Failed to fetch album: ${error.message}`);
-          }
+            try {
+                if (idAlbum === null) {
+                    return "undefined"; // Valor predeterminado cuando idAlbum es null
+                }
+        
+                const response = await fetch(`http://127.0.0.1:8000/devolverAlbum/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ albumId: idAlbum })
+                });
+                if (!response.ok) throw new Error("Failed to fetch album");
+                const albumData = await response.json();
+                if(albumData.album){
+                    console.log(albumData);
+                    console.log(albumData.album.nombre);
+                    return albumData.album.nombre;
+                } else{
+                    return " ";
+                }
+            } catch (error) {
+                console.log(error);
+                setError(`Failed to fetch album: ${error.message}`);
+            }
         };
         fetchData();
     }, []);
@@ -117,7 +124,7 @@ export default function ListaCancionesAdmin() {
                                         </div>
                                     </div>
                                 </td>
-                                <td>{albums[index]}</td>
+                                <td>{albums[indiceInicio + index]}</td>
                                 <Link to={`/editar_cancion/${c.id}`} className="cancion__settings">
                                   <FaCog />
                                 </Link>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import "../pantallaInicioSesion/inicioSesion.css"
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../UserContext/userContext';
 
 export default function RegisterTerminosCondiciones() {
     const navigate = useNavigate();
@@ -10,9 +11,12 @@ export default function RegisterTerminosCondiciones() {
     const [generosPodcasts, setGenerosPodcasts] = useState([]);
     const [generoPodcastFav, setGeneroPodcastFav] = useState('');
     const [artistas, setArtistas] = useState([]);
-    const [artistaFav, setArtistaFav] = useState('');
+    const [artistaFav, setArtistaFav] = useState({ id: '', nombre: '' });
     const [presentadores, setPresentadores] = useState([]);
-    const [presentadorFav, setPresentadorFav] = useState('');
+    const [presentadorFav, setPresentadorFav] = useState({ id: '', nombre: '' });
+
+    const [correo, setCorreo] = useState('');
+    const { userDetails, setUserDetails } = useUser();
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -69,8 +73,13 @@ export default function RegisterTerminosCondiciones() {
                 if (!response.ok) throw new Error("Failed to fetch artistas");
                 const artistasData = await response.json();
                 const nombresArtistas = artistasData.artistas.map(artista => artista.nombre);
-                setArtistas(nombresArtistas);
-                console.log(nombresArtistas);
+                const idArtistas = artistasData.artistas.map(artista => artista.id);
+                const artistasRelacionados = nombresArtistas.map((nombre, index) => ({
+                    nombre,
+                    id: idArtistas[index]
+                }));
+                setArtistas(artistasRelacionados);
+                console.log(artistasRelacionados);
             } catch (error) {
                 setError(`Failed to fetch artistas: ${error.message}`);
             } finally {
@@ -90,8 +99,13 @@ export default function RegisterTerminosCondiciones() {
                 if (!response.ok) throw new Error("Failed to fetch podcasts");
                 const presentadoresData = await response.json();
                 const nombresPresentadores = presentadoresData.presentadores.map(presentador => presentador.nombre);
-                setPresentadores(nombresPresentadores);
-                console.log(nombresPresentadores);
+                const idPresentadores = presentadoresData.presentadores.map(artista => artista.id);
+                const presentadoresRelacionados = nombresPresentadores.map((nombre, index) => ({
+                    nombre,
+                    id: idPresentadores[index]
+                }));
+                setPresentadores(presentadoresRelacionados);
+                console.log(presentadoresRelacionados);
             } catch (error) {
                 setError(`Failed to fetch presentadores: ${error.message}`);
             } finally {
@@ -101,12 +115,84 @@ export default function RegisterTerminosCondiciones() {
         fetchPresentadores();
     }, []);
 
+    useEffect(() => {
+        const fetchArtistaFav = async () => {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/agnadirArtistaFavorito/`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo: userDetails.correo, artistaId: artistaFav.id}),
+                });
+                if (!response.ok) throw new Error("Failed to fetch artista favorito");
+            } catch (error) {
+                setError(`Failed to fetch artista favorito: ${error.message}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchArtistaFav();
+    },);
+
+    useEffect(() => {
+        const fetchPresentadorFav = async () => {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/agnadirPresentadorFavorito/`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo: userDetails.correo, presentadorId: presentadorFav.id}),
+                });
+                if (!response.ok) throw new Error("Failed to fetch presentador favorito");
+            } catch (error) {
+                setError(`Failed to fetch presentador favorito: ${error.message}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPresentadorFav();
+    },);
+
+    useEffect(() => {
+        const fetchGeneroCancionFav = async () => {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/agnadirGeneroFavorito/`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo: userDetails.correo, genero: generoCancionFav}),
+                });
+                if (!response.ok) throw new Error("Failed to fetch genero de cancion favorito");
+            } catch (error) {
+                setError(`Failed to fetch genero de cancion favorito: ${error.message}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchGeneroCancionFav();
+    },);
+
+    useEffect(() => {
+        const fetchGeneroPodcastFav = async () => {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/agnadirGeneroFavorito/`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo: userDetails.correo, genero: generoPodcastFav}),
+                });
+                if (!response.ok) throw new Error("Failed to fetch genero de podcast favorito");
+            } catch (error) {
+                setError(`Failed to fetch genero de podcast favorito: ${error.message}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchGeneroPodcastFav();
+    },);
+
     const handleSaltar = () => {
         navigate('/login'); //Vuelve a la lista de canciones
     };
 
     const handleTerminar = () => {
-        navigate('/aniadir_capitulo'); //Vuelve a la lista de canciones
+        navigate('/login'); //Vuelve a la lista de canciones
     };
 
     return (
@@ -117,10 +203,12 @@ export default function RegisterTerminosCondiciones() {
                     <h1>¿Qué prefieres?</h1>
                     <div className="question">
                         <h6>¿Qué artistas prefieres?</h6>
-                        <select className='seleccion' value={artistaFav} onChange={e=>setArtistaFav(e.target.value)}>
+                        <select className='seleccion' value={artistaFav.id} onChange={e => {setArtistaFav({ id: e.target.value, nombre: artistas[e.target.value].nombre })}}>
                             <option value="">Selecciona un artista</option>
-                            {artistas.map((artista, index) => (
-                                <option key={index} value={artista}>{artista}</option>
+                            {Object.keys(artistas).map((id, index) => (
+                            <option key={id} value={id}>
+                                {artistas[id].nombre}
+                            </option>
                             ))}
                         </select>
                     </div>
@@ -137,10 +225,12 @@ export default function RegisterTerminosCondiciones() {
 
                     <div className="question">
                         <h6>¿Qué presentador prefieres?</h6>
-                        <select className='seleccion' value={presentadorFav} onChange={e=>setPresentadorFav(e.target.value)}>
+                        <select className='seleccion' value={presentadorFav.id} onChange={e => {setPresentadorFav({ id: e.target.value, nombre: artistas[e.target.value].nombre })}}>
                             <option value="">Selecciona un presentador</option>
-                            {presentadores.map((presentador, index) => (
-                                <option key={index} value={presentador}>{presentador}</option>
+                            {Object.keys(presentadores).map((id, index) => (
+                                <option key={id} value={id}>
+                                    {presentadores[id].nombre}
+                                </option>
                             ))}
                         </select>
                     </div>
@@ -248,6 +338,20 @@ const Container = styled.div`
     }
 }
 
+.seleccion {
+    position: relative;
+    width: 400px;
+    height: 35px;
+    background: none;
+    border: 2px solid #fff;
+    border-radius: 20px;
+    color: #fff;
+    option {
+        color: #000;
+    }
+}
+
+
 .buttons-container {
     display: flex;
     justify-content: space-between;
@@ -257,7 +361,6 @@ const Container = styled.div`
     padding: 10px 20px;
     border: none;
     border-radius: 20px;
-    margin-top: 20px;
     margin-right: 200px;
     margin-left: 200px;
     background: #54b2e7;

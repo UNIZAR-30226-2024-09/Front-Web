@@ -28,11 +28,11 @@ export default function Body_inicio() {
             setLoading(true);
             try {
                 const [songsResponse, podcastsResponse] = await Promise.all([
-                    fetch('http://127.0.0.1:8000/listarCanciones/', {
+                    fetch('http://127.0.0.1:8000/listarPocasCanciones/', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'}
                     }),
-                    fetch('http://127.0.0.1:8000/listarPodcasts/', {
+                    fetch('http://127.0.0.1:8000/listarPocosPodcasts/', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'}
                     })

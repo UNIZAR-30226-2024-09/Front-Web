@@ -5,14 +5,11 @@ import AniadirWindow from "./salir_sin_guardar";
 
 export default function AniadirPodcasrAdmin() {
     const navigate = useNavigate();
-    const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
-    const [showModalCap, setShowModalCap] = useState(false);
+    const [showModal, setShowModal] = useState(false);
     const [podcastValid, setPodcastValid] = useState(true);
 
     const [titulo, setTitulo] = useState('');
     const [presentador, setPresentador] = useState('');
-    const [fecha, setFecha] = useState('');
-    const [duracion, setDuracion] = useState('');
     const [genero, setGenero] = useState('');
     const [imagen, setImagen] = useState(null);
     const [audio, setAudio] = useState(null);
@@ -244,13 +241,13 @@ const Container = styled.div`
     padding: 90px 30px;
   }
 
-  .cancel-button, .save-button, .chapter-button {
+  .cancel-button, .save-button {
     padding: 10px 20px;
     border: 20px;
     border-radius: 20px;
     cursor: pointer;
     font-weight: bold;
-    bottom: 1px;
+    bottom: 100px;
   }
 
   .cancel-button {

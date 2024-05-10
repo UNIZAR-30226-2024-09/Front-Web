@@ -27,7 +27,7 @@ export default function EditarCancion() {
     const[generosCancion, setGenerosCancion] = useState({});
     const[foto, setFoto] = useState(null);
     const[audio, setAudio] = useState(null);
-    const[duracion, setDuracion] = useState('');
+    const[duracion, setDuracion] = useState(0);
     const[generos, setGeneros] = useState([]);
 
     const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
@@ -53,11 +53,11 @@ export default function EditarCancion() {
                 setNombre(data.cancion.nombre);
                 setAlbum(data.cancion.miAlbum);
                 setFoto(base64ToImageSrc(data.cancion.foto));
-                setAudio(base64ToAudioSrc(data.cancion.archivoMp3));
+                //setAudio(base64ToAudioSrc(data.cancion.archivoMp3));
                 fetchArtistas();
                 fetchAlbum(data.cancion.miAlbum);
                 fetchGenerosCancion(cancionId);
-                fetchDuracion(base64ToAudioSrc(data.cancion.archivoMp3));
+                //fetchDuracion(base64ToAudioSrc(data.cancion.archivoMp3));
                 fetchGeneros();
             } catch (error) {
                 setError(error.message);
@@ -74,11 +74,18 @@ export default function EditarCancion() {
                     body: JSON.stringify({ cancionId })
                 });
                 if (!response.ok) throw new Error("Failed to fetch artistas");
-                const songData = await response.json();
-                const updatedArtistas = songData.artistas.map(artista => ({
-                    nombre: artista.nombre
-                }));
-                setArtistas(updatedArtistas);
+                const cancionData = await response.json();
+                if(cancionData.artistas) {
+                    const updatedArtistas = cancionData.artistas.map(artista => ({
+                        nombre: artista.nombre
+                    }));
+                    setArtistas(updatedArtistas);
+                    console.log(updatedArtistas);
+                } else{
+                    setArtistas([]);
+                    console.log(artistas);
+                }
+                
             } catch (error) {
                 setError(`Failed to fetch artistas: ${error.message}`);
             } finally {
@@ -112,8 +119,14 @@ export default function EditarCancion() {
                 });
                 if (!response.ok) throw new Error("Failed to fetch album");
                 const cancionData = await response.json();
-                const nombresGeneros = cancionData.generos.map(genero => genero.nombre);
-                setGenerosCancion(nombresGeneros);
+                if(cancionData.generos) {
+                    const nombresGeneros = cancionData.generos.map(genero => genero.nombre);
+                    setGenerosCancion(nombresGeneros);
+                    console.log(nombresGeneros);
+                } else{
+                    setGenerosCancion();
+                    console.log(generosCancion);
+                }
             } catch (error) {
                 setError(`Failed to fetch generos de la cancion: ${error.message}`);
             } finally {
@@ -126,7 +139,6 @@ export default function EditarCancion() {
                 const response = await fetch(`http://127.0.0.1:8000/generosCanciones/`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({})
                 });
                 if (!response.ok) throw new Error("Failed to fetch album");
                 const generosData = await response.json();
@@ -254,7 +266,7 @@ export default function EditarCancion() {
                             <h6>Artistas:</h6>
                             <textarea
                                 rows={4} 
-                                value={artistas.map(artista => artista.nombre).join(", ")}
+                                value={artistas.length > 0 ? artistas.map(artista => artista.nombre).join(", ") : ""}
                                 onChange={handleInputChange}
                                 placeholder="Escribe los nombres de los artistas separados por comas"
                             />
@@ -418,7 +430,7 @@ const Container = styled.div`
     padding: 0 20px;
   }
 
-  .cancel-button, .save-button {
+  .cancel-button, .save-button, .delete-button {
     padding: 10px 20px;
     border: none;
     border-radius: 20px;
