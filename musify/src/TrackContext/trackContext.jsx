@@ -119,6 +119,9 @@ export const TrackProvider = ({ children }) => {
     const getImageUrl = (songId) => {
     return `http://localhost:8000/imagenCancion/${songId}/`;
 };
+    const getAudioUrl = (songId) => {
+    return `http://localhost:8000/audioCancion/${songId}/`;
+};
 
     // Función para obtener la última canción y su estado
     const obtenerUltimoEstadoYReproducir = async () => {
@@ -161,7 +164,9 @@ export const TrackProvider = ({ children }) => {
                     // Tercero, actualizamos el reproductor con la nueva canción y el tiempo guardado
                     updateTrack({
                         id: cancion.id,
-                        src: base64ToAudioSrc(cancion.archivoMp3),
+                        //src: base64ToAudioSrc(cancion.archivoMp3),
+                        //src: getAudioUrl(cancion.id),
+                        src: getAudioUrl(64),
                         nombre: cancion.nombre,
                         imagen: getImageUrl(cancion.id),
                         artistas: artistas

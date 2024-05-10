@@ -13,6 +13,9 @@ const base64ToAudioSrc = (base64) => {
 const getImageSrc = (type, id) => {
     return `http://localhost:8000/imagen${type}/${id}`;
 };
+const getAudioUrl = (songId) => {
+    return `http://localhost:8000/audioCancion/${songId}/`;
+};
 
 export default function Body_inicio() {
     const [canciones, setCanciones] = useState([]);
@@ -189,7 +192,10 @@ const SongRow = ({ canciones }) => {
                     throw new Error('Failed to load the song audio');
                 }
                 const data = await response.json();
-                const audioUrl = base64ToAudioSrc(data.cancion.archivoMp3);
+                //const audioUrl = base64ToAudioSrc(data.cancion.archivoMp3);
+                //const audioUrl = getAudioUrl(data.cancion.id); Version vinal <----------
+                const audioUrl = getAudioUrl(64);
+
                 
                 // Actualiza el track actual con la nueva información, incluido el URL del audio
                 updateTrack({
