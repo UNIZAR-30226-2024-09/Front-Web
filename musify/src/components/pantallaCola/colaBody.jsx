@@ -3,11 +3,6 @@ import styled from 'styled-components';
 import { useTrack } from "../../TrackContext/trackContext";
 import { FaTrashAlt } from 'react-icons/fa';
 
-const base64ToImageSrc = (base64) => {
-  const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
-  return `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
-};
-
 export default function Body_cola() {
   const [songs, setSongs] = useState([]);
   const [message, setMessage] = useState('');
@@ -15,11 +10,18 @@ export default function Body_cola() {
 
   const startPlayingQueue = () => {
     if (songs.length > 0) {
+      const firstSong = songs[0];
+      updateTrack({
+        ...firstSong,
+        src: `http://localhost:8000/audioCancion/${firstSong.id}`
+      });
       setTrackIndex(0);
-      updateTrack(songs[0]);
       play();
+    } else {
+      setMessage('No songs in queue');
     }
   };
+  
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -46,7 +48,7 @@ export default function Body_cola() {
     if (response.ok) {
       const enrichedSongs = data.queue.map(song => ({
         ...song,
-        imageUrl: base64ToImageSrc(song.foto),
+        imageUrl: `http://localhost:8000/imagenCancion/${song.id}/`,
       }));
       setSongs(enrichedSongs);
       setTrackList(enrichedSongs);

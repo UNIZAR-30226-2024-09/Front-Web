@@ -3,24 +3,12 @@ import styled from "styled-components";
 import { FaSearch } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
 
-
-const base64ToAudioSrc = (base64) => {
-  console.log("Base64 original:", base64); // Imprimir la base64 original
-
-    // Eliminar cualquier prefijo incorrecto y asegurar que es el correcto para audio/mp3
-    const base64WithoutPrefix = base64.replace(/^data:audio\/mp3;base64,/, '').replace(/^data:[^;]+;base64,/, '');
-    const audioSrc = `data:audio/mp3;base64,${atob(base64WithoutPrefix)}`;
-    console.log("Audio transformado:", audioSrc); // Imprimir el src del audio transformado
-
-    return audioSrc;
-};
-
 export default function Navbar({ onSearch: parentOnSearch }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [artistData, setArtistData] = useState(null);
+  const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showResults, setShowResults] = useState(false); 
+  const [showResults, setShowResults] = useState(false);
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -31,6 +19,7 @@ export default function Navbar({ onSearch: parentOnSearch }) {
     setError("");
     setLoading(true);
     setShowResults(false);
+
     try {
       const response = await fetch('http://127.0.0.1:8000/buscar/', {
         method: 'POST',
@@ -39,14 +28,15 @@ export default function Navbar({ onSearch: parentOnSearch }) {
         },
         body: JSON.stringify({ nombre: searchQuery }),
       });
-  
+
       if (response.ok) {
         const data = await response.json();
-        console.log("Data from search:", data);  // Agrega esta línea para ver los datos
-        if (parentOnSearch) parentOnSearch(data);  
-    } else {
+        if (parentOnSearch) parentOnSearch(data);
+        setResults(data);
+        setShowResults(true);
+      } else {
         setError("Error al buscar. Por favor, intenta de nuevo.");
-    }
+      }
     } catch (error) {
       setError("Error al conectar con el servicio. Por favor, verifica tu conexión.");
     } finally {
@@ -72,7 +62,7 @@ export default function Navbar({ onSearch: parentOnSearch }) {
       </div>
       {loading && <p>Cargando...</p>}
       {error && <p>{error}</p>}
-      {showResults && artistData.map((item, index) => (
+      {showResults && results.map((item, index) => (
         <div key={index}>
           {item.cancion && <p>Canción: {item.cancion.nombre}</p>}
           {item.capitulo && <p>Capítulo: {item.capitulo.nombre}</p>}
@@ -80,6 +70,8 @@ export default function Navbar({ onSearch: parentOnSearch }) {
           {item.artista && <p>Artista: {item.artista.nombre}</p>}
           {item.album && <p>Álbum: {item.album.nombre}</p>}
           {item.playlist && <p>Playlist: {item.playlist.nombre}</p>}
+          {item.usuario && <p>Usuario: {item.usuario.nombre}</p>}
+          {item.presentador && <p>Presentador: {item.presentador.nombre}</p>}
         </div>
       ))}
     </Container>

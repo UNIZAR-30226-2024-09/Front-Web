@@ -202,11 +202,6 @@ export const TrackProvider = ({ children }) => {
         if (track.src) {
             audioRef.current.src = track.src;
             audioRef.current.load();
-            audioRef.current.oncanplay = () => {
-                if (isPlaying) {
-                    audioRef.current.play().catch(error => console.error('Error playing:', error));
-                }
-            };
             setCurrentTrack(track);
             setCurrentTrackId(track.id);
         } else {
@@ -234,20 +229,24 @@ export const TrackProvider = ({ children }) => {
     const changeTrack = (forward = true) => {
         let newIndex;
         if (isShuffling) {
-            // Asegúrate de que el índice aleatorio sea realmente aleatorio y no repita el actual.
-            newIndex = getRandomIndex(trackIndex);
+            newIndex = Math.floor(Math.random() * tracks.length);
         } else {
             newIndex = trackIndex + (forward ? 1 : -1);
             if (newIndex >= tracks.length) {
-                newIndex = 0; // Vuelve al inicio de la lista si se alcanza el final.
+                newIndex = 0; // Si es el fin de la cola, vuelve al inicio.
             } else if (newIndex < 0) {
-                newIndex = tracks.length - 1; // Vuelve al final de la lista si se alcanza el inicio.
+                newIndex = tracks.length - 1; // Si retrocede antes del inicio, va al final.
             }
         }
-        if (newIndex !== trackIndex) {
-            setTrackIndex(newIndex);
-        }
+        setTrackIndex(newIndex);
     };
+
+    useEffect(() => {
+        audioRef.current.onended = () => {
+            changeTrack(true); // Cambia a la siguiente pista cuando una canción termina.
+            play(); // Comienza a reproducir automáticamente la siguiente canción.
+        };
+    }, [trackIndex, tracks]); 
     
     
     useEffect(() => {

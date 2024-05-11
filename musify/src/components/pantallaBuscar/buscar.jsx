@@ -1,4 +1,4 @@
-import React, { useState} from "react";
+import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import styled, { createGlobalStyle } from "styled-components";
 import Sidebar from "../Sidebar/sidebar";
@@ -7,31 +7,42 @@ import Footer from "../Footer/footer";
 import Card from "./tarjetasGeneros";
 
 export default function Musify(){
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
     const [showSearchResults, setShowSearchResults] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
+    const [userSearchResults, setUserSearchResults] = useState([]);
+    const [showUserSearchResults, setShowUserSearchResults] = useState(false);
 
     const handleSearch = (results) => {
-        const mappedResults = results.map(item => {
-            let imageUrl = '';
-            if (item.cancion) {
-                imageUrl = `http://localhost:8000/imagenCancion/${item.cancion.id}/`;
-            } else if (item.podcast) {
-                imageUrl = `http://localhost:8000/imagenPodcast/${item.podcast.id}/`;
-            } else if (item.album) {
-                imageUrl = `http://localhost:8000/imagenAlbum/${item.album.id}/`;
-            }
+        const generalResults = [];
+        const userResults = [];
+
+        results.forEach(item => {
+            if (item.usuario) {
+                userResults.push(item);
+            } else {
+                let imageUrl = '';
+                if (item.cancion) {
+                    imageUrl = `http://localhost:8000/imagenCancion/${item.cancion.id}/`;
+                } else if (item.podcast) {
+                    imageUrl = `http://localhost:8000/imagenPodcast/${item.podcast.id}/`;
+                } else if (item.album) {
+                    imageUrl = `http://localhost:8000/imagenAlbum/${item.album.id}/`;
+                }
     
-            return {
-                ...item,
-                imageUrl, // Agregar la URL de la imagen al objeto del resultado
-            };
+                generalResults.push({
+                    ...item,
+                    imageUrl,
+                });
+            }
         });
 
-    
-        console.log("Search results received in Musify:", mappedResults);
-        setSearchResults(mappedResults);
+        console.log("General search results received in Musify:", generalResults);
+        console.log("User search results received in Musify:", userResults);
+        setSearchResults(generalResults);
+        setUserSearchResults(userResults);
         setShowSearchResults(true);
+        setShowUserSearchResults(userResults.length > 0);
     };
     
     const handleClick = (item) => {
@@ -44,6 +55,10 @@ export default function Musify(){
         }
     };
 
+    const handleUserClick = (email) => {
+        navigate(`/perfilAmigo/${email}`);
+    };
+
     return (
         <>
             <GlobalStyle />
@@ -53,24 +68,27 @@ export default function Musify(){
                     <div className="body">
                         <Navbar onSearch={handleSearch} />
                         <div className="body__contents">
-                            {showSearchResults ? (
-                                <div>
-                                    {searchResults.map((item, index) => (
-                                        <ResultContainer key={index}>
-                                            {item.imageUrl && (
-                                                <ArtistImage
-                                                    src={item.imageUrl}
-                                                    alt={item.cancion ? item.cancion.nombre : item.podcast ? item.podcast.nombre : item.album.nombre}
-                                                    onClick={() => handleClick(item)}
-                                                />
-                                            )}
-                                            {/* Más información del item... */}
-                                        </ResultContainer>
-                                    ))}
-                                </div>
-                            ) : (
-                                <Card />
+                        {showUserSearchResults && userSearchResults.map(user => (
+                                  <UserResultButton key={user.usuario.id} onClick={() => handleUserClick(user.usuario.correo)}>
+                                  Correo: {user.usuario.correo} - Nombre: {user.usuario.nombre}
+                              </UserResultButton>
+                              
+                                ))}
+                            {showSearchResults && (
+                                searchResults.map((item, index) => (
+                                    <ResultContainer key={index}>
+                                        {item.imageUrl && (
+                                            <ArtistImage
+                                                src={item.imageUrl}
+                                                alt={item.cancion ? item.cancion.nombre : item.podcast ? item.podcast.nombre : item.album.nombre}
+                                                onClick={() => handleClick(item)}
+                                            />
+                                        )}
+                                        {/* More information about the item */}
+                                    </ResultContainer>
+                                ))
                             )}
+                            {!showSearchResults && <Card />}
                         </div>
                     </div>
                 </div>
@@ -127,4 +145,21 @@ const ArtistImage = styled.img`
     border-radius: 50%;
     margin-bottom: 20px;
     object-fit: cover;
+`;
+
+const UserResultButton = styled.button`
+    padding: 10px 15px;
+    margin: 10px 0;
+    margin-left: 400px;
+    margin-top: 150px;
+    background-color: #318ce7; /* Green background */
+    color: white; /* White text color */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+        background-color: #45a049; /* Darker green background on hover */
+    }
 `;
