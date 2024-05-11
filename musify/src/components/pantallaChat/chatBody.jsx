@@ -25,9 +25,13 @@ function Chat() {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [userEmail, setUserEmail] = useState('');
+    const [messageCounter, setMessageCounter] = useState(0);
 
     const websocket = useRef(null);
     const [uniqueMessageIds, setUniqueMessageIds] = useState(new Set()); // Maintain a set of unique message IDs
+
+
+    
     useEffect(() => {
         if (localStorage.getItem('userToken')) {
             const fetchUserDetails = async () => {
@@ -51,8 +55,16 @@ function Chat() {
                     console.error('Error fetching user details:', error);
                 }
             };
-    
-            fetchUserDetails();
+            
+            if (localStorage.getItem('userToken')) {
+                fetchUserDetails();
+            }            
+            return () => {
+                if (websocket.current && websocket.current.readyState === WebSocket.OPEN) {
+                    websocket.current.close();
+                    console.log('WebSocket connection closed.');
+                }
+            };
         }
     }, []);
     
@@ -63,19 +75,25 @@ function Chat() {
         websocket.current = new WebSocket(`ws://localhost:8000/ws/chat/${salaId}/`);
     
         websocket.current.onmessage = (event) => {
-            const newMessage = JSON.parse(event.data);
+            const newId = messageCounter + 1;
+            setMessageCounter(newId);
+            const newMessage = { ...JSON.parse(event.data), id: newId };
+        
             if (!uniqueMessageIds.has(newMessage.id)) {
                 setMessages(prevMessages => [
                     ...prevMessages,
                     {
                         ...newMessage,
-                        type: newMessage.miUsuario === userEmail ? 'sent' : 'received'
+                        type: newMessage.cuerpo.emisorid === userEmail ? 'sent' : 'received',
+                        text: newMessage.cuerpo ? newMessage.cuerpo.mensaje : '', // Adjust this to match the structure of your message data
+                        userId: newMessage.cuerpo.emisorid === userEmail ? 'You' : newMessage.cuerpo.emisorid,
                     }
                 ]);
                 
                 setUniqueMessageIds(prevIds => new Set(prevIds).add(newMessage.id));
             }
         };
+        
     
         websocket.current.onopen = () => {
             console.log("WebSocket Conectado");
@@ -120,9 +138,9 @@ function Chat() {
                     const mensajesApi = await response.json();
                     const mensajesFormat = mensajesApi.map(msg => ({
                         id: msg.id,
-                        text: msg.texto,
+                        text: msg.texto, // Make sure this property name matches the one returned from the API
                         type: msg.miUsuario === userEmail ? 'sent' : 'received',
-                        userId: msg.miUsuario, // Include user's ID
+                        userId: msg.miUsuario,
                         fecha: msg.fecha
                     }));
                     mensajesFormat.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
@@ -185,14 +203,15 @@ function Chat() {
                 <ChatTitle>Taylor Swift Group</ChatTitle>
             </ChatHeader>
             <MessagesList id="messagesList">
-                {messages.map((msg) => (
-                    <Message key={msg.id} type={msg.type}>
+                {messages.map((msg, index) => (
+                    <Message key={`${msg.id}-${index}`} type={msg.type}>
                         <FaUserCircle size="24" style={{ minWidth: '24px', color: msg.type === 'sent' ? 'green' : 'gray' }} />
                         <span>{msg.type === 'sent' ? 'You' : msg.userId}</span>
                         <p>{msg.text}</p>
                     </Message>
                 ))}
             </MessagesList>
+
 
             <InputForm onSubmit={sendMessage}>
                 <Input
