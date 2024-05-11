@@ -22,17 +22,7 @@ export default function Body() {
     const [isPublic, setIsPublic] = useState(true);
     const [collaboratorEmail, setCollaboratorEmail] = useState('');
     const [isAddingCollaborator, setIsAddingCollaborator] = useState(false);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [songToDelete, setSongToDelete] = useState(null);
-    const [loadingSongs, setLoadingSongs] = useState(true);
-    const [loadingArtists, setLoadingArtists] = useState(false);
-    const [loadingAlbums, setLoadingAlbums] = useState(false);
-
-
-    const confirmDelete = (songId) => {
-        setSongToDelete(songId);
-        setShowDeleteConfirm(true);
-    };
+    const [setShowDeleteConfirm] = useState(false);
     
     const getImageUrl = (type, filename) => {
         return `http://localhost:8000/imagen${type}/${filename}/`;

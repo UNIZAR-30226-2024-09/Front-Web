@@ -1,34 +1,47 @@
-import React, { useState } from "react";
+import React, { useState} from "react";
+import { useNavigate } from 'react-router-dom';
 import styled, { createGlobalStyle } from "styled-components";
 import Sidebar from "../Sidebar/sidebar";
 import Navbar from "../Navbar/navbar";
 import Footer from "../Footer/footer";
 import Card from "./tarjetasGeneros";
 
-const base64ToImageSrc = (base64) => {
-    console.log("Base64 original:", base64); // Imprimir la base64 original
-  
-    // Eliminar el prefijo de la cadena base64 si está presente
-    const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
-    console.log("Base64 sin prefijo:", base64WithoutPrefix); // Imprimir la base64 sin prefijo
-  
-    // Decodificar la cadena base64
-    const byteCharacters = atob(base64WithoutPrefix);
-    console.log("Caracteres de bytes:", byteCharacters); // Opcional: Imprimir los caracteres después de atob
-    const imageSrc = `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
-    console.log("Imagen transformada:", imageSrc); // Imprimir el src de la imagen transformada
-    return imageSrc;
-  };
-  
-
 export default function Musify(){
+    const navigate = useNavigate(); 
     const [showSearchResults, setShowSearchResults] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
 
     const handleSearch = (results) => {
-        console.log("Search results received in Musify:", results); // Verifica los resultados recibidos
-        setSearchResults(results);
+        const mappedResults = results.map(item => {
+            let imageUrl = '';
+            if (item.cancion) {
+                imageUrl = `http://localhost:8000/imagenCancion/${item.cancion.id}/`;
+            } else if (item.podcast) {
+                imageUrl = `http://localhost:8000/imagenPodcast/${item.podcast.id}/`;
+            } else if (item.album) {
+                imageUrl = `http://localhost:8000/imagenAlbum/${item.album.id}/`;
+            }
+    
+            return {
+                ...item,
+                imageUrl, // Agregar la URL de la imagen al objeto del resultado
+            };
+        });
+
+    
+        console.log("Search results received in Musify:", mappedResults);
+        setSearchResults(mappedResults);
         setShowSearchResults(true);
+    };
+    
+    const handleClick = (item) => {
+        if (item.cancion) {
+            navigate(`/musifyc/${item.cancion.id}`);
+        } else if (item.podcast) {
+            navigate(`/musifyp/${item.podcast.id}`);
+        } else if (item.album) {
+            navigate(`/musifya/${item.album.id}`);
+        }
     };
 
     return (
@@ -40,27 +53,24 @@ export default function Musify(){
                     <div className="body">
                         <Navbar onSearch={handleSearch} />
                         <div className="body__contents">
-                            {
-                                showSearchResults ? (
-                                    <div>
-                                        {searchResults.map((item, index) => (
-                                            <ResultContainer key={index}>
-                                                {item.artista && (
-                                                    <>
-                                                        <ArtistImage src={base64ToImageSrc(item.artista.foto)} alt={item.artista.nombre} />
-                                                        <p>Artista: {item.artista.nombre}</p>
-                                                        <p>Descripción: {item.artista.descripcion}</p>
-                                                    </>
-                                                )}
-                                                {item.cancion && <p>Canción: {item.cancion.nombre}</p>}
-                                                {item.album && <p>Álbum: {item.album.nombre}</p>}
-                                            </ResultContainer>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <Card />
-                                )
-                            }
+                            {showSearchResults ? (
+                                <div>
+                                    {searchResults.map((item, index) => (
+                                        <ResultContainer key={index}>
+                                            {item.imageUrl && (
+                                                <ArtistImage
+                                                    src={item.imageUrl}
+                                                    alt={item.cancion ? item.cancion.nombre : item.podcast ? item.podcast.nombre : item.album.nombre}
+                                                    onClick={() => handleClick(item)}
+                                                />
+                                            )}
+                                            {/* Más información del item... */}
+                                        </ResultContainer>
+                                    ))}
+                                </div>
+                            ) : (
+                                <Card />
+                            )}
                         </div>
                     </div>
                 </div>
@@ -70,7 +80,7 @@ export default function Musify(){
             </MusifyContainer>
         </>
     );
-}
+};
 
 const GlobalStyle = createGlobalStyle`
     body {

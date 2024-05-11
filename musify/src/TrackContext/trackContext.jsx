@@ -2,11 +2,6 @@ import React, { createContext, useContext, useRef, useState, useEffect} from 're
 
 const TrackContext = createContext();
 
-const base64ToAudioSrc = (base64) => {
-    const base64WithoutPrefix = base64.replace(/^data:audio\/mp3;base64,/, '').replace(/^data:[^;]+;base64,/, '');
-    return `data:audio/mp3;base64,${atob(base64WithoutPrefix)}`;
-};
-
 export const useTrack = () => useContext(TrackContext);
 
 export const TrackProvider = ({ children }) => {
@@ -56,8 +51,12 @@ export const TrackProvider = ({ children }) => {
         if (currentTrackId) {
             addToHistory(currentTrackId);
         }
-        audioRef.current.play();
-        setIsPlaying(true);
+        audioRef.current.play().then(() => {
+            setIsPlaying(true);
+        }).catch(error => {
+            console.error("Error during play:", error);
+            setIsPlaying(false);
+        });
     };
 
     const actualizarEstadoCancion = async () => {
@@ -184,7 +183,6 @@ export const TrackProvider = ({ children }) => {
     const pause = () => {
         audioRef.current.pause();
         setIsPlaying(false);
-        actualizarEstadoCancion();
     };
 
     const updateTrackDetails = async (track) => {
@@ -204,6 +202,11 @@ export const TrackProvider = ({ children }) => {
         if (track.src) {
             audioRef.current.src = track.src;
             audioRef.current.load();
+            audioRef.current.oncanplay = () => {
+                if (isPlaying) {
+                    audioRef.current.play().catch(error => console.error('Error playing:', error));
+                }
+            };
             setCurrentTrack(track);
             setCurrentTrackId(track.id);
         } else {
@@ -219,19 +222,36 @@ export const TrackProvider = ({ children }) => {
         }
     };
 
-    const changeTrack = async (forward = true) => {
-        let newIndex = trackIndex + (forward ? 1 : -1);
-        if (newIndex >= tracks.length) {
-            newIndex = 0;  // Loop to start
-        } else if (newIndex < 0) {
-            newIndex = tracks.length - 1;  // Loop to end
+    const getRandomIndex = (currentIndex) => {
+        if (tracks.length < 2) return currentIndex; // Devuelve el índice actual si no hay suficientes pistas para una elección aleatoria.
+        let newIndex = currentIndex;
+        while (newIndex === currentIndex) {
+            newIndex = Math.floor(Math.random() * tracks.length);
         }
-        await updateTrackDetails(tracks[newIndex]);
-        setTrackIndex(newIndex);
+        return newIndex;
     };
 
+    const changeTrack = (forward = true) => {
+        let newIndex;
+        if (isShuffling) {
+            // Asegúrate de que el índice aleatorio sea realmente aleatorio y no repita el actual.
+            newIndex = getRandomIndex(trackIndex);
+        } else {
+            newIndex = trackIndex + (forward ? 1 : -1);
+            if (newIndex >= tracks.length) {
+                newIndex = 0; // Vuelve al inicio de la lista si se alcanza el final.
+            } else if (newIndex < 0) {
+                newIndex = tracks.length - 1; // Vuelve al final de la lista si se alcanza el inicio.
+            }
+        }
+        if (newIndex !== trackIndex) {
+            setTrackIndex(newIndex);
+        }
+    };
+    
+    
     useEffect(() => {
-        if (trackIndex >= 0 && trackIndex < tracks.length) {
+        if (tracks.length > 0 && trackIndex >= 0) {
             updateTrackDetails(tracks[trackIndex]);
         }
     }, [trackIndex, tracks]);

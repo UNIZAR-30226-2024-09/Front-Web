@@ -88,12 +88,12 @@ export default function PlayerControls() {
 
     useEffect(() => {
         const audio = audioRef.current;
-    
         const onEnded = () => {
             if (isRepeating) {
+                audio.currentTime = 0;
                 play();  // Reproduce la misma canción de nuevo
             } else {
-                changeTrack(true);  // Pasa a la siguiente pista
+                handleNextTrack();  // Pasa a la siguiente pista automáticamente
             }
         };
     
@@ -102,7 +102,9 @@ export default function PlayerControls() {
         return () => {
             audio.removeEventListener('ended', onEnded);
         };
-    }, [audioRef, isRepeating, play, changeTrack]); // Añade changeTrack a la lista de dependencias
+    }, [isRepeating, handleNextTrack]);
+    
+
     
     
     const handleShowLyrics = () => setShowLyrics(true);

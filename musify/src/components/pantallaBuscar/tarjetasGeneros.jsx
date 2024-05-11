@@ -57,7 +57,6 @@ export default function Cards() {
                     const songsWithArtists = data.canciones.map((song) => ({
                         ...song,
                         foto: `http://localhost:8000/imagenCancion/${song.id}/`, // Usando ID para construir la URL
-                        archivoMp3: base64ToAudioSrc(song.archivoMp3),
                     }));
                     setSongs(prev => ({
                         ...prev,
@@ -73,7 +72,7 @@ export default function Cards() {
         if (view === 'songs' && !isPodcastGenre && !songs[activeGenre]) {
             fetchSongs(activeGenre);
         }
-    }, [activeGenre, view, songs, isPodcastGenre]);
+    }, [activeGenre, view, songs, isPodcastGenre]);    
     
     useEffect(() => {
         const fetchPodcasts = async (genre) => {

@@ -177,7 +177,6 @@ const SongDetails = () => {
     };
     
 
-
     // Función para añadir una canción a la playlist
     const addToPlaylist = async (playlistId) => {
         try {
@@ -249,8 +248,6 @@ const SongDetails = () => {
         }
     };
     
-    
-
     const formatDuration = (duration) => {
         if (!duration) return 'N/A';
         const minutes = Math.floor(duration / 60);
