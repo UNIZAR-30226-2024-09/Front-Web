@@ -14,10 +14,10 @@ import Chat from './components/pantallaChat/chat';
 import Perfil from './components/pantallaPerfil/miPerfil';
 import PerfilA from './components/pantallaPerfilAmigo/perfilAmigo';
 import Salas from './components/pantallaSalas/salasChat';
-import PantallaInicio from './components/pantallaInicial/inicialBody';
-import Musify from './components/pantallaPlaylist/playlistBody';
-import MusifyP from './components/pantallaPodcast/podcastsBody';
-import MusifyC from './components/pantallaCanciones/cancionesBody';
+import PantallaInicio from './components/pantallaInicial/inicio';
+import Musify from './components/pantallaPlaylist/playlist';
+import MusifyP from './components/pantallaPodcast/podcasts';
+import MusifyC from './components/pantallaCanciones/canciones';
 import Preguntas from './components/pantallaPreguntasFAQ/preguntas';
 import Ayuda from './components/pantallasAyuda/ayudaCuenta';
 import Ayuda2 from './components/pantallasAyuda/ayudaAplicacion';
@@ -35,7 +35,6 @@ import AniadirCapituloAdmin from './admin/aniadir_capitulo';
 import EditarCapAdmin from './admin/editar_capitulo';
 import Historial from './components/pantallaHistorial/historialReproducción';
 import { TrackProvider } from './TrackContext/trackContext';
-import Layout from './components/Layout';
 
 export default class App extends React.Component {
   render() {
@@ -49,8 +48,12 @@ export default class App extends React.Component {
             <Route path="/register_3" element={<RegisterInfo />} />
             <Route path="/register_4" element={<RegisterTerminosCondiciones />} />
             <Route path="/register_5" element={<RegisterPreguntas />} />
+            <Route path="/musify/:playlistId" element={<Musify />} />
             <Route path="/perfilAmigo/:correoAmigo" element={<PerfilA />} />
+            <Route path="/musifyp/:podcastId" element={<MusifyP />} />
+            <Route path="/musifyc/:cancionId" element={<MusifyC />} />
             <Route path="/login" element={<LoginForm />} />
+            <Route path="/inicio" element={<PantallaInicio />} />
             <Route path="/chat/:salaId" element={<Chat />} />
             <Route path="/asistencia" element={<Asistencia />} />
             <Route path="/busqueda" element={<Busqueda />} />
@@ -74,12 +77,6 @@ export default class App extends React.Component {
             <Route path="/editar_capitulo/:idCap" element={<EditarCapAdmin />} />
             <Route path="/historial" element={<Historial />} />
             <Route path="/historial/:correo" element={<Historial />} />
-            <Route element={<Layout />}>
-              <Route path="/musify/:playlistId" element={<Musify />} />
-              <Route path="/musifyp/:podcastId" element={<MusifyP />} />
-              <Route path="/musifyc/:cancionId" element={<MusifyC />} />
-              <Route path="/inicio" element={<PantallaInicio />} />
-            </Route>
           </Routes>
         </UserProvider>
       </BrowserRouter>
