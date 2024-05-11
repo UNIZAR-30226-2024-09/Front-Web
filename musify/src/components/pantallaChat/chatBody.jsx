@@ -1,90 +1,66 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef} from 'react';
 import styled from 'styled-components';
 import { useParams } from 'react-router-dom';
 import { IoIosArrowBack } from 'react-icons/io';
 import { FaUserCircle } from 'react-icons/fa';
 
+
 function useExternalScript(url) {
     useEffect(() => {
         const script = document.createElement('script');
         script.src = url;
-        script.async = true;
+        script.async = false; // Load script synchronously
+        script.defer = true; // Defer script execution until HTML parsing is complete
         document.body.appendChild(script);
 
         return () => {
             document.body.removeChild(script);
         };
-    }, [url]); // Esta dependencia asegura que el script se carga una sola vez basado en la URL
+    }, [url]);
 }
-
 function Chat() {
-    useExternalScript("https://unpkg.com/htmx.org@1.9.12/dist/ext/ws.js");
-
     const { salaId } = useParams();
-
+    useExternalScript("https://unpkg.com/htmx.org/dist/htmx.js");
+    useExternalScript("https://unpkg.com/htmx.org@1.9.12/dist/ext/ws.js");
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
-    const [userEmail, setUserEmail] = useState('');
     const websocket = useRef(null);
+    const [uniqueMessageIds, setUniqueMessageIds] = useState(new Set()); // Maintain a set of unique message IDs
+
 
     useEffect(() => {
-        if (localStorage.getItem('userToken')) {
-            const fetchUserDetails = async () => {
-                try {
-                    const response = await fetch('http://127.0.0.1:8000/obtenerUsuarioSesionAPI/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            token: localStorage.getItem('userToken'),
-                        }),
-                    });
-                    const data = await response.json();
-                    if (response.ok) {
-                        setUserEmail(data.correo);
-                    } else {
-                        console.error('Failed to fetch user details:', data);
-                    }
-                } catch (error) {
-                    console.error('Error fetching user details:', error);
-                }
-            };
-
-            fetchUserDetails();
-        }
-    }, []);
-
-   useEffect(() => {
-    websocket.current = new WebSocket(`ws://localhost:8000/ws/chat/${salaId}/`);
-
-    websocket.current.onmessage = (event) => {
-        const newMessage = JSON.parse(event.data);
-        setMessages(prevMessages => [...prevMessages, {
-            ...newMessage,
-            type: newMessage.emisorid === userEmail ? 'sent' : 'received'  // Define si el mensaje es enviado o recibido
-        }]);
-    };
-
-    websocket.current.onopen = () => {
-        console.log("WebSocket Conectado");
-    };
-
-    websocket.current.onerror = (error) => {
-        console.error("WebSocket Error: ", error);
-    };
-
-    websocket.current.onclose = () => {
-        console.log("WebSocket Desconectado");
-    };
-
-    return () => {
-        if (websocket.current) {
-            websocket.current.close();
-        }
-    };
-}, [salaId, userEmail]);  // Añade userEmail a las dependencias
-
+        // Cambia el host y puerto según tu configuración de Django y asegúrate de incluir el nombre de la sala
+        // Por ejemplo, si tu servidor Django corre en localhost en el puerto 8000 y la sala se llama "public"
+        websocket.current = new WebSocket(`ws://localhost:8000/ws/chat/${salaId}/`);
+    
+        websocket.current.onmessage = (event) => {
+            const newMessage = JSON.parse(event.data);
+            if (!uniqueMessageIds.has(newMessage.id)) {
+                setMessages(prevMessages => [...prevMessages, newMessage]);
+                setUniqueMessageIds(prevIds => new Set(prevIds).add(newMessage.id));
+            }
+        };
+    
+        websocket.current.onopen = () => {
+            console.log("WebSocket Conectado");
+        };
+    
+        websocket.current.onerror = (errorEvent) => {
+            console.error("WebSocket Error: ", errorEvent);
+        };
+        
+    
+        websocket.current.onclose = () => {
+            console.log("WebSocket Desconectado");
+        };
+    
+        // Asegúrate de cerrar el WebSocket cuando el componente se desmonte
+        return () => {
+            if (websocket.current) {
+                websocket.current.close();
+            }
+        };
+    }, [salaId]);
 
     useEffect(() => {
         const messageList = document.getElementById("messagesList");
@@ -108,7 +84,8 @@ function Chat() {
                     const mensajesFormat = mensajesApi.map(msg => ({
                         id: msg.id,
                         text: msg.texto,
-                        type: msg.miUsuario === userEmail ? 'sent' : 'received',
+                        type: msg.miUsuario === 'zineb@gmail.com' ? 'sent' : 'received',
+                        userId: msg.miUsuario, // Include user's ID
                         fecha: msg.fecha
                     }));
                     mensajesFormat.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
@@ -120,27 +97,17 @@ function Chat() {
                 console.error("Error al cargar mensajes: ", error);
             }
         }
-
-        if (userEmail) {
-            cargarMensajes();
-        }
-    }, [salaId, userEmail]); 
+        cargarMensajes();
+    }, [salaId,uniqueMessageIds]);  // Dependencia para que se ejecute cada vez que cambia el ID de la sala.
+    
 
     const sendMessage = async (e) => {
         e.preventDefault();
         if (input.trim()) {
-            const newMessage = {
-                id: new Date().getTime(),  // Genera un ID temporal basado en el tiempo actual
-                text: input,
-                type: 'sent',  // Asume que siempre se envía y luego verifica en el servidor si es correcto
-                fecha: new Date()  // Añade la fecha actual al mensaje
-            };
-            setMessages(prevMessages => [...prevMessages, newMessage]);  // Añade el mensaje al estado antes de enviarlo
-    
             const messageToSend = JSON.stringify({
                 cuerpo: {
                     mensaje: input,
-                    emisorid: userEmail,
+                    emisorid: 'zineb@gmail.com',
                     salaid: salaId
                 }
             });
@@ -155,7 +122,7 @@ function Chat() {
                     },
                     body: JSON.stringify({ 
                         salaid: salaId,
-                        emisorid: userEmail,
+                        emisorid: 'zineb@gmail.com',
                         mensaje: input 
                     })
                 });
@@ -167,14 +134,13 @@ function Chat() {
                     }
                 } else {
                     throw new Error('Error al enviar mensaje.');
-                    // Podrías aquí quitar el mensaje del estado si falla el envío
                 }
             } catch (error) {
                 console.error("Error al registrar mensaje: ", error);
             }
         }
     };
-    
+
     return (
         <ChatContainer>
             <ChatHeader>
@@ -185,10 +151,12 @@ function Chat() {
                 {messages.map((msg) => (
                     <Message key={msg.id} type={msg.type}>
                         <FaUserCircle size="24" style={{ minWidth: '24px', color: msg.type === 'sent' ? 'green' : 'gray' }} />
+                        <span>{msg.type === 'sent' ? 'You' : msg.userId}</span>
                         <p>{msg.text}</p>
                     </Message>
                 ))}
             </MessagesList>
+
             <InputForm onSubmit={sendMessage}>
                 <Input
                     type="text"
