@@ -24,9 +24,38 @@ function Chat() {
     useExternalScript("https://unpkg.com/htmx.org@1.9.12/dist/ext/ws.js");
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
+    const [userEmail, setUserEmail] = useState('');
+
     const websocket = useRef(null);
     const [uniqueMessageIds, setUniqueMessageIds] = useState(new Set()); // Maintain a set of unique message IDs
-
+    useEffect(() => {
+        if (localStorage.getItem('userToken')) {
+            const fetchUserDetails = async () => {
+                try {
+                    const response = await fetch('http://127.0.0.1:8000/obtenerUsuarioSesionAPI/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            token: localStorage.getItem('userToken'),
+                        }),
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        setUserEmail(data.correo);
+                    } else {
+                        console.error('Failed to fetch user details:', data);
+                    }
+                } catch (error) {
+                    console.error('Error fetching user details:', error);
+                }
+            };
+    
+            fetchUserDetails();
+        }
+    }, []);
+    
 
     useEffect(() => {
         // Cambia el host y puerto según tu configuración de Django y asegúrate de incluir el nombre de la sala
@@ -36,7 +65,14 @@ function Chat() {
         websocket.current.onmessage = (event) => {
             const newMessage = JSON.parse(event.data);
             if (!uniqueMessageIds.has(newMessage.id)) {
-                setMessages(prevMessages => [...prevMessages, newMessage]);
+                setMessages(prevMessages => [
+                    ...prevMessages,
+                    {
+                        ...newMessage,
+                        type: newMessage.miUsuario === userEmail ? 'sent' : 'received'
+                    }
+                ]);
+                
                 setUniqueMessageIds(prevIds => new Set(prevIds).add(newMessage.id));
             }
         };
@@ -60,7 +96,8 @@ function Chat() {
                 websocket.current.close();
             }
         };
-    }, [salaId]);
+        
+    }, [salaId, uniqueMessageIds, userEmail]);
 
     useEffect(() => {
         const messageList = document.getElementById("messagesList");
@@ -84,7 +121,7 @@ function Chat() {
                     const mensajesFormat = mensajesApi.map(msg => ({
                         id: msg.id,
                         text: msg.texto,
-                        type: msg.miUsuario === 'zineb@gmail.com' ? 'sent' : 'received',
+                        type: msg.miUsuario === userEmail ? 'sent' : 'received',
                         userId: msg.miUsuario, // Include user's ID
                         fecha: msg.fecha
                     }));
@@ -98,7 +135,7 @@ function Chat() {
             }
         }
         cargarMensajes();
-    }, [salaId,uniqueMessageIds]);  // Dependencia para que se ejecute cada vez que cambia el ID de la sala.
+    }, [salaId, userEmail]); // Make sure to include userEmail as a dependency
     
 
     const sendMessage = async (e) => {
@@ -107,7 +144,7 @@ function Chat() {
             const messageToSend = JSON.stringify({
                 cuerpo: {
                     mensaje: input,
-                    emisorid: 'zineb@gmail.com',
+                    emisorid: userEmail,
                     salaid: salaId
                 }
             });
@@ -122,7 +159,7 @@ function Chat() {
                     },
                     body: JSON.stringify({ 
                         salaid: salaId,
-                        emisorid: 'zineb@gmail.com',
+                        emisorid: userEmail,
                         mensaje: input 
                     })
                 });
