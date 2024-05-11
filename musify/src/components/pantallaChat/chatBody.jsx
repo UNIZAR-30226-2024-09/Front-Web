@@ -1,65 +1,90 @@
-import React, { useState, useEffect, useRef} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { useParams } from 'react-router-dom';
 import { IoIosArrowBack } from 'react-icons/io';
 import { FaUserCircle } from 'react-icons/fa';
-
 
 function useExternalScript(url) {
     useEffect(() => {
         const script = document.createElement('script');
         script.src = url;
         script.async = true;
-        document.head.appendChild(script);
+        document.body.appendChild(script);
 
         return () => {
-            document.head.removeChild(script);
+            document.body.removeChild(script);
         };
-    }, [url]);
+    }, [url]); // Esta dependencia asegura que el script se carga una sola vez basado en la URL
 }
 
 function Chat() {
-    const { salaId } = useParams();
     useExternalScript("https://unpkg.com/htmx.org@1.9.12/dist/ext/ws.js");
-    const [messages, setMessages] = useState([
-        { id: 1, text: "Hey everyone, how's the project going?", type: 'received' },
-        { id: 2, text: "Pretty good! Just finished the new feature.", type: 'sent' },
-        { id: 3, text: "Awesome! I'm working on the chat functionality.", type: 'received' },
-        { id: 4, text: "I'll start with the documentation then.", type: 'sent' },
-        { id: 5, text: "Could use some help with the backend later.", type: 'received' }
-    ]);
+
+    const { salaId } = useParams();
+
+    const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
+    const [userEmail, setUserEmail] = useState('');
     const websocket = useRef(null);
 
     useEffect(() => {
-        // Cambia el host y puerto según tu configuración de Django y asegúrate de incluir el nombre de la sala
-        // Por ejemplo, si tu servidor Django corre en localhost en el puerto 8000 y la sala se llama "public"
-        websocket.current = new WebSocket(`ws://localhost:8000/ws/chat/${salaId}/`);
-    
-        websocket.current.onmessage = (event) => {
-            const newMessage = JSON.parse(event.data);
-            setMessages(prevMessages => [...prevMessages, newMessage]);
-        };
-    
-        websocket.current.onopen = () => {
-            console.log("WebSocket Conectado");
-        };
-    
-        websocket.current.onerror = (error) => {
-            console.error("WebSocket Error: ", error);
-        };
-    
-        websocket.current.onclose = () => {
-            console.log("WebSocket Desconectado");
-        };
-    
-        // Asegúrate de cerrar el WebSocket cuando el componente se desmonte
-        return () => {
-            if (websocket.current) {
-                websocket.current.close();
-            }
-        };
-    }, [salaId]);
+        if (localStorage.getItem('userToken')) {
+            const fetchUserDetails = async () => {
+                try {
+                    const response = await fetch('http://127.0.0.1:8000/obtenerUsuarioSesionAPI/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            token: localStorage.getItem('userToken'),
+                        }),
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        setUserEmail(data.correo);
+                    } else {
+                        console.error('Failed to fetch user details:', data);
+                    }
+                } catch (error) {
+                    console.error('Error fetching user details:', error);
+                }
+            };
+
+            fetchUserDetails();
+        }
+    }, []);
+
+   useEffect(() => {
+    websocket.current = new WebSocket(`ws://localhost:8000/ws/chat/${salaId}/`);
+
+    websocket.current.onmessage = (event) => {
+        const newMessage = JSON.parse(event.data);
+        setMessages(prevMessages => [...prevMessages, {
+            ...newMessage,
+            type: newMessage.emisorid === userEmail ? 'sent' : 'received'  // Define si el mensaje es enviado o recibido
+        }]);
+    };
+
+    websocket.current.onopen = () => {
+        console.log("WebSocket Conectado");
+    };
+
+    websocket.current.onerror = (error) => {
+        console.error("WebSocket Error: ", error);
+    };
+
+    websocket.current.onclose = () => {
+        console.log("WebSocket Desconectado");
+    };
+
+    return () => {
+        if (websocket.current) {
+            websocket.current.close();
+        }
+    };
+}, [salaId, userEmail]);  // Añade userEmail a las dependencias
+
 
     useEffect(() => {
         const messageList = document.getElementById("messagesList");
@@ -83,10 +108,10 @@ function Chat() {
                     const mensajesFormat = mensajesApi.map(msg => ({
                         id: msg.id,
                         text: msg.texto,
-                        type: msg.miUsuario === 'zineb@gmail.com' ? 'sent' : 'received', // Cambia 'zineb@gmail.com' por el email del usuario actual
+                        type: msg.miUsuario === userEmail ? 'sent' : 'received',
                         fecha: msg.fecha
                     }));
-                    mensajesFormat.sort((a, b) => new Date(a.fecha) - new Date(b.fecha)); // Ordena mensajes por fecha
+                    mensajesFormat.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
                     setMessages(mensajesFormat);
                 } else {
                     throw new Error('No se pudo cargar los mensajes.');
@@ -95,18 +120,27 @@ function Chat() {
                 console.error("Error al cargar mensajes: ", error);
             }
         }
-    
-        cargarMensajes();
-    }, [salaId]);  // Dependencia para que se ejecute cada vez que cambia el ID de la sala.
-    
+
+        if (userEmail) {
+            cargarMensajes();
+        }
+    }, [salaId, userEmail]); 
 
     const sendMessage = async (e) => {
         e.preventDefault();
         if (input.trim()) {
+            const newMessage = {
+                id: new Date().getTime(),  // Genera un ID temporal basado en el tiempo actual
+                text: input,
+                type: 'sent',  // Asume que siempre se envía y luego verifica en el servidor si es correcto
+                fecha: new Date()  // Añade la fecha actual al mensaje
+            };
+            setMessages(prevMessages => [...prevMessages, newMessage]);  // Añade el mensaje al estado antes de enviarlo
+    
             const messageToSend = JSON.stringify({
                 cuerpo: {
                     mensaje: input,
-                    emisorid: 'zineb@gmail.com',
+                    emisorid: userEmail,
                     salaid: salaId
                 }
             });
@@ -121,7 +155,7 @@ function Chat() {
                     },
                     body: JSON.stringify({ 
                         salaid: salaId,
-                        emisorid: 'zineb@gmail.com',
+                        emisorid: userEmail,
                         mensaje: input 
                     })
                 });
@@ -133,13 +167,14 @@ function Chat() {
                     }
                 } else {
                     throw new Error('Error al enviar mensaje.');
+                    // Podrías aquí quitar el mensaje del estado si falla el envío
                 }
             } catch (error) {
                 console.error("Error al registrar mensaje: ", error);
             }
         }
     };
-
+    
     return (
         <ChatContainer>
             <ChatHeader>
@@ -154,7 +189,6 @@ function Chat() {
                     </Message>
                 ))}
             </MessagesList>
-
             <InputForm onSubmit={sendMessage}>
                 <Input
                     type="text"
