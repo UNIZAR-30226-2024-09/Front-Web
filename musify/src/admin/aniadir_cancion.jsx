@@ -12,7 +12,7 @@ export default function AniadirCancionesAdmin() {
     const [album, setAlbum] = useState('');
     const [genero, setGenero] = useState('');
     const [generos, setGenerosCanciones] = useState('');
-    const [imagen, setImagen] = useState(null);
+    const [imagen, setImagen] = useState('');
     const [audio, setAudio] = useState(null);
     const [cancionValid, setCancionValid] = useState(false);
 
@@ -61,6 +61,32 @@ export default function AniadirCancionesAdmin() {
     const handleCloseModalNoSave = () => {
         navigate('/lista_canciones_admin'); //Vuelve a la lista de canciones
     };
+
+    const handleImagenChange = (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+
+        reader.onloadend = () => {
+            // Cuando la carga del archivo esté completa, establecemos la imagen en base64
+            setImagen(reader.result);
+        };
+
+        // Leemos el archivo como una URL de datos en base64
+        reader.readAsDataURL(file);
+    };
+
+    const handleAudioChange = (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+
+        reader.onloadend = () => {
+            // Cuando la carga del archivo esté completa, establecemos el audio en base64
+            setAudio(reader.result);
+        };
+
+        // Leemos el archivo como una URL de datos en base64
+        reader.readAsDataURL(file);
+    };
     
     const handleCancionAniadida = async () => {
         if(cancionValid) {
@@ -70,7 +96,7 @@ export default function AniadirCancionesAdmin() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({nombre: titulo, nombreFoto: imagen, miAlbum: album, nombreArchivoMp3: audio}),
+                    body: JSON.stringify({nombre: titulo, imagen_b64: imagen, miAlbum: album, audio_b64: audio}),
                 });
 
                 if (response.ok) {
@@ -121,11 +147,16 @@ export default function AniadirCancionesAdmin() {
                     </div>
                     <div className="audio">
                         <h6>Archivo de audio (.mp3):</h6>
-                        <input type="file" accept=".mp3" onChange={e=>setAudio(e.target.value)} required />
+                        <input type="file" accept=".mp3" onChange={handleAudioChange} required />
                     </div>
                     <div className="image">
                         <h6>Imagen:</h6>
-                        <input type="file" accept="image/*" onChange={e=>setImagen(e.target.value)} required />
+                        <input className="image-input" type="file" accept="image/*" onChange={handleImagenChange} required />
+                        {imagen && (
+                            <div className="preview">
+                                <img src={imagen} alt="Vista previa de la imagen" />
+                            </div>
+                        )}
                     </div>
                     <div className="buttons-container">
                         <button type="button" className="cancel-button" onClick={handleExitWithoutSave}>Salir sin guardar</button>
@@ -200,7 +231,7 @@ const Container = styled.div`
         padding-left: 20px;
         appearance: none;
     }
-
+    
 }
 
 .input-box input::placeholder {
@@ -235,16 +266,24 @@ const Container = styled.div`
     outline: none;
     border: 2px solid #fff;
     border-radius: 20px;
+    align-items: center;
+}
+
+.image h6 {
+    border: 10px;
     text-align: center;
-    h6 {
-        border: 10px;
-        text-align: center;
-    }
-    input {
-        width: 100%;
-        height: 100%;
-        background: transparent;
-    }
+}
+
+.image preview {
+    width: 100%; 
+    height: 100%;
+}
+
+.preview img {
+    width: 120px;
+    height: 120px;
+    text-align: center;
+    object-fit: cover; /* Para ajustar la imagen al tamaño del contenedor sin deformarla */
 }
 
   .buttons-container {

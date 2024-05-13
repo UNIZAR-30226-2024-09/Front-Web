@@ -10,6 +10,10 @@ const base64ToAudioSrc = (base64) => {
   return audioSrc;
 };
 
+const getAudioUrl = (id) => {
+    return `http://localhost:8000/audioCapitulo/${id}/`;
+};
+
 export default function EditCapitulo() {
   const navigate = useNavigate();
   const { idCap } = useParams();
@@ -17,7 +21,7 @@ export default function EditCapitulo() {
   const [podcast, setPodcast] = useState('');
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [duracion, setDuracion] = useState(0);
+  const [duracion, setDuracion] = useState('0');
 
   const [showModal, setShowModal] = useState(false);
   const [capituloValid, setCapituloValid] = useState(false);
@@ -42,27 +46,9 @@ export default function EditCapitulo() {
             setNombre(capituloData.capitulo.nombre);
             setDescripcion(capituloData.capitulo.descripcion);
             setPodcast(capituloData.capitulo.miPodcast);
-            fetchNomPodcast(capituloData.capitulo.miPodcast)
-            //fetchDuracion(base64ToAudioSrc(capituloData.capitulo.archivoMp3));
+            //fetchDuracion(getAudioUrl(capituloData.capitulo.id));
         } catch (error) {
             setError(error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchNomPodcast = async (idPodcast) => {
-        try {
-            const response = await fetch(`http://127.0.0.1:8000/devolverPodcast/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ podcastId: idPodcast })
-            });
-            if (!response.ok) throw new Error("Failed to fetch album");
-            const podcastData = await response.json();
-            setPodcast(podcastData.podcast.nombre);
-        } catch (error) {
-            setError(`Failed to fetch podcast: ${error.message}`);
         } finally {
             setLoading(false);
         }

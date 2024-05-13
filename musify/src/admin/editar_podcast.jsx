@@ -18,6 +18,10 @@ const base64ToAudioSrc = (base64) => {
     return `data:audio/mp3;base64,${atob(base64WithoutPrefix)}`;
 };
 
+const getImageSrc = (id) => {
+    return `http://localhost:8000/imagenPodcast/${id}`;
+};
+
 export default function EditarPodcasrAdmin() {
     const navigate = useNavigate();
     const { idPodcast } = useParams();
@@ -62,7 +66,7 @@ export default function EditarPodcasrAdmin() {
                     const podcastData = await response.json();
                     setPodcast(podcastData);
                     setNombre(podcastData.podcast.nombre);
-                    setFoto(base64ToImageSrc(podcastData.podcast.foto));
+                    setFoto(getImageSrc(idPodcast));
                     fetchPresentadores(idPodcast);
                     fetchCapitulos(podcastData.podcast.nombre);
                     fetchGenerosPodcast(idPodcast);

@@ -17,6 +17,13 @@ const base64ToAudioSrc = (base64) => {
     return audioSrc;
 };
 
+const getImageSrc = (id) => {
+    return `http://localhost:8000/imagenCancion/${id}`;
+};
+const getAudioUrl = (songId) => {
+    return `http://localhost:8000/audioCancion/${songId}/`;
+};
+
 export default function EditarCancion() {
     const navigate = useNavigate();
     const { cancionId } = useParams();
@@ -27,7 +34,7 @@ export default function EditarCancion() {
     const[generosCancion, setGenerosCancion] = useState({});
     const[foto, setFoto] = useState(null);
     const[audio, setAudio] = useState(null);
-    const[duracion, setDuracion] = useState(0);
+    const[duracion, setDuracion] = useState('');
     const[generos, setGeneros] = useState([]);
 
     const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
@@ -52,12 +59,12 @@ export default function EditarCancion() {
                 const data = await response.json();
                 setNombre(data.cancion.nombre);
                 setAlbum(data.cancion.miAlbum);
-                setFoto(base64ToImageSrc(data.cancion.foto));
-                //setAudio(base64ToAudioSrc(data.cancion.archivoMp3));
+                setFoto(getImageSrc(data.cancion.id));
+                setAudio(getAudioUrl(data.cancion.id));
                 fetchArtistas();
                 fetchAlbum(data.cancion.miAlbum);
                 fetchGenerosCancion(cancionId);
-                //fetchDuracion(base64ToAudioSrc(data.cancion.archivoMp3));
+                fetchDuracion(getAudioUrl(data.cancion.id));
                 fetchGeneros();
             } catch (error) {
                 setError(error.message);
@@ -95,6 +102,9 @@ export default function EditarCancion() {
 
         const fetchAlbum = async (idAlbum) => {
             try {
+                if (idAlbum === null) {
+                    return "undefined"; // Valor predeterminado cuando idAlbum es null
+                }
                 const response = await fetch(`http://127.0.0.1:8000/devolverAlbum/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -155,16 +165,20 @@ export default function EditarCancion() {
     }, [cancionId]);
 
     const fetchDuracion = (audioSrc) => {
-        return new Promise((resolve, reject) => {
-            const audio = new Audio(audioSrc);
-            audio.onloadedmetadata = () => {
-                resolve(audio.duration);
-                setDuracion(audio.duration);
-            };
-            audio.onerror = () => {
-                reject('Failed to load audio');
-            };
-        });
+        if(audioSrc){
+            return new Promise((resolve, reject) => {
+                const audio = new Audio(audioSrc);
+                audio.onloadedmetadata = () => {
+                    resolve(audio.duration);
+                    setDuracion(audio.duration);
+                };
+                audio.onerror = () => {
+                    reject('Failed to load audio');
+                };
+            });
+        } else {
+            setDuracion('0');
+        }
     };
 
     const formatDuration = (duration) => {
@@ -287,7 +301,7 @@ export default function EditarCancion() {
                                 onChange={(e) => setDuracion(e.target.value)}
                                 />
                         </div>
-                        <select value={generosCancion} onChange={e=>setGenerosCancion(e.target.value)} required>
+                        <select className='seleccion' value={generosCancion} onChange={e=>setGenerosCancion(e.target.value)} required>
                             <option value="">Selecciona un género</option>
                             {generos.map((genero, index) => (
                                 <option key={index} value={genero}>{genero}</option>
@@ -362,12 +376,17 @@ const Container = styled.div`
             appearance: none;
         }
     }
+    .artistas textarea::placeholder {
+        color: #fff;
+        
+    }
     
     .input-box, select{
         position: relative;
         width: 400px;
         height: 40px;
         margin: 30px 0;
+        
     }
     input{
         width: 100%;
@@ -382,6 +401,19 @@ const Container = styled.div`
         appearance: none;
     }
 
+}
+
+.seleccion {
+    position: relative;
+    width: 400px;
+    height: 35px;
+    background: none;
+    border: 2px solid #fff;
+    border-radius: 20px;
+    color: #fff;
+    option {
+        color: #000;
+    }
 }
 
 .audio{

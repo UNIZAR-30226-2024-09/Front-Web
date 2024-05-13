@@ -9,6 +9,10 @@ const base64ToImageSrc = (base64) => {
     return imageSrc;
 };
 
+const getImageSrc = (id) => {
+    return `http://localhost:8000/imagenPodcast/${id}`;
+};
+
 export default function ListaPodcastsAdmin() {
     const [podcasts, setPodcasts] = useState([]);
     const [presentadores, setPresentadores] = useState([]);
@@ -35,14 +39,13 @@ export default function ListaPodcastsAdmin() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({})
                 });
                 if (response.ok) {
                     const data = await response.json();
                     const updatedPodcasts = data.podcasts.map(podcast => ({
                         id: podcast.id,
                         nombre: podcast.nombre,
-                        foto: base64ToImageSrc(podcast.foto)
+                        foto: getImageSrc(podcast.id),
                     }));
                     setPodcasts(updatedPodcasts);
                     const fetchPodcastPromises = updatedPodcasts.map(podcast => fetchPresentadores(podcast.id));

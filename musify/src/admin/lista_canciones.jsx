@@ -9,6 +9,10 @@ const base64ToImageSrc = (base64) => {
     return imageSrc;
 };
 
+const getImageSrc = (id) => {
+    return `http://localhost:8000/imagenCancion/${id}`;
+};
+
 
 export default function ListaCancionesAdmin() {
     const [albums, setAlbums] = useState({});
@@ -37,14 +41,12 @@ export default function ListaCancionesAdmin() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({})
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    console.log(data);
                     const updatedCanciones = data.canciones.map(cancion => ({
                         id: cancion.id,
-                        foto: base64ToImageSrc(cancion.foto),
+                        foto: getImageSrc(cancion.id),
                         nombre: cancion.nombre,
                         album: cancion.miAlbum
                     }));
