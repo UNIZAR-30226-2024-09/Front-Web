@@ -5,11 +5,6 @@ import { useTrack } from "../../TrackContext/trackContext";
 import { useNavigate } from 'react-router-dom';
 
 
-const base64ToAudioSrc = (base64) => {
-    const base64WithoutPrefix = base64.replace(/^data:audio\/mp3;base64,/, '').replace(/^data:[^;]+;base64,/, '');
-    return `data:audio/mp3;base64,${atob(base64WithoutPrefix)}`;
-};
-
 const getImageSrc = (type, id) => {
     return `http://localhost:8000/imagen${type}/${id}`;
 };
@@ -194,7 +189,7 @@ const SongRow = ({ canciones }) => {
                 const data = await response.json();
                 //const audioUrl = base64ToAudioSrc(data.cancion.archivoMp3);
                 //const audioUrl = getAudioUrl(data.cancion.id); Version vinal <----------
-                const audioUrl = getAudioUrl(64);
+                const audioUrl = getAudioUrl(selectedSong.id);
 
                 
                 // Actualiza el track actual con la nueva información, incluido el URL del audio

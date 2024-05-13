@@ -9,9 +9,8 @@ import { RiMenuAddFill } from "react-icons/ri";
 import { useTrack } from "../../TrackContext/trackContext";
 import { CiShare1 } from "react-icons/ci";
 
-const base64ToAudioSrc = (base64) => {
-    const base64WithoutPrefix = base64.replace(/^data:audio\/mp3;base64,/, '').replace(/^data:[^;]+;base64,/, '');
-    return `data:audio/mp3;base64,${atob(base64WithoutPrefix)}`;
+const getAudioUrl = (songId) => {
+    return `http://localhost:8000/audioCancion/${songId}/`;
 };
 
 const SongDetails = () => {
@@ -118,7 +117,7 @@ const SongDetails = () => {
                 setSongImage(`http://localhost:8000/imagenCancion/${data.cancion.id}`);
     
                 setSongName(data.cancion.nombre);
-                const audioSrc = base64ToAudioSrc(data.cancion.archivoMp3);
+                const audioSrc = getAudioUrl(data.cancion.id);
                 setSongMp3(audioSrc);
     
                 fetchAudioDuration(audioSrc).then(duration => {
