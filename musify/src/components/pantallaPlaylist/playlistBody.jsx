@@ -7,10 +7,10 @@ import { MdOutlineAddToPhotos } from 'react-icons/md';
 import { useTrack } from "../../TrackContext/trackContext";
 import Modal from '../agnadirColaboradorModal/agnadirColaborador';
 
-const base64ToAudioSrc = (base64) => {
-    const base64WithoutPrefix = base64.replace(/^data:audio\/mp3;base64,/, '').replace(/^data:[^;]+;base64,/, '');
-    return `data:audio/mp3;base64,${atob(base64WithoutPrefix)}`;
+const getAudioUrl = (songId) => {
+    return `http://localhost:8000/audioCancion/${songId}/`;
 };
+
 
 export default function Body() {
     const { playlistId } = useParams();
@@ -27,7 +27,6 @@ export default function Body() {
     const getImageUrl = (type, filename) => {
         return `http://localhost:8000/imagen${type}/${filename}/`;
     };
-    
 
     const handleAddCollaborator = async () => {
         if (!collaboratorEmail) {
@@ -60,7 +59,7 @@ export default function Body() {
             if (response.ok && data.canciones) {
                 const enrichedSongs = await Promise.all(data.canciones.map(async song => {
                     const imageUrl = getImageUrl('Cancion', song.id);
-                    const audioUrl = base64ToAudioSrc(song.archivoMp3);
+                    const audioUrl = getAudioUrl(song.id);
                     const artistas = await fetchArtistsForSong(song.id);
                     const album = await fetchAlbumForSong(song.miAlbum);
                     const duration = await fetchAudioDuration(audioUrl).catch(() => 'Duración Desconocida');
