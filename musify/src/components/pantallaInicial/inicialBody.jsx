@@ -203,7 +203,7 @@ export default function Body_inicio() {
             <SectionTitle>Canciones</SectionTitle>
             <SongRow canciones={canciones.slice(0, 7)} />
             <PodcastRow podcasts={podcasts} onSelectPodcast={onSelectPodcast} />
-            <SectionTitle>Recomendaciones</SectionTitle>
+            <SectionTitle>Recomendado</SectionTitle>
             <RecomendadosRow cancionesRecomendadas={cancionesRecomendadas} podcastsRecomendados={podcastsRecomendados} onSelectPodcast={onSelectPodcast}/>
         </Container>
     );    
