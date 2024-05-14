@@ -17,8 +17,69 @@ export default function Body_inicio() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [podcasts, setPodcasts] = useState([]);
+    const [email, setEmail] = useState('');
+    const [cancionesRecomendadas, setCancionesRecomendadas] = useState([]);
+    const [podcastsRecomendados, setPodcastsRecomendados] = useState([]);
     const { updateTrack, play, pause, isPlaying, currentTrack, audioRef } = useTrack();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchUserDetails = async () => {
+            const token = localStorage.getItem('userToken');
+            try {
+                const response = await fetch('http://127.0.0.1:8000/obtenerUsuarioSesionAPI/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token: token })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    setEmail(data.correo);
+                } else {
+                    console.error('Failed to fetch user details:', data);
+                }
+            } catch (error) {
+                console.error('Error fetching user details:', error);
+            }
+        };
+        fetchUserDetails();
+    }, [email]);
+
+    useEffect(() => {
+        if(email){
+            const fetchData = async () => {
+                setLoading(true);
+                console.log(email);
+                try {
+                    const recomendedResponse = await fetch('http://localhost:8000/recomendar/', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ correo: email })
+                    });
+        
+                    if (!recomendedResponse.ok) {
+                        throw new Error("Failed to fetch data recomendacion");
+                    }
+                    const recomendedData = await recomendedResponse.json();
+    
+                    setCancionesRecomendadas(recomendedData.recomendaciones.canciones);
+                    setPodcastsRecomendados(recomendedData.recomendaciones.podcasts);
+                    console.log(recomendedData.recomendaciones.canciones);
+                    console.log(cancionesRecomendadas);
+                    console.log(recomendedData.recomendaciones.podcasts);
+                    console.log(podcastsRecomendados);
+                } catch (error) {
+                    setError(error.message);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchData();
+        }
+        
+    }, [email]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -142,6 +203,8 @@ export default function Body_inicio() {
             <SectionTitle>Canciones</SectionTitle>
             <SongRow canciones={canciones.slice(0, 7)} />
             <PodcastRow podcasts={podcasts} onSelectPodcast={onSelectPodcast} />
+            <SectionTitle>Recomendaciones</SectionTitle>
+            <RecomendadosRow cancionesRecomendadas={cancionesRecomendadas} podcastsRecomendados={podcastsRecomendados} onSelectPodcast={onSelectPodcast}/>
         </Container>
     );    
 }
@@ -235,6 +298,111 @@ const SongRow = ({ canciones }) => {
                             <p>{cancion.nombre}</p>
                         </ImageBox>
                     ))}
+                </ScrollContent>
+            </ScrollContainer>
+        </RowContainer>
+    );
+};
+
+const RecomendadosRow = ({ cancionesRecomendadas, podcastsRecomendados, onSelectPodcast }) => {
+    const { updateTrack, play, pause, isPlaying, audioRef } = useTrack();
+    const scrollRef = useRef(null);
+    const [playingIndex, setPlayingIndex] = useState(-1); // Índice de la canción actualmente en reproducción
+    const [hoverIndex, setHoverIndex] = useState(-1); // Índice de la canción sobre la que se encuentra el mouse
+    const audioRefs = useRef([]);
+    const containerRef = useRef(null);
+    const [isHovered, setIsHovered] = useState(false);
+    const [scrollPosition, setScrollPosition] = useState(0);
+    const [error, setError] = useState('');
+    const navigate = useNavigate(); 
+
+    const handleMouseEnter = () => {
+        setIsHovered(true);
+    };
+
+    const handleMouseLeave = () => {
+        setIsHovered(false);
+    };
+
+    const handleScroll = (e) => {
+        const scrollWidth = e.target.scrollWidth;
+        const clientWidth = e.target.clientWidth;
+        const maxScroll = scrollWidth - clientWidth;
+        const scrollPercentage = (e.target.scrollLeft / maxScroll) * 100;
+        setScrollPosition(scrollPercentage);
+    };
+
+    const togglePlayPause = async (index) => {
+        const selectedSong = cancionesRecomendadas[index];
+        // Verifica si la canción a reproducir es diferente o si el reproductor está pausado
+        if (playingIndex !== index || !isPlaying) {
+            try {
+                // Solicitar el archivo de audio solo si es necesario
+                const response = await fetch('http://127.0.0.1:8000/devolverCancion/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cancionId: selectedSong.id })
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to load the song audio');
+                }
+                const data = await response.json();
+                //const audioUrl = base64ToAudioSrc(data.cancion.archivoMp3);
+                //const audioUrl = getAudioUrl(data.cancion.id); Version vinal <----------
+                const audioUrl = getAudioUrl(selectedSong.id);
+
+                
+                // Actualiza el track actual con la nueva información, incluido el URL del audio
+                updateTrack({
+                    id: selectedSong.id,
+                    src: audioUrl,
+                    nombre: selectedSong.nombre,
+                    artista: selectedSong.artista,
+                    imagen: selectedSong.foto
+                });
+                audioRef.current.src = audioUrl; 
+                setPlayingIndex(index);
+                play();
+            } catch (error) {
+                console.error("Error loading audio:", error.message);
+            }
+        } else if (playingIndex === index && isPlaying) {
+            // Si se hace clic en el mismo índice y la música está reproduciendo, pausa
+            pause();
+        }
+    };
+
+    return (
+        <RowContainer>
+            <ScrollContainer
+                ref={containerRef}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                onScroll={handleScroll}
+            >
+                <ScrollContent style={{ transform: `translateX(-${scrollPosition}%)` }}>
+                    {cancionesRecomendadas.map((cancion, index) => (
+                        <ImageBox key={index} onMouseEnter={() => setHoverIndex(index)} onMouseLeave={() => setHoverIndex(-1)} onClick={() => togglePlayPause(index)}>
+                            <ImgContainer>
+                                <img src={getImageSrc('Cancion', cancion.id)} alt={cancion.nombre || 'Desconocido'} />
+                                {hoverIndex === index && (
+                                    <PlayIconContainer isVisible={true}>
+                                        {playingIndex === index && isPlaying ? <FaPause size="3em" /> : <FaPlay size="3em" />}
+                                    </PlayIconContainer>
+                                )}
+                                <audio ref={(el) => audioRefs.current[index] = el} src={getAudioUrl(cancion.id)} />
+                            </ImgContainer>
+                            <p>{cancion.nombre}</p>
+                        </ImageBox>
+                    ))}
+                    {podcastsRecomendados.map((podcast, index) => (
+                            <ImageBox key={index} onClick={() => onSelectPodcast(podcast.id)}>
+                                <ImgContainer>
+                                    <img src={getImageSrc('Podcast', podcast.id)} alt={podcast.nombre} />
+                                </ImgContainer>
+                                <p>{podcast.nombre}</p>
+                            </ImageBox>
+                        ))}
                 </ScrollContent>
             </ScrollContainer>
         </RowContainer>
