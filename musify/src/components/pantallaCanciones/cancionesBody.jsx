@@ -10,7 +10,7 @@ import { useTrack } from "../../TrackContext/trackContext";
 import { CiShare1 } from "react-icons/ci";
 
 const getAudioUrl = (songId) => {
-    return `http://localhost:8000/audioCancion/${songId}/`;
+    return `http://musify.servemp3.com:8000/audioCancion/${songId}/`;
 };
 
 const SongDetails = () => {
@@ -47,7 +47,7 @@ const SongDetails = () => {
         const fetchUserDetails = async () => {
             const token = localStorage.getItem('userToken');
             try {
-                const response = await fetch('http://127.0.0.1:8000/obtenerUsuarioSesionAPI/', {
+                const response = await fetch('http://musify.servemp3.com:8000/obtenerUsuarioSesionAPI/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -104,7 +104,7 @@ const SongDetails = () => {
         const fetchSongDetails = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`http://127.0.0.1:8000/devolverCancion/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/devolverCancion/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ cancionId })
@@ -114,7 +114,7 @@ const SongDetails = () => {
                     throw new Error(`Server responded with status ${response.status}: ${data.detail || JSON.stringify(data)}`);
                 }
                 // Actualizar para usar URL directa para la imagen de la canción
-                setSongImage(`http://localhost:8000/imagenCancion/${data.cancion.id}`);
+                setSongImage(`http://musify.servemp3.com:8000/imagenCancion/${data.cancion.id}`);
     
                 setSongName(data.cancion.nombre);
                 const audioSrc = getAudioUrl(data.cancion.id);
@@ -147,7 +147,7 @@ const SongDetails = () => {
 
     const addToQueue = async (correo, cancionId) => {
         try {
-            const response = await fetch('http://localhost:8000/agnadirCancionCola/', {
+            const response = await fetch('http://musify.servemp3.com:8000/agnadirCancionCola/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -179,7 +179,7 @@ const SongDetails = () => {
     // Función para añadir una canción a la playlist
     const addToPlaylist = async (playlistId) => {
         try {
-            const response = await fetch('http://localhost:8000/agnadirCancionPlaylist/', {
+            const response = await fetch('http://musify.servemp3.com:8000/agnadirCancionPlaylist/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -201,7 +201,7 @@ const SongDetails = () => {
     
     const fetchArtistsForSong = async (songId) => {
         try {
-            const response = await fetch(`http://localhost:8000/listarArtistasCancion/`, {
+            const response = await fetch(`http://musify.servemp3.com:8000/listarArtistasCancion/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -213,7 +213,7 @@ const SongDetails = () => {
             if (response.ok) {
                 setArtistas(data.artistas.map(artista => ({
                     nombre: artista.nombre,
-                    imagen: `http://localhost:8000/imagenArtista/${artista.id}`
+                    imagen: `http://musify.servemp3.com:8000/imagenArtista/${artista.id}`
                 })));
             } else {
                 throw new Error('Failed to fetch artists');
@@ -225,7 +225,7 @@ const SongDetails = () => {
 
     const fetchAlbumForSong = async (albumId) => {
         try {
-            const response = await fetch(`http://localhost:8000/devolverAlbum/`, {
+            const response = await fetch(`http://musify.servemp3.com:8000/devolverAlbum/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -237,7 +237,7 @@ const SongDetails = () => {
             if (response.ok) {
                 setAlbum({
                     nombre: data.album.nombre,
-                    imagen: `http://localhost:8000/imagenAlbum/${data.album.id}`
+                    imagen: `http://musify.servemp3.com:8000/imagenAlbum/${data.album.id}`
                 });
             } else {
                 throw new Error('Failed to fetch album');

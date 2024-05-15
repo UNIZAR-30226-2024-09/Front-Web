@@ -16,6 +16,22 @@ export const TrackProvider = ({ children }) => {
     const [userEmail, setUserEmail] = useState('');
     const [playedTime, setPlayedTime] = useState(0);  // Nuevo estado para rastrear el tiempo reproducido
     const [intervalId, setIntervalId] = useState(null); 
+    const [isFullyLoaded, setIsFullyLoaded] = useState(false);
+
+    useEffect(() => {
+        const audio = audioRef.current;
+
+        const handleCanPlayThrough = () => {
+            setIsFullyLoaded(true);  // Establecer que el audio está completamente cargado
+            console.log("Audio fully loaded, ready to play through.");
+        };
+
+        audio.addEventListener('canplaythrough', handleCanPlayThrough);
+
+        return () => {
+            audio.removeEventListener('canplaythrough', handleCanPlayThrough);
+        };
+    }, []);
 
     const startTimer = () => {
         clearInterval(intervalId);  // Limpiar intervalo existente si hay alguno
@@ -56,7 +72,7 @@ export const TrackProvider = ({ children }) => {
         const fetchUserDetails = async () => {
             const token = localStorage.getItem('userToken');
             try {
-                const response = await fetch('http://127.0.0.1:8000/obtenerUsuarioSesionAPI/', {
+                const response = await fetch('http://musify.servemp3.com:8000/obtenerUsuarioSesionAPI/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -83,7 +99,7 @@ export const TrackProvider = ({ children }) => {
     
     
     const addToHistory = async (trackId) => {
-        const url = 'http://localhost:8000/agnadirCancionHistorial/';
+        const url = 'http://musify.servemp3.com:8000/agnadirCancionHistorial/';
         try {
             const response = await fetch(url, {
                 method: 'POST',
@@ -104,11 +120,10 @@ export const TrackProvider = ({ children }) => {
     };
     
 
-      const play = () => {
-        if (!isPlaying) {
+    const play = () => {
+        if (isFullyLoaded && !isPlaying) {  // Solo reproducir si el audio está completamente cargado
             audioRef.current.play().then(() => {
                 setIsPlaying(true);
-                startTimer();  // Iniciar el timer al comenzar a reproducir
             }).catch(error => {
                 console.error("Error during play:", error);
             });
@@ -119,7 +134,7 @@ export const TrackProvider = ({ children }) => {
     const actualizarEstadoCancion = async () => {
         const tiempo = Math.floor(audioRef.current.currentTime);
         const cancionID = currentTrackId;
-        const url = 'http://localhost:8000/actualizarEstadoCancionesAPI/';
+        const url = 'http://musify.servemp3.com:8000/actualizarEstadoCancionesAPI/';
     
         try {
             const response = await fetch(url, {
@@ -139,8 +154,8 @@ export const TrackProvider = ({ children }) => {
     };
     
     const obtenerUltimoEstadoYReproducir = async () => {
-        const obtenerEstadoUrl = 'http://localhost:8000/obtenerEstadoCancionesAPI/';
-        const devolverCancionUrl = 'http://localhost:8000/devolverCancion/';
+        const obtenerEstadoUrl = 'http://musify.servemp3.com:8000/obtenerEstadoCancionesAPI/';
+        const devolverCancionUrl = 'http://musify.servemp3.com:8000/devolverCancion/';
     
         try {
             const estadoResponse = await fetch(obtenerEstadoUrl, {
@@ -191,7 +206,7 @@ export const TrackProvider = ({ children }) => {
     
     const fetchArtistsForSong = async (songId) => {
         try {
-            const response = await fetch(`http://localhost:8000/listarArtistasCancion/`, {
+            const response = await fetch(`http://musify.servemp3.com:8000/listarArtistasCancion/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -219,10 +234,10 @@ export const TrackProvider = ({ children }) => {
     };
 
     const getImageUrl = (songId) => {
-    return `http://localhost:8000/imagenCancion/${songId}/`;
+    return `http://musify.servemp3.com:8000/imagenCancion/${songId}/`;
 };
     const getAudioUrl = (songId) => {
-    return `http://localhost:8000/audioCancion/${songId}/`;
+    return `http://musify.servemp3.com:8000/audioCancion/${songId}/`;
 };
 
 const pause = () => {
@@ -323,7 +338,9 @@ const pause = () => {
         tracks,
         setTracks,
         toggleShuffle,
-        isShuffling
+        isShuffling,
+        isFullyLoaded,
+        setIsFullyLoaded,
 }   ;
 
     return <TrackContext.Provider value={value}>{children}</TrackContext.Provider>;

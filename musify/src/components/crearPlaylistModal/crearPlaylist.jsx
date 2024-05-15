@@ -7,7 +7,7 @@ export default function PlaylistForm({ userEmail, onClose, onCreate }) {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        const url = 'http://127.0.0.1:8000/crearPlaylist/';
+        const url = 'http://musify.servemp3.com:8000/crearPlaylist/';
         try {
             const response = await fetch(url, {
                 method: 'POST',

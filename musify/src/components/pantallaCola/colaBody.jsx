@@ -13,7 +13,7 @@ export default function Body_cola() {
       const firstSong = songs[0];
       updateTrack({
         ...firstSong,
-        src: `http://localhost:8000/audioCancion/${firstSong.id}`
+        src: `http://musify.servemp3.com:8000/audioCancion/${firstSong.id}`
       });
       setTrackIndex(0);
       play();
@@ -26,7 +26,7 @@ export default function Body_cola() {
   useEffect(() => {
     const fetchUserDetails = async () => {
       const token = localStorage.getItem('userToken');
-      const response = await fetch('http://127.0.0.1:8000/obtenerUsuarioSesionAPI/', {
+      const response = await fetch('http://musify.servemp3.com:8000/obtenerUsuarioSesionAPI/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token }),
@@ -39,7 +39,7 @@ export default function Body_cola() {
   }, [setTrackList]);
 
   const fetchQueueSongs = async (email) => {
-    const response = await fetch('http://127.0.0.1:8000/listarCola/', {
+    const response = await fetch('http://musify.servemp3.com:8000/listarCola/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ correo: email }),
@@ -48,7 +48,7 @@ export default function Body_cola() {
     if (response.ok) {
       const enrichedSongs = data.queue.map(song => ({
         ...song,
-        imageUrl: `http://localhost:8000/imagenCancion/${song.id}/`,
+        imageUrl: `http://musify.servemp3.com:8000/imagenCancion/${song.id}/`,
       }));
       setSongs(enrichedSongs);
       setTrackList(enrichedSongs);
@@ -58,7 +58,7 @@ export default function Body_cola() {
   };
 
   const fetchArtistsForSong = async (songId) => {
-    const response = await fetch(`http://localhost:8000/listarArtistasCancion/`, {
+    const response = await fetch(`http://musify.servemp3.com:8000/listarArtistasCancion/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ export default function Body_cola() {
     console.log("Sending payload to server:", payload);
   
     try {
-      const response = await fetch('http://127.0.0.1:8000/eliminarCancionCola/', {
+      const response = await fetch('http://musify.servemp3.com:8000//eliminarCancionCola/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

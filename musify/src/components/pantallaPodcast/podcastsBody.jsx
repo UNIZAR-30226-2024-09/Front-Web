@@ -25,7 +25,7 @@ const PodcastDetails = () => {
     useEffect(() => {
         const fetchPodcastDetails = async () => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/devolverPodcast/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/devolverPodcast/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ podcastId })
@@ -33,7 +33,7 @@ const PodcastDetails = () => {
                 if (!response.ok) throw new Error("Failed to fetch podcast details");
                 const data = await response.json();
                 // Construye la URL de la imagen usando el servidor como base
-                setPodcastImage(`http://127.0.0.1:8000/imagenPodcast/${podcastId}/`);
+                setPodcastImage(`http://musify.servemp3.com:8000/imagenPodcast/${podcastId}/`);
                 setPodcastName(data.podcast.nombre);
                 fetchChapters(data.podcast.nombre);
             } catch (error) {
@@ -43,7 +43,7 @@ const PodcastDetails = () => {
 
         const fetchChapters = async (podcastName) => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/listarCapitulosPodcast/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/listarCapitulosPodcast/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ nombrePodcast: podcastName })

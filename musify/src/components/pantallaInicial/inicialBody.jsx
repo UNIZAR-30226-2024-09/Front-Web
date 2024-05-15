@@ -6,10 +6,10 @@ import { useNavigate } from 'react-router-dom';
 
 
 const getImageSrc = (type, id) => {
-    return `http://localhost:8000/imagen${type}/${id}`;
+    return `http://musify.servemp3.com:8000/imagen${type}/${id}`;
 };
 const getAudioUrl = (songId) => {
-    return `http://localhost:8000/audioCancion/${songId}/`;
+    return `http://musify.servemp3.com:8000/audioCancion/${songId}/`;
 };
 
 export default function Body_inicio() {
@@ -27,7 +27,7 @@ export default function Body_inicio() {
         const fetchUserDetails = async () => {
             const token = localStorage.getItem('userToken');
             try {
-                const response = await fetch('http://127.0.0.1:8000/obtenerUsuarioSesionAPI/', {
+                const response = await fetch('http://musify.servemp3.com:8000/obtenerUsuarioSesionAPI/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ export default function Body_inicio() {
                 setLoading(true);
                 console.log(email);
                 try {
-                    const recomendedResponse = await fetch('http://localhost:8000/recomendar/', {
+                    const recomendedResponse = await fetch('http://musify.servemp3.com:8000/recomendar/', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ correo: email })
@@ -86,11 +86,11 @@ export default function Body_inicio() {
             setLoading(true);
             try {
                 const [songsResponse, podcastsResponse] = await Promise.all([
-                    fetch('http://127.0.0.1:8000/listarPocasCanciones/', {
+                    fetch('http://musify.servemp3.com:8000/listarPocasCanciones/', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'}
                     }),
-                    fetch('http://localhost:8000/listarPocosPodcasts/', {
+                    fetch('http://musify.servemp3.com:8000/listarPocosPodcasts/', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'}
                     })
@@ -129,7 +129,7 @@ export default function Body_inicio() {
 
 
     const fetchArtistsForSong = async (songId) => {
-        const response = await fetch(`http://localhost:8000/listarArtistasCancion/`, {
+        const response = await fetch(`http://musify.servemp3.com:8000/listarArtistasCancion/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -18,6 +18,7 @@ export default function PlayerControls() {
         changeTrack,
         isShuffling,
         toggleShuffle,
+        isFullyLoaded,
     } = useTrack();
 
 
@@ -50,8 +51,10 @@ export default function PlayerControls() {
     const togglePlayPause = () => {
         if (isPlaying) {
             pause();
-        } else {
+        } else if (isFullyLoaded) {  // Añadir condición para asegurarse de que el audio está cargado
             play();
+        } else {
+            console.log("Audio is not fully loaded yet.");
         }
     };
 

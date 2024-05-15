@@ -24,7 +24,7 @@ export default function RegisterTerminosCondiciones() {
     useEffect(() => {
         const fetchGenerosCanciones = async () => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/generosCanciones/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/generosCanciones/`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                 });
