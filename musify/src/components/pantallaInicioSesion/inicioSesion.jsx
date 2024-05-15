@@ -64,10 +64,7 @@ export default function LoginForm() {
         <div className='wrapper'>
             <form onSubmit={handleLogin}>
                 <h1>Inicie Sesión en Musify</h1>
-                <button type="button" onClick={handleGoogleSignIn} className="google-signin-button">
-                    <FaGoogle className="google-icon" />
-                    Continuar con Google
-                </button>
+
                 <div className="separator"></div>
     
                 {/* Asegúrate de actualizar el estado con el valor del input */}
@@ -90,11 +87,6 @@ export default function LoginForm() {
                       onChange={(e) => setPassword(e.target.value)} // Actualiza el estado al escribir
                     />
                     <FaLock className="icon" />
-                </div>
-    
-                <div className="remember-forgot">
-                    <label><input type="checkbox" />Recuérdame</label>
-                    <a href="#">¿Has olvidado tú contraseña?</a>
                 </div>
     
                 <button type="submit">Iniciar Sesion</button>
@@ -120,15 +112,15 @@ const Logo = styled.img`
 
 const Container = styled.div`
 .wrapper {
-    width: 800px;
-    height: 550px;
+    width: 650px;
+    height: 460px;
     color: #fff;
     border-radius: 40px;
     padding: 30px 40px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 80px;
+    margin-top: 60px;
     background: rgba(0, 0, 0, 0.25);
 }
 .wrapper h1{
@@ -168,27 +160,6 @@ const Container = styled.div`
     font-size: 16px;
 }
 
-.wrapper .remember-forgot {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14.5px;
-    margin: -15px 0 15px;
-}
-
-.remember-forgot label input {
-    accent-color: #fff;
-    margin-right: 4px;
-}
-
-.remember-forgot a {
-    color: #fff;
-    text-decoration: none;
-
-}
-
-.remember-forgot a:hover {
-    text-decoration: underline;
-}
 
 .wrapper button, .wrapper .google-signin-button {
     width: 100%;

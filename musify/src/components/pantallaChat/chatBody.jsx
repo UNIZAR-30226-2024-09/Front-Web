@@ -46,6 +46,7 @@ function Chat() {
                         }),
                     });
                     const data = await response.json();
+                    console.log(data.correo);
                     if (response.ok) {
                         setUserEmail(data.correo);
                     } else {
@@ -181,6 +182,9 @@ function Chat() {
                         mensaje: input 
                     })
                 });
+
+                const data = await response.json(); // Asumiendo que la respuesta es un JSON
+                console.log("Respuesta del servidor:", data.userEmail);
     
                 if (response.ok) {
                     if (websocket.current.readyState === WebSocket.OPEN) {
