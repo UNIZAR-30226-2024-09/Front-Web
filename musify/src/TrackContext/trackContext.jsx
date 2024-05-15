@@ -11,6 +11,7 @@ export const TrackProvider = ({ children }) => {
     const [currentTrackId, setCurrentTrackId] = useState(null);
     const [volume, setVolume] = useState(0.5);
     const [trackIndex, setTrackIndex] = useState(-1);
+    const [shouldPlayNext, setShouldPlayNext] = useState(false);
     const [tracks, setTracks] = useState([]);
     const [isShuffling, setIsShuffling] = useState(false);
     const [userEmail, setUserEmail] = useState('');
@@ -18,49 +19,50 @@ export const TrackProvider = ({ children }) => {
     const [intervalId, setIntervalId] = useState(null);
 
     useEffect(() => {
-        if (currentTrackId) {
-            const loadFullAudio = async () => {
-                try {
-                    const response = await fetch(`http://musify.servemp3.com:8000/audioCancion/${currentTrackId}/`);
-                    const data = await response.blob();
-                    const objectURL = URL.createObjectURL(data);
-                    audioRef.current.src = objectURL;
-                    audioRef.current.load();  // Ensure the audio object is loaded
-                } catch (error) {
-                    console.error("Error loading full audio:", error);
-                }
-            };
-            loadFullAudio();
+        if (tracks.length > 0 && trackIndex < tracks.length) {
+            const track = tracks[trackIndex];
+            fetchAudio(track.id);
         }
+    }, [trackIndex, tracks]);
 
-        // Cleanup function to revoke the created URL and prevent memory leaks
-        return () => {
-            audioRef.current.src && URL.revokeObjectURL(audioRef.current.src);
-            audioRef.current.pause();
-            audioRef.current.src = "";
-        };
-    }, [currentTrackId]); // Dependency on currentTrackId ensures this runs only when the track changes
-
+    // Función para cargar y preparar el audio
+    const fetchAudio = async (trackId) => {
+        try {
+            const response = await fetch(`http://musify.servemp3.com:8000/audioCancion/${trackId}/`);
+            const data = await response.blob();
+            const objectURL = URL.createObjectURL(data);
+            audioRef.current.src = objectURL;
+            audioRef.current.load();
+            audioRef.current.oncanplaythrough = () => audioRef.current.play(); // Autoplay cuando esté listo
+        } catch (error) {
+            console.error("Error loading full audio:", error);
+        }
+    };
+    
     const updateTrack = (track) => {
-        if (track && track.id && track.id !== currentTrackId) {
-            setCurrentTrack(track);
-            setCurrentTrackId(track.id);
+        if (track && track.id && track.id !== currentTrack.id) {
+            setCurrentTrack({
+                ...track,
+                type: track.type || 'song' // Asumimos 'song' como default
+            });
+            audioRef.current.src = track.src;
+            audioRef.current.load();
+            audioRef.current.oncanplaythrough = play;
         }
     };
     
 
     useEffect(() => {
-        if (trackIndex >= 0 && trackIndex < tracks.length) {
-            updateTrack(tracks[trackIndex]);
-        }
-    }, [trackIndex, tracks]);
-
-    useEffect(() => {
-        audioRef.current.onended = () => {
-            changeTrack(true);
-            play();
+        const handleEnded = () => {
+            if (trackIndex < tracks.length - 1) {
+                setTrackIndex(trackIndex + 1);  // Avanzar al siguiente índice
+            } else {
+                setIsPlaying(false);  // Si es el final de la lista, detener la reproducción
+            }
         };
-    }, [trackIndex, tracks]); 
+        audioRef.current.addEventListener('ended', handleEnded);
+        return () => audioRef.current.removeEventListener('ended', handleEnded);
+    }, [trackIndex, tracks]);
 
     const play = () => {
         if (!isPlaying) {
@@ -70,6 +72,36 @@ export const TrackProvider = ({ children }) => {
         }
     };
 
+    useEffect(() => {
+        if (shouldPlayNext) {
+            playAudio();
+            setShouldPlayNext(false);
+        }
+    }, [shouldPlayNext]);
+    
+    const onEnded = () => {
+        changeTrack(true);
+        setShouldPlayNext(true);
+    };
+
+    const playAudio = () => {
+        const playPromise = audioRef.current.play();
+    
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                setIsPlaying(true);
+            }).catch(error => {
+                console.error("Error during play:", error);
+                if (error.name === "AbortError") {
+                    console.log("Play was aborted, retrying...");
+                    audioRef.current.play().then(() => {
+                        setIsPlaying(true);
+                    }).catch(error => console.error("Retry failed:", error));
+                }
+            });
+        }
+    };
+    
     const pause = () => {
         audioRef.current.pause();
         setIsPlaying(false);
@@ -88,6 +120,20 @@ export const TrackProvider = ({ children }) => {
         clearInterval(intervalId);
     };
 
+    useEffect(() => {
+        const onEnded = () => {
+            changeTrack(true); // Cambia a la siguiente pista cuando una canción termina.
+            play(); // Comienza a reproducir automáticamente la siguiente canción.
+        };
+    
+        const audio = audioRef.current;
+        audio.addEventListener('ended', onEnded);
+    
+        return () => {
+            audio.removeEventListener('ended', onEnded);
+        };
+    }, [trackIndex, tracks, isShuffling]); // Asegúrate de incluir isShuffling en las dependencias si su estado afecta la lógica de cambio de pista.
+    
     useEffect(() => {
         if (!isPlaying) {
             stopTimer();
@@ -275,29 +321,23 @@ export const TrackProvider = ({ children }) => {
         }
     };
 
-    const getRandomIndex = (currentIndex) => {
-        if (tracks.length < 2) return currentIndex; // Devuelve el índice actual si no hay suficientes pistas para una elección aleatoria.
-        let newIndex = currentIndex;
-        while (newIndex === currentIndex) {
-            newIndex = Math.floor(Math.random() * tracks.length);
-        }
-        return newIndex;
-    };
-
     const changeTrack = (forward = true) => {
         let newIndex;
         if (isShuffling) {
-            newIndex = Math.floor(Math.random() * tracks.length);
+            do {
+                newIndex = Math.floor(Math.random() * tracks.length);
+            } while (tracks.length > 1 && newIndex === trackIndex); // Asegura no repetir la misma canción si hay más de una canción
         } else {
             newIndex = trackIndex + (forward ? 1 : -1);
             if (newIndex >= tracks.length) {
-                newIndex = 0; // Si es el fin de la cola, vuelve al inicio.
+                newIndex = 0; // Vuelve al inicio si es el fin de la lista
             } else if (newIndex < 0) {
-                newIndex = tracks.length - 1; // Si retrocede antes del inicio, va al final.
+                newIndex = tracks.length - 1; // Va al final si retrocede antes del inicio
             }
         }
         setTrackIndex(newIndex);
     };
+    
 
     useEffect(() => {
         audioRef.current.onended = () => {
@@ -318,6 +358,14 @@ export const TrackProvider = ({ children }) => {
         setVolume(newVolume);  // Actualiza el estado
     };
 
+    useEffect(() => {
+        if (isPlaying) {
+            audioRef.current.play().catch(error => console.error("Error durante la reproducción:", error));
+        } else {
+            audioRef.current.pause();
+        }
+    }, [isPlaying]);
+    
 
     const value = {
         // Expose all necessary states and functions through context
