@@ -35,7 +35,7 @@ function Chat() {
         const fetchUserDetails = async () => {
             try {
                 const token = localStorage.getItem('userToken');
-                const response = await fetch('http://localhost:8000/obtenerUsuarioSesionAPI/', {
+                const response = await fetch('http://musify.servemp3.com:8000/obtenerUsuarioSesionAPI/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ function Chat() {
         // Cambia el host y puerto según tu configuración de Django y asegúrate de incluir el nombre de la sala
         // Por ejemplo, si tu servidor Django corre en localhost en el puerto 8000 y la sala se llama "public"
         const token = localStorage.getItem('userToken');
-        websocket.current = new WebSocket(`ws://localhost:8000/ws/chat/${salaId}/${token}/`);
+        websocket.current = new WebSocket(`ws://musify.servemp3.com:8000/ws/chat/${salaId}/${token}/`);
     
         websocket.current.onmessage = (event) => {
             const newId = messageCounter + 1;
@@ -118,7 +118,7 @@ function Chat() {
     useEffect(() => {
         async function cargarMensajes() {
             try {
-                const response = await fetch(`http://localhost:8000/cargarMensajesAPI/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/cargarMensajesAPI/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -184,7 +184,7 @@ function Chat() {
                 setInput('');
                 
                 // Call API to register the message
-                const response = await fetch('http://localhost:8000/registrarMensajeAPI/', {
+                const response = await fetch('http://musify.servemp3.com:8000/registrarMensajeAPI/', {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
