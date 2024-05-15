@@ -65,6 +65,7 @@ export default function EditarCancion() {
                 fetchAlbum(data.cancion.miAlbum);
                 fetchGenerosCancion(cancionId);
                 fetchDuracion(getAudioUrl(data.cancion.id));
+                //setDuracion(0);
                 fetchGeneros();
             } catch (error) {
                 setError(error.message);
@@ -246,7 +247,7 @@ export default function EditarCancion() {
     
             if (response.ok) {
                 // Borrado exitoso
-                navigate('/lista_canciones_admin');
+                //navigate('/lista_canciones_admin');
                 console.log('Canción eliminada correctamente en la base de datos');
             } else {
                 // Maneja errores de respuesta
@@ -301,7 +302,7 @@ export default function EditarCancion() {
                                 onChange={(e) => setDuracion(e.target.value)}
                                 />
                         </div>
-                        <select className='seleccion' value={generosCancion} onChange={e=>setGenerosCancion(e.target.value)} required>
+                        <select className='seleccion' value={generosCancion} onChange={e=>setGenerosCancion(e.target.value)}>
                             <option value="">Selecciona un género</option>
                             {generos.map((genero, index) => (
                                 <option key={index} value={genero}>{genero}</option>

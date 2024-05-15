@@ -125,7 +125,6 @@ export default function EditarPodcasrAdmin() {
                     return null;
                 }
             } catch (error) {
-              console.log(error);
                 setError(`Failed to fetch presentadores: ${error.message}`);
             }
           };
@@ -142,7 +141,6 @@ export default function EditarPodcasrAdmin() {
                 if (podcastData.generos && podcastData.generos.length > 0) {
                     const nombresGeneros = podcastData.generos.map(genero => genero.nombre);
                     setGenerosPodcast(nombresGeneros);
-                    console.log(nombresGeneros);
                 }
             } catch (error) {
                 setError(`Failed to fetch generos del podcast: ${error.message}`);
@@ -292,10 +290,6 @@ export default function EditarPodcasrAdmin() {
                             ))}
                         </select>
                     </div>
-                    <div className="audio">
-                        <h6>Archivo de audio (.mp3):</h6>
-                        <input type="file" accept=".mp3" onChange={e=>setAudio(e.target.value)}/>
-                    </div>
                     <div className="image">
                     <h6>Imagen:</h6>
                         <img 
@@ -393,12 +387,27 @@ const Container = styled.div`
         }
     }
 
-    .input-box, select{
+    .input-box {
         position: relative;
         width: 400px;
         height: 40px;
         margin: 30px 0;
     }
+
+    select {
+        position: relative;
+        width: 400px;
+        height: 40px;
+        margin-top: 35px;
+        background: none;
+        border: 2px solid #fff;
+        border-radius: 20px;
+        color: #fff;
+    }
+    select option {
+        color: #000;
+    }
+
     input{
         width: 100%;
         height: 100%;
@@ -406,7 +415,7 @@ const Container = styled.div`
         outline: none;
         border: 2px solid #fff;
         border-radius: 20px;
-        font-size: 20px;
+        font-size: 16px;
         color: #fff;
         padding-left: 20px;
         appearance: none;
