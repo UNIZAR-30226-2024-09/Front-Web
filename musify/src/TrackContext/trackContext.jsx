@@ -16,22 +16,7 @@ export const TrackProvider = ({ children }) => {
     const [userEmail, setUserEmail] = useState('');
     const [playedTime, setPlayedTime] = useState(0);  // Nuevo estado para rastrear el tiempo reproducido
     const [intervalId, setIntervalId] = useState(null); 
-    const [isFullyLoaded, setIsFullyLoaded] = useState(false);
 
-    useEffect(() => {
-        const audio = audioRef.current;
-
-        const handleCanPlayThrough = () => {
-            setIsFullyLoaded(true);  // Establecer que el audio está completamente cargado
-            console.log("Audio fully loaded, ready to play through.");
-        };
-
-        audio.addEventListener('canplaythrough', handleCanPlayThrough);
-
-        return () => {
-            audio.removeEventListener('canplaythrough', handleCanPlayThrough);
-        };
-    }, []);
 
     const startTimer = () => {
         clearInterval(intervalId);  // Limpiar intervalo existente si hay alguno
@@ -118,10 +103,9 @@ export const TrackProvider = ({ children }) => {
             console.error("Error al añadir la canción al historial:", error);
         }
     };
-    
 
     const play = () => {
-        if (isFullyLoaded && !isPlaying) {  // Solo reproducir si el audio está completamente cargado
+        if (!isPlaying) {
             audioRef.current.play().then(() => {
                 setIsPlaying(true);
             }).catch(error => {
@@ -130,79 +114,60 @@ export const TrackProvider = ({ children }) => {
         }
     };
 
-
     const actualizarEstadoCancion = async () => {
         const tiempo = Math.floor(audioRef.current.currentTime);
         const cancionID = currentTrackId;
-        const url = 'http://musify.servemp3.com:8000/actualizarEstadoCancionesAPI/';
-    
+        const correo = userEmail;
         try {
-            const response = await fetch(url, {
+            const response = await fetch('http://musify.servemp3.com:8000/actualizarEstadoCancionesAPI/', {
                 method: 'POST',
                 headers: {
                     'accept': 'application/json',
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': 'tu_token_csrf'
+                    'X-CSRFToken': 'tu_token_csrf'  // Asegúrate de que este token se maneje de manera segura
                 },
-                body: JSON.stringify({ correo: userEmail, cancionID, tiempo })
+                body: JSON.stringify({ correo, cancionID, tiempo })
             });
             const data = await response.json();
-            console.log(data.message); 
+            if (!response.ok) throw new Error(data.message || "Error al actualizar el estado de la canción");
+            console.log("Estado de canción actualizado con éxito:", data.message);
         } catch (error) {
             console.error('Error al actualizar el estado de la canción:', error);
         }
     };
     
     const obtenerUltimoEstadoYReproducir = async () => {
-        const obtenerEstadoUrl = 'http://musify.servemp3.com:8000/obtenerEstadoCancionesAPI/';
-        const devolverCancionUrl = 'http://musify.servemp3.com:8000/devolverCancion/';
-    
+        const correo = userEmail;
         try {
-            const estadoResponse = await fetch(obtenerEstadoUrl, {
+            const response = await fetch('http://musify.servemp3.com:8000/obtenerEstadoCancionesAPI/', {
                 method: 'POST',
                 headers: {
                     'accept': 'application/json',
                     'Content-Type': 'application/json',
                     'X-CSRFToken': 'tu_token_csrf'
                 },
-                body: JSON.stringify({ correo: userEmail })
+                body: JSON.stringify({ correo })
             });
-            const estadoData = await estadoResponse.json();
-            if (estadoResponse.ok) {
-                const { ultima_cancion, ultima_minutos } = estadoData;
-                const cancionResponse = await fetch(devolverCancionUrl, {
-                    method: 'POST',
-                    headers: {
-                        'accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': 'tu_token_csrf'
-                    },
-                    body: JSON.stringify({ cancionId: ultima_cancion })
+            const data = await response.json();
+            if (response.ok && data.ultima_cancion) {
+                audioRef.current.src = getAudioUrl(data.ultima_cancion);
+                audioRef.current.currentTime = data.ultima_minutos;
+                audioRef.current.play().then(() => {
+                    setCurrentTrackId(data.ultima_cancion);
+                    setIsPlaying(true);
                 });
-                const cancionData = await cancionResponse.json();
-                if (cancionResponse.ok) {
-                    const { cancion } = cancionData;
-                    const artistas = await fetchArtistsForSong(ultima_cancion);
-                    updateTrack({
-                        id: cancion.id,
-                        src: getAudioUrl(cancion.id),
-                        nombre: cancion.nombre,
-                        imagen: getImageUrl(cancion.id),
-                        artistas: artistas
-                    });
-                    audioRef.current.currentTime = ultima_minutos;
-                    console.log("Canción cargada y lista para reproducirse desde el último punto guardado.");
-                }
+                console.log("Canción cargada y lista para reproducirse desde el último punto guardado.");
             }
         } catch (error) {
             console.error('Error al obtener el estado de la canción o al cargar la canción:', error);
         }
     };
     
-
     useEffect(() => {
-        obtenerUltimoEstadoYReproducir();
-    }, []);
+        if (userEmail) {
+            obtenerUltimoEstadoYReproducir();
+        }
+    }, [userEmail]);
     
     const fetchArtistsForSong = async (songId) => {
         try {
@@ -244,7 +209,9 @@ const pause = () => {
     audioRef.current.pause();
     setIsPlaying(false);
     stopTimer();  // Detener el timer al pausar
+    actualizarEstadoCancion();  // Actualizar el estado de la canción en el servidor
 };
+
 
     const updateTrackDetails = async (track) => {
         if (!track.id) return;
@@ -339,8 +306,6 @@ const pause = () => {
         setTracks,
         toggleShuffle,
         isShuffling,
-        isFullyLoaded,
-        setIsFullyLoaded,
 }   ;
 
     return <TrackContext.Provider value={value}>{children}</TrackContext.Provider>;

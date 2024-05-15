@@ -18,16 +18,13 @@ export default function PlayerControls() {
         changeTrack,
         isShuffling,
         toggleShuffle,
-        isFullyLoaded,
     } = useTrack();
-
 
     const [lyrics, setLyrics] = useState([]);
     const [showLyrics, setShowLyrics] = useState(false);
     const [isRepeating, setIsRepeating] = useState(false);
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
-    const [isFavorited, setIsFavorited] = useState(false);
     
 
     useEffect(() => {
@@ -51,10 +48,8 @@ export default function PlayerControls() {
     const togglePlayPause = () => {
         if (isPlaying) {
             pause();
-        } else if (isFullyLoaded) {  // Añadir condición para asegurarse de que el audio está cargado
-            play();
         } else {
-            console.log("Audio is not fully loaded yet.");
+            play();
         }
     };
 

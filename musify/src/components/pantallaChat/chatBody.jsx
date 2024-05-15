@@ -33,41 +33,41 @@ function Chat() {
 
     
     useEffect(() => {
+        const fetchUserDetails = async () => {
+            try {
+                const token = localStorage.getItem('userToken');
+                const response = await fetch('http://musify.servemp3.com:8000/obtenerUsuarioSesionAPI/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token }),
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    setUserEmail(data.correo);
+                    console.log("Correo obtenido:", data.correo);
+                } else {
+                    console.error('Failed to fetch user details:', data);
+                }
+            } catch (error) {
+                console.error('Error fetching user details:', error);
+            }
+        };
+    
         if (localStorage.getItem('userToken')) {
-            const fetchUserDetails = async () => {
-                try {
-                    const response = await fetch('http://musify.servemp3.com:8000/obtenerUsuarioSesionAPI/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            token: localStorage.getItem('userToken'),
-                        }),
-                    });
-                    const data = await response.json();
-                    console.log(data.correo);
-                    if (response.ok) {
-                        setUserEmail(data.correo);
-                    } else {
-                        console.error('Failed to fetch user details:', data);
-                    }
-                } catch (error) {
-                    console.error('Error fetching user details:', error);
-                }
-            };
-            
-            if (localStorage.getItem('userToken')) {
-                fetchUserDetails();
-            }            
-            return () => {
-                if (websocket.current && websocket.current.readyState === WebSocket.OPEN) {
-                    websocket.current.close();
-                    console.log('WebSocket connection closed.');
-                }
-            };
+            fetchUserDetails();
         }
     }, []);
+    
+    useEffect(() => {
+        if (userEmail) {
+            // Lógica que depende del userEmail aquí
+            console.log("Usuario Email Establecido:", userEmail);
+            // Por ejemplo, iniciar WebSocket aquí si es dependiente del userEmail
+        }
+    }, [userEmail]); // Dependencia a userEmail
+    
     
 
     useEffect(() => {
@@ -159,6 +159,8 @@ function Chat() {
 
     const sendMessage = async (e) => {
         e.preventDefault();
+        console.log("Correo del usuario al enviar mensaje:", userEmail);  // Aquí verificas el correo del usuario
+    
         if (input.trim()) {
             const messageToSend = JSON.stringify({
                 cuerpo: {
@@ -182,9 +184,9 @@ function Chat() {
                         mensaje: input 
                     })
                 });
-
-                const data = await response.json(); // Asumiendo que la respuesta es un JSON
-                console.log("Respuesta del servidor:", data.userEmail);
+    
+                const data = await response.json();  // Asumiendo que la respuesta es un JSON
+                console.log("Respuesta del servidor:", data);
     
                 if (response.ok) {
                     if (websocket.current.readyState === WebSocket.OPEN) {
@@ -199,6 +201,7 @@ function Chat() {
             }
         }
     };
+    
 
     return (
         <ChatContainer>
