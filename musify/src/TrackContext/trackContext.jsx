@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useRef, useState, useEffect} from 'react';
+import React, { createContext, useContext, useRef, useState, useEffect } from 'react';
 
 const TrackContext = createContext();
 
@@ -14,9 +14,66 @@ export const TrackProvider = ({ children }) => {
     const [tracks, setTracks] = useState([]);
     const [isShuffling, setIsShuffling] = useState(false);
     const [userEmail, setUserEmail] = useState('');
-    const [playedTime, setPlayedTime] = useState(0);  // Nuevo estado para rastrear el tiempo reproducido
-    const [intervalId, setIntervalId] = useState(null); 
+    const [playedTime, setPlayedTime] = useState(0);
+    const [intervalId, setIntervalId] = useState(null);
 
+    useEffect(() => {
+        if (currentTrackId) {
+            const loadFullAudio = async () => {
+                try {
+                    const response = await fetch(`http://musify.servemp3.com:8000/audioCancion/${currentTrackId}/`);
+                    const data = await response.blob();
+                    const objectURL = URL.createObjectURL(data);
+                    audioRef.current.src = objectURL;
+                    audioRef.current.load();  // Ensure the audio object is loaded
+                } catch (error) {
+                    console.error("Error loading full audio:", error);
+                }
+            };
+            loadFullAudio();
+        }
+
+        // Cleanup function to revoke the created URL and prevent memory leaks
+        return () => {
+            audioRef.current.src && URL.revokeObjectURL(audioRef.current.src);
+            audioRef.current.pause();
+            audioRef.current.src = "";
+        };
+    }, [currentTrackId]); // Dependency on currentTrackId ensures this runs only when the track changes
+
+    const updateTrack = (track) => {
+        if (track && track.id && track.id !== currentTrackId) {
+            setCurrentTrack(track);
+            setCurrentTrackId(track.id);
+        }
+    };
+    
+
+    useEffect(() => {
+        if (trackIndex >= 0 && trackIndex < tracks.length) {
+            updateTrack(tracks[trackIndex]);
+        }
+    }, [trackIndex, tracks]);
+
+    useEffect(() => {
+        audioRef.current.onended = () => {
+            changeTrack(true);
+            play();
+        };
+    }, [trackIndex, tracks]); 
+
+    const play = () => {
+        if (!isPlaying) {
+            audioRef.current.play()
+            .then(() => setIsPlaying(true))
+            .catch(error => console.error("Error during play:", error));
+        }
+    };
+
+    const pause = () => {
+        audioRef.current.pause();
+        setIsPlaying(false);
+    };
 
     const startTimer = () => {
         clearInterval(intervalId);  // Limpiar intervalo existente si hay alguno
@@ -103,30 +160,22 @@ export const TrackProvider = ({ children }) => {
             console.error("Error al añadir la canción al historial:", error);
         }
     };
-
-    const play = () => {
-        if (!isPlaying) {
-            audioRef.current.play().then(() => {
-                setIsPlaying(true);
-            }).catch(error => {
-                console.error("Error during play:", error);
-            });
-        }
-    };
-
+    
     const actualizarEstadoCancion = async () => {
-        const tiempo = Math.floor(audioRef.current.currentTime);
+        if (!currentTrackId) return;
+        const currentTime = audioRef.current.currentTime;
         const cancionID = currentTrackId;
         const correo = userEmail;
+    
         try {
             const response = await fetch('http://musify.servemp3.com:8000/actualizarEstadoCancionesAPI/', {
                 method: 'POST',
                 headers: {
                     'accept': 'application/json',
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': 'tu_token_csrf'  // Asegúrate de que este token se maneje de manera segura
+                    'X-CSRFToken': 'tu_token_csrf'  // Make sure this token is managed securely
                 },
-                body: JSON.stringify({ correo, cancionID, tiempo })
+                body: JSON.stringify({ correo, cancionID, tiempo: currentTime })
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || "Error al actualizar el estado de la canción");
@@ -135,9 +184,8 @@ export const TrackProvider = ({ children }) => {
             console.error('Error al actualizar el estado de la canción:', error);
         }
     };
-    
     const obtenerUltimoEstadoYReproducir = async () => {
-        const correo = userEmail;
+        if (!userEmail) return;
         try {
             const response = await fetch('http://musify.servemp3.com:8000/obtenerEstadoCancionesAPI/', {
                 method: 'POST',
@@ -146,22 +194,23 @@ export const TrackProvider = ({ children }) => {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': 'tu_token_csrf'
                 },
-                body: JSON.stringify({ correo })
+                body: JSON.stringify({ correo: userEmail })
             });
             const data = await response.json();
-            if (response.ok && data.ultima_cancion) {
+            if (response.ok && data.ultima_cancion && data.ultima_minutos !== undefined) {
                 audioRef.current.src = getAudioUrl(data.ultima_cancion);
                 audioRef.current.currentTime = data.ultima_minutos;
                 audioRef.current.play().then(() => {
                     setCurrentTrackId(data.ultima_cancion);
                     setIsPlaying(true);
-                });
+                }).catch(error => console.error('Error during auto-resume play:', error));
                 console.log("Canción cargada y lista para reproducirse desde el último punto guardado.");
             }
         } catch (error) {
             console.error('Error al obtener el estado de la canción o al cargar la canción:', error);
         }
     };
+    
     
     useEffect(() => {
         if (userEmail) {
@@ -205,14 +254,6 @@ export const TrackProvider = ({ children }) => {
     return `http://musify.servemp3.com:8000/audioCancion/${songId}/`;
 };
 
-const pause = () => {
-    audioRef.current.pause();
-    setIsPlaying(false);
-    stopTimer();  // Detener el timer al pausar
-    actualizarEstadoCancion();  // Actualizar el estado de la canción en el servidor
-};
-
-
     const updateTrackDetails = async (track) => {
         if (!track.id) return;
         // Fetch artist name if missing
@@ -226,17 +267,6 @@ const pause = () => {
         updateTrack(track);
     };
     
-    const updateTrack = (track) => {
-        if (track.src) {
-            audioRef.current.src = track.src;
-            audioRef.current.load();
-            setCurrentTrack(track);
-            setCurrentTrackId(track.id);
-        } else {
-            console.error('Invalid audio source:', track.src);
-        }
-    };
-
     const setTrackList = (list) => {
         setTracks(list);
         if (list.length > 0) {
@@ -288,20 +318,34 @@ const pause = () => {
         setVolume(newVolume);  // Actualiza el estado
     };
 
+
     const value = {
-        currentTrack,
+        // Expose all necessary states and functions through context
         isPlaying,
-        play,
-        pause,
+        currentTrack,
+        play: () => {
+            if (!isPlaying) {
+                audioRef.current.play().then(() => setIsPlaying(true)).catch(error => console.error("Error during play:", error));
+            }
+        },
+        pause: () => {
+            if (isPlaying) {
+                audioRef.current.pause();
+                setIsPlaying(false);
+            }
+        },
         audioRef,
+        volume,
+        adjustVolume: (newVolume) => {
+            audioRef.current.volume = newVolume;
+            setVolume(newVolume);
+        },
         trackIndex,
         setTrackIndex, // Ensure this is correctly passed
         currentTrackId,
         updateTrack,
         changeTrack,
         setTrackList,
-        volume,
-        adjustVolume,
         tracks,
         setTracks,
         toggleShuffle,

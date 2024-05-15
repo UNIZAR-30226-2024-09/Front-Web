@@ -127,6 +127,12 @@ export default function PlayerControls() {
         };
     }, [audioRef]);
 
+    const handleTimeChange = (e) => {
+        const newTime = parseFloat(e.target.value);
+        audioRef.current.currentTime = newTime; // Establece directamente el nuevo tiempo en el elemento de audio
+        setCurrentTime(newTime); // Actualiza el estado para reflejar el cambio en la interfaz de usuario
+    };
+
     useEffect(() => {
         const audio = audioRef.current;
     
@@ -163,14 +169,11 @@ export default function PlayerControls() {
             </div>
 
             <div className="progress-bar">
-                <Progress 
-                    currentTime={currentTime} 
-                    duration={duration} 
-                    onTimeUpdate={(e) => {
-                        audioRef.current.currentTime = parseFloat(e.target.value);
-                        setCurrentTime(parseFloat(e.target.value));
-                    }} 
-                />
+            <Progress
+                currentTime={currentTime}
+                duration={duration}
+                onTimeUpdate={handleTimeChange}
+            />
             </div>
             <PiMicrophoneStageFill onClick={handleShowLyrics} style={{ cursor: 'pointer' }} />
             {showLyrics && <LyricsWindow lyrics={lyrics} currentTime={currentTime} onClose={handleCloseLyrics} />}

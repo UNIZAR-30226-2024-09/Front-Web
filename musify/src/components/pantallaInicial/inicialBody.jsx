@@ -20,7 +20,6 @@ export default function Body_inicio() {
     const [email, setEmail] = useState('');
     const [cancionesRecomendadas, setCancionesRecomendadas] = useState([]);
     const [podcastsRecomendados, setPodcastsRecomendados] = useState([]);
-    const { updateTrack, play, pause, isPlaying, currentTrack, audioRef } = useTrack();
     const navigate = useNavigate();
 
     useEffect(() => {
