@@ -18,10 +18,10 @@ const base64ToAudioSrc = (base64) => {
 };
 
 const getImageSrc = (id) => {
-    return `http://localhost:8000/imagenCancion/${id}`;
+    return `http://musify.servemp3.com:8000/imagenCancion/${id}`;
 };
 const getAudioUrl = (songId) => {
-    return `http://localhost:8000/audioCancion/${songId}/`;
+    return `hhttp://musify.servemp3.com:8000/audioCancion/${songId}/`;
 };
 
 export default function EditarCancion() {
@@ -48,7 +48,7 @@ export default function EditarCancion() {
         const fetchCancion = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`http://127.0.0.1:8000/devolverCancion/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/devolverCancion/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -75,7 +75,7 @@ export default function EditarCancion() {
 
         const fetchArtistas = async () => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/listarArtistasCancion/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/listarArtistasCancion/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ cancionId })
@@ -105,7 +105,7 @@ export default function EditarCancion() {
                 if (idAlbum === null) {
                     return "undefined"; // Valor predeterminado cuando idAlbum es null
                 }
-                const response = await fetch(`http://127.0.0.1:8000/devolverAlbum/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/devolverAlbum/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ albumId: idAlbum })
@@ -122,7 +122,7 @@ export default function EditarCancion() {
 
         const fetchGenerosCancion = async (idCancion) => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/listarGenerosCancion/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/listarGenerosCancion/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ cancionId: idCancion })
@@ -146,7 +146,7 @@ export default function EditarCancion() {
 
         const fetchGeneros = async () => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/generosCanciones/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/generosCanciones/`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                 });
@@ -236,7 +236,7 @@ export default function EditarCancion() {
 
     const handleEliminarCancion = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/eliminarCancion/', {
+            const response = await fetch('http://musify.servemp3.com:8000/eliminarCancion/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

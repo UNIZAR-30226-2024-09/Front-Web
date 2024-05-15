@@ -29,7 +29,7 @@ export default function AniadirPodcasrAdmin() {
     useEffect(() => {
         const fetchGeneros = async () => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/generosPodcasts/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/generosPodcasts/`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                 });
@@ -62,7 +62,7 @@ export default function AniadirPodcasrAdmin() {
     const handlePodcastAniadido = async () => {
         if(podcastValid) {
             try {
-                const response = await fetch('http://127.0.0.1:8000/crearPodcast/', {
+                const response = await fetch('http://musify.servemp3.com:8000/crearPodcast/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
