@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useParams } from 'react-router-dom';
 import { IoIosArrowBack } from 'react-icons/io';
 import { FaUserCircle } from 'react-icons/fa';
-
+import { useLocation } from 'react-router-dom';
 
 function useExternalScript(url) {
     useEffect(() => {
@@ -27,10 +27,11 @@ function Chat() {
     const [userEmail, setUserEmail] = useState('');
     const [messageCounter, setMessageCounter] = useState(0);
     const websocket = useRef(null);
-    const [uniqueMessageIds, setUniqueMessageIds] = useState(new Set()); // Maintain a set of unique message IDs
+    const [uniqueMessageIds, setUniqueMessageIds] = useState(new Set());
+    const location = useLocation();
+    const nombreSala = location.state?.nombreSala;
 
 
-    
     useEffect(() => {
         const fetchUserDetails = async () => {
             try {
@@ -214,7 +215,7 @@ function Chat() {
         <ChatContainer>
             <ChatHeader>
                 <IoIosArrowBack size="24" style={{ cursor: 'pointer' }} />
-                <ChatTitle>Taylor Swift Group</ChatTitle>
+                <ChatTitle>{nombreSala}</ChatTitle>
             </ChatHeader>
             <MessagesList id="messagesList">
                 {messages.map((msg, index) => (
