@@ -14,18 +14,18 @@ export default function AniadirCancionesAdmin() {
     const [generos, setGenerosCanciones] = useState('');
     const [imagen, setImagen] = useState('');
     const [audio, setAudio] = useState(null);
-    const [cancionValid, setCancionValid] = useState(false);
+    const [cancionValid, setCancionValid] = useState(true);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    useEffect(() => {
+    /*useEffect(() => {
         if (titulo.trim() !== '' && artista.trim() !== '' && album.trim() !== '' && imagen.trim() !== '' && audio.trim() !== '') {
           setCancionValid(true);
         } else {
           setCancionValid(false);
         }
-    }, [titulo, artista, album, imagen, audio]);
+    }, [titulo, artista, album, imagen, audio]);*/
 
     useEffect(() => {
         const fetchGeneros = async () => {
@@ -73,6 +73,7 @@ export default function AniadirCancionesAdmin() {
 
         // Leemos el archivo como una URL de datos en base64
         reader.readAsDataURL(file);
+        console.log(reader.result);
     };
 
     const handleAudioChange = (e) => {
@@ -86,10 +87,14 @@ export default function AniadirCancionesAdmin() {
 
         // Leemos el archivo como una URL de datos en base64
         reader.readAsDataURL(file);
+        console.log(reader.result);
     };
     
     const handleCancionAniadida = async () => {
-        if(cancionValid) {
+        //if(cancionValid) {
+        if(imagen && audio){
+                console.log(imagen);
+                console.log(audio);
             try {
                 const response = await fetch('http://musify.servemp3.com:8000/crearCancion/', {
                     method: 'POST',
@@ -100,14 +105,14 @@ export default function AniadirCancionesAdmin() {
                 });
 
                 if (response.ok) {
-                    // Si el registro es exitoso, redirige al usuario
-                    navigate('/lista_canciones_admin');
-                } else {
-                    // Maneja errores, por ejemplo, mostrar un mensaje al usuario
+                    //Si el registro es exitoso, redirige al usuario
+                    console.log('cancion creada');
                 }
             } catch (error) {
-                // Maneja excepciones
+                navigate('/lista_canciones_admin');
+                setError(`Failed to create song: ${error.message}`);
             }
+        //}
         }
     };
 
@@ -136,9 +141,9 @@ export default function AniadirCancionesAdmin() {
                                 type="album" 
                                 value={album}
                                 onChange={e=>setAlbum(e.target.value)}
-                                placeholder="Album" required />
+                                placeholder="Album" />
                         </div>
-                        <select value={genero} onChange={e=>setGenero(e.target.value)} required>
+                        <select value={genero} onChange={e=>setGenero(e.target.value)}>
                             <option value="">Selecciona un género</option>
                             {generos.map((genero, index) => (
                                 <option key={index} value={genero}>{genero}</option>
@@ -147,11 +152,11 @@ export default function AniadirCancionesAdmin() {
                     </div>
                     <div className="audio">
                         <h6>Archivo de audio (.mp3):</h6>
-                        <input type="file" accept=".mp3" onChange={handleAudioChange} required />
+                        <input type="file" accept=".mp3" onChange={handleAudioChange}/>
                     </div>
                     <div className="image">
                         <h6>Imagen:</h6>
-                        <input className="image-input" type="file" accept="image/*" onChange={handleImagenChange} required />
+                        <input className="image-input" type="file" accept="image/*" onChange={handleImagenChange}/>
                         {imagen && (
                             <div className="preview">
                                 <img src={imagen} alt="Vista previa de la imagen" />
@@ -161,7 +166,7 @@ export default function AniadirCancionesAdmin() {
                     <div className="buttons-container">
                         <button type="button" className="cancel-button" onClick={handleExitWithoutSave}>Salir sin guardar</button>
                         {showModal && <AniadirWindow onClose={handleCloseModal} ruta={handleCloseModalNoSave} />}
-                        <button type="submit" className="save-button" onClick={handleCancionAniadida}>Guardar</button>
+                        <button type="button" className="save-button" onClick={handleCancionAniadida}>Guardar</button>
                     </div>
                 </form>
             </div>
@@ -267,6 +272,7 @@ const Container = styled.div`
     border: 2px solid #fff;
     border-radius: 20px;
     align-items: center;
+    overflow: hidden;
 }
 
 .image h6 {

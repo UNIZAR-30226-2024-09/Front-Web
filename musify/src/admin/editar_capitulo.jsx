@@ -16,7 +16,7 @@ export default function EditCapitulo() {
   const [podcast, setPodcast] = useState('');
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [duracion, setDuracion] = useState('0');
+  const [duracion, setDuracion] = useState('');
 
   const [showModal, setShowModal] = useState(false);
   const [capituloValid, setCapituloValid] = useState(false);
@@ -41,7 +41,7 @@ export default function EditCapitulo() {
             setNombre(capituloData.capitulo.nombre);
             setDescripcion(capituloData.capitulo.descripcion);
             setPodcast(capituloData.capitulo.miPodcast);
-            //fetchDuracion(getAudioUrl(capituloData.capitulo.id));
+            fetchDuracion(getAudioUrl(capituloData.capitulo.id));
         } catch (error) {
             setError(error.message);
         } finally {
