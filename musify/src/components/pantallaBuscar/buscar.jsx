@@ -23,11 +23,11 @@ export default function Musify(){
             } else {
                 let imageUrl = '';
                 if (item.cancion) {
-                    imageUrl = `http://localhost:8000/imagenCancion/${item.cancion.id}/`;
+                    imageUrl = `http://musify.servemp3.com:8000/imagenCancion/${item.cancion.id}/`;
                 } else if (item.podcast) {
-                    imageUrl = `http://localhost:8000/imagenPodcast/${item.podcast.id}/`;
+                    imageUrl = `http://musify.servemp3.com:8000/imagenPodcast/${item.podcast.id}/`;
                 } else if (item.album) {
-                    imageUrl = `http://localhost:8000/imagenAlbum/${item.album.id}/`;
+                    imageUrl = `http://musify.servemp3.com:8000/imagenAlbum/${item.album.id}/`;
                 }
     
                 generalResults.push({

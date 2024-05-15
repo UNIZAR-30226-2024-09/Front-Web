@@ -3,14 +3,8 @@ import styled from "styled-components";
 import { FaCog } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 
-const base64ToImageSrc = (base64) => {
-    const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
-    const imageSrc = `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
-    return imageSrc;
-};
-
 const getImageSrc = (id) => {
-    return `http://localhost:8000/imagenCancion/${id}`;
+    return `http://musify.servemp3.com:8000/imagenCancion/${id}`;
 };
 
 
@@ -36,7 +30,7 @@ export default function ListaCancionesAdmin() {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const response = await fetch('http://127.0.0.1:8000/listarCanciones/', {
+                const response = await fetch('http://musify.servemp3.com:8000/listarPocasCanciones/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -75,7 +69,7 @@ export default function ListaCancionesAdmin() {
                     return "undefined"; // Valor predeterminado cuando idAlbum es null
                 }
         
-                const response = await fetch(`http://127.0.0.1:8000/devolverAlbum/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/devolverAlbum/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ albumId: idAlbum })

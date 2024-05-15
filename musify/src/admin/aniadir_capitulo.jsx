@@ -32,7 +32,7 @@ export default function EditCapitulo() {
         const fetchPodcast = async () => {
             setLoading(true);
             try {
-                const response = await fetch('http://127.0.0.1:8000/devolverPodcast/', {
+                const response = await fetch('http://musify.servemp3.com:8000/devolverPodcast/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ export default function EditCapitulo() {
     const handleCapituloAniadido = async () => {
         if(capituloValid) {
             try {
-                const response = await fetch('http://127.0.0.1:8000/crearCapitulo/', {
+                const response = await fetch('http://musify.servemp3.com:8000/crearCapitulo/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

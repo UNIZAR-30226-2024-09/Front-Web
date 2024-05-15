@@ -20,7 +20,7 @@ export default function Sidebar() {
     
         if (token) {
             try {
-                const response = await fetch('http://127.0.0.1:8000/cerrarSesionAPI/', {
+                const response = await fetch('http://musify.servemp3.com:8000/cerrarSesionAPI/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -45,7 +45,7 @@ export default function Sidebar() {
         const fetchUserDetails = async () => {
             const token = localStorage.getItem('userToken');
             try {
-                const response = await fetch('http://127.0.0.1:8000/obtenerUsuarioSesionAPI/', {
+                const response = await fetch('http://musify.servemp3.com:8000/obtenerUsuarioSesionAPI/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -75,7 +75,7 @@ export default function Sidebar() {
         if (user && user.correo) {
             const fetchPlaylists = async () => {
                 try {
-                    const response = await fetch('http://127.0.0.1:8000/listarPlaylistsUsuario/', {
+                    const response = await fetch('http://musify.servemp3.com:8000/listarPlaylistsUsuario/', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'

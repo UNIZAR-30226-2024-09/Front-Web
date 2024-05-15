@@ -13,7 +13,7 @@ export default function Body_historial() {
         const fetchUserDetails = async () => {
             const token = localStorage.getItem('userToken');
             try {
-                const response = await fetch('http://127.0.0.1:8000/obtenerUsuarioSesionAPI/', {
+                const response = await fetch('http://musify.servemp3.com:8000/obtenerUsuarioSesionAPI/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -49,7 +49,7 @@ export default function Body_historial() {
 
     const fetchUsuario = async () => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/devolverUsuario/`, {
+            const response = await fetch(`http://musify.servemp3.com:8000/devolverUsuario/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ correo: correo })
@@ -68,7 +68,7 @@ export default function Body_historial() {
     };
 
     const fetchHistorySongs = async (email) => {
-        const response = await fetch(`http://127.0.0.1:8000/listarHistorial/`, {
+        const response = await fetch(`http://musify.servemp3.com:8000/listarHistorial/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ correo: email })
@@ -79,7 +79,7 @@ export default function Body_historial() {
             if (data.historial && data.historial.length > 0) {
                 console.log("Canciones recibidas:", data.historial);
                 const enrichedSongs = await Promise.all(data.historial.map(async (song) => {
-                    const imageUrl = `http://localhost:8000/imagenCancion/${song.id}`;
+                    const imageUrl = `http://musify.servemp3.com:8000/imagenCancion/${song.id}`;
                     const artistas = await fetchArtistsForSong(song.id);  // Llamada a la función para obtener los artistas
                     return {
                         ...song,
@@ -100,7 +100,7 @@ export default function Body_historial() {
     };
 
     const fetchArtistsForSong = async (songId) => {
-        const response = await fetch(`http://localhost:8000/listarArtistasCancion/`, {
+        const response = await fetch(`http://musify.servemp3.com:8000/listarArtistasCancion/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

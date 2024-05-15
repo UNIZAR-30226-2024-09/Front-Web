@@ -22,7 +22,7 @@ export default function PerfilAmigoBody () {
         const fetchUserDetails = async () => {
         const token = localStorage.getItem('userToken');
         try {
-          const response = await fetch('http://127.0.0.1:8000/obtenerUsuarioSesionAPI/', {
+          const response = await fetch('http://musify.servemp3.com:8000/obtenerUsuarioSesionAPI/', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ export default function PerfilAmigoBody () {
     
     const fetchUsuario = async () => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/devolverUsuario/`, {
+            const response = await fetch(`http://musify.servemp3.com:8000/devolverUsuario/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ correo: correoAmigo })
@@ -81,7 +81,7 @@ export default function PerfilAmigoBody () {
     
     const checkSiguiendo = async (correoUsuario, correoAmigo) => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/siguiendo/`, {
+            const response = await fetch(`http://musify.servemp3.com:8000/siguiendo/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ correo: correoUsuario, esSeguido: correoAmigo, })
@@ -100,7 +100,7 @@ export default function PerfilAmigoBody () {
     };
 
     const fetchPlaylists = async (email) => {
-        const response = await fetch(`http://127.0.0.1:8000/listarPlaylistsUsuario/`, {
+        const response = await fetch(`http://musify.servemp3.com:8000/listarPlaylistsUsuario/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ correo: email })
@@ -115,7 +115,7 @@ export default function PerfilAmigoBody () {
     };
 
     const fetchSeguidores = async (email) => {
-        const response = await fetch(`http://127.0.0.1:8000/listarSeguidores/`, {
+        const response = await fetch(`http://musify.servemp3.com:8000/listarSeguidores/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ correo: email })
@@ -130,7 +130,7 @@ export default function PerfilAmigoBody () {
     };
 
     const fetchSeguidos = async (email) => {
-        const response = await fetch(`http://127.0.0.1:8000/listarSeguidos/`, {
+        const response = await fetch(`http://musify.servemp3.com:8000/listarSeguidos/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ correo: email })
@@ -147,7 +147,7 @@ export default function PerfilAmigoBody () {
     const toggleSeguir = async () => {
         if (siguiendo) {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/dejarDeSeguir/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/dejarDeSeguir/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ correo : usuario.correo, seguido : amigo.correo,})
@@ -165,7 +165,7 @@ export default function PerfilAmigoBody () {
             }
         } else {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/seguir/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/seguir/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ correo : usuario.correo, seguido : amigo.correo,})

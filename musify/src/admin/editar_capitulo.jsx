@@ -4,14 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import AniadirWindow from "./salir_sin_guardar";
 
-const base64ToAudioSrc = (base64) => {
-  const base64WithoutPrefix = base64.replace(/^data:audio\/mp3;base64,/, '').replace(/^data:[^;]+;base64,/, '');
-  const audioSrc = `data:audio/mp3;base64,${atob(base64WithoutPrefix)}`;
-  return audioSrc;
-};
 
 const getAudioUrl = (id) => {
-    return `http://localhost:8000/audioCapitulo/${id}/`;
+    return `http://musify.servemp3.com:8000/audioCapitulo/${id}/`;
 };
 
 export default function EditCapitulo() {
@@ -32,7 +27,7 @@ export default function EditCapitulo() {
     const fetchCapitulo = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://127.0.0.1:8000/devolverCapitulo/', {
+            const response = await fetch('http://musify.servemp3.com:8000/devolverCapitulo/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -91,7 +86,7 @@ export default function EditCapitulo() {
 
     const handleCapituloEditado = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/actualizarCapitulo/', {
+            const response = await fetch('http://musify.servemp3.com:8000/actualizarCapitulo/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -119,7 +114,7 @@ export default function EditCapitulo() {
 
     const handleEliminarCapitulo = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/eliminarCapitulo/', {
+            const response = await fetch('http://musify.servemp3.com:8000/eliminarCapitulo/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

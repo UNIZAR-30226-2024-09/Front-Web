@@ -10,7 +10,7 @@ const base64ToImageSrc = (base64) => {
 };
 
 const getImageSrc = (id) => {
-    return `http://localhost:8000/imagenPodcast/${id}`;
+    return `http://musify.servemp3.com:8000/imagenPodcast/${id}`;
 };
 
 export default function ListaPodcastsAdmin() {
@@ -34,7 +34,7 @@ export default function ListaPodcastsAdmin() {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const response = await fetch('http://127.0.0.1:8000/listarPodcasts/', {
+                const response = await fetch('http://musify.servemp3.com:8000/listarPodcasts/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ export default function ListaPodcastsAdmin() {
 
         const fetchPresentadores = async (idPodcast) => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/listarPresentadoresPodcast/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/listarPresentadoresPodcast/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ podcastId: idPodcast })

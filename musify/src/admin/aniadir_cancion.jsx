@@ -28,23 +28,23 @@ export default function AniadirCancionesAdmin() {
     }, [titulo, artista, album, imagen, audio]);*/
 
     useEffect(() => {
-            const fetchGeneros = async () => {
-                try {
-                    const response = await fetch(`http://127.0.0.1:8000/generosCanciones/`, {
-                        method: 'GET',
-                        headers: { 'Content-Type': 'application/json' },
-                    });
-                    if (!response.ok) throw new Error("Failed to fetch album");
-                    const generosData = await response.json();
-                    const nombresGeneros = generosData.generos.map(genero => genero.nombre);
-                    setGenerosCanciones(nombresGeneros);
-                } catch (error) {
-                    setError(`Failed to fetch generos: ${error.message}`);
-                } finally {
-                    setLoading(false);
-                }
-            };
-            fetchGeneros();
+        const fetchGeneros = async () => {
+            try {
+                const response = await fetch(`http://musify.servemp3.com:8000/generosCanciones/`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                if (!response.ok) throw new Error("Failed to fetch album");
+                const generosData = await response.json();
+                const nombresGeneros = generosData.generos.map(genero => genero.nombre);
+                setGenerosCanciones(nombresGeneros);
+            } catch (error) {
+                setError(`Failed to fetch generos: ${error.message}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchGeneros();
     }, []);
 
     if (loading) return <p>Cargando...</p>;
@@ -96,7 +96,7 @@ export default function AniadirCancionesAdmin() {
                 console.log(imagen);
                 console.log(audio);
             try {
-                const response = await fetch('http://127.0.0.1:8000/crearCancion/', {
+                const response = await fetch('http://musify.servemp3.com:8000/crearCancion/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

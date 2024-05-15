@@ -7,19 +7,13 @@ import AniadirWindow from "./salir_sin_guardar";
 import { FaCog, FaClock } from "react-icons/fa";
 import { IoAddCircle } from "react-icons/io5";
 
-const base64ToImageSrc = (base64) => {
-    const base64WithoutPrefix = base64.replace(/^data:image\/[a-z]+;base64,/, '');
-    const imageSrc = `data:image/jpeg;base64,${atob(base64WithoutPrefix)}`;
-    return imageSrc;
-};
-
 const base64ToAudioSrc = (base64) => {
     const base64WithoutPrefix = base64.replace(/^data:audio\/mp3;base64,/, '').replace(/^data:[^;]+;base64,/, '');
     return `data:audio/mp3;base64,${atob(base64WithoutPrefix)}`;
 };
 
 const getImageSrc = (id) => {
-    return `http://localhost:8000/imagenPodcast/${id}`;
+    return `http://musify.servemp3.com:8000/imagenPodcast/${id}`;
 };
 
 export default function EditarPodcasrAdmin() {
@@ -54,7 +48,7 @@ export default function EditarPodcasrAdmin() {
         const fetchPodcast = async () => {
             setLoading(true);
             try {
-                const response = await fetch('http://127.0.0.1:8000/devolverPodcast/', {
+                const response = await fetch('http://musify.servemp3.com:8000/devolverPodcast/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -84,7 +78,7 @@ export default function EditarPodcasrAdmin() {
 
         const fetchCapitulos = async (nomPodcast) => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/listarCapitulosPodcast/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/listarCapitulosPodcast/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ nombrePodcast: nomPodcast })
@@ -111,7 +105,7 @@ export default function EditarPodcasrAdmin() {
 
         const fetchPresentadores = async (idPodcast) => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/listarPresentadoresPodcast/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/listarPresentadoresPodcast/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ podcastId: idPodcast })
@@ -131,7 +125,7 @@ export default function EditarPodcasrAdmin() {
 
         const fetchGenerosPodcast = async (idPodcast) => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/listarGenerosPodcast/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/listarGenerosPodcast/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ podcastId: idPodcast })
@@ -151,7 +145,7 @@ export default function EditarPodcasrAdmin() {
 
         const fetchGeneros = async () => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/generosPodcasts/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/generosPodcasts/`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                 });
@@ -209,7 +203,7 @@ export default function EditarPodcasrAdmin() {
 
     const handleActualizarPodcast = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/actualizarPodcast/', {
+            const response = await fetch('http://musify.servemp3.com:8000/actualizarPodcast/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -233,7 +227,7 @@ export default function EditarPodcasrAdmin() {
 
     const handleEliminarPodcast = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/eliminarPodcast/', {
+            const response = await fetch('http://musify.servemp3.com:8000/eliminarPodcast/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

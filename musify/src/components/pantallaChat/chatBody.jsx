@@ -33,46 +33,47 @@ function Chat() {
 
     
     useEffect(() => {
+        const fetchUserDetails = async () => {
+            try {
+                const token = localStorage.getItem('userToken');
+                const response = await fetch('http://musify.servemp3.com:8000/obtenerUsuarioSesionAPI/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token }),
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    setUserEmail(data.correo);
+                    console.log("Correo obtenido:", data.correo);
+                } else {
+                    console.error('Failed to fetch user details:', data);
+                }
+            } catch (error) {
+                console.error('Error fetching user details:', error);
+            }
+        };
+    
         if (localStorage.getItem('userToken')) {
-            const fetchUserDetails = async () => {
-                try {
-                    const response = await fetch('http://127.0.0.1:8000/obtenerUsuarioSesionAPI/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            token: localStorage.getItem('userToken'),
-                        }),
-                    });
-                    const data = await response.json();
-                    if (response.ok) {
-                        setUserEmail(data.correo);
-                    } else {
-                        console.error('Failed to fetch user details:', data);
-                    }
-                } catch (error) {
-                    console.error('Error fetching user details:', error);
-                }
-            };
-            
-            if (localStorage.getItem('userToken')) {
-                fetchUserDetails();
-            }            
-            return () => {
-                if (websocket.current && websocket.current.readyState === WebSocket.OPEN) {
-                    websocket.current.close();
-                    console.log('WebSocket connection closed.');
-                }
-            };
+            fetchUserDetails();
         }
     }, []);
+    
+    useEffect(() => {
+        if (userEmail) {
+            // Lógica que depende del userEmail aquí
+            console.log("Usuario Email Establecido:", userEmail);
+            // Por ejemplo, iniciar WebSocket aquí si es dependiente del userEmail
+        }
+    }, [userEmail]); // Dependencia a userEmail
+    
     
 
     useEffect(() => {
         // Cambia el host y puerto según tu configuración de Django y asegúrate de incluir el nombre de la sala
         // Por ejemplo, si tu servidor Django corre en localhost en el puerto 8000 y la sala se llama "public"
-        websocket.current = new WebSocket(`ws://localhost:8000/ws/chat/${salaId}/`);
+        websocket.current = new WebSocket(`ws://musify.servemp3.com:8000/ws/chat/${salaId}/`);
     
         websocket.current.onmessage = (event) => {
             const newId = messageCounter + 1;
@@ -125,7 +126,7 @@ function Chat() {
     useEffect(() => {
         async function cargarMensajes() {
             try {
-                const response = await fetch(`http://localhost:8000/cargarMensajesAPI/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/cargarMensajesAPI/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -158,6 +159,8 @@ function Chat() {
 
     const sendMessage = async (e) => {
         e.preventDefault();
+        console.log("Correo del usuario al enviar mensaje:", userEmail);  // Aquí verificas el correo del usuario
+    
         if (input.trim()) {
             const messageToSend = JSON.stringify({
                 cuerpo: {
@@ -168,7 +171,7 @@ function Chat() {
             });
     
             try {
-                const response = await fetch('http://localhost:8000/registrarMensajeAPI/', {
+                const response = await fetch('http://musify.servemp3.com:8000/registrarMensajeAPI/', {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
@@ -181,6 +184,9 @@ function Chat() {
                         mensaje: input 
                     })
                 });
+    
+                const data = await response.json();  // Asumiendo que la respuesta es un JSON
+                console.log("Respuesta del servidor:", data);
     
                 if (response.ok) {
                     if (websocket.current.readyState === WebSocket.OPEN) {
@@ -195,6 +201,7 @@ function Chat() {
             }
         }
     };
+    
 
     return (
         <ChatContainer>

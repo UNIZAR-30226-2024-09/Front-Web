@@ -70,8 +70,8 @@ const Logo = styled.img`
 
 const Container = styled.div`
 .wrapper {
-    width: 800px;
-    height: 550px;
+    width: 650px;
+    height: 460px;
     color: #fff;
     border-radius: 40px;
     padding: 30px 40px;

@@ -6,10 +6,10 @@ import { useNavigate } from 'react-router-dom';
 
 
 const getImageSrc = (type, id) => {
-    return `http://localhost:8000/imagen${type}/${id}`;
+    return `http://musify.servemp3.com:8000/imagen${type}/${id}`;
 };
 const getAudioUrl = (songId) => {
-    return `http://localhost:8000/audioCancion/${songId}/`;
+    return `http://musify.servemp3.com:8000/audioCancion/${songId}/`;
 };
 
 export default function Body_inicio() {
@@ -20,14 +20,13 @@ export default function Body_inicio() {
     const [email, setEmail] = useState('');
     const [cancionesRecomendadas, setCancionesRecomendadas] = useState([]);
     const [podcastsRecomendados, setPodcastsRecomendados] = useState([]);
-    const { updateTrack, play, pause, isPlaying, currentTrack, audioRef } = useTrack();
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchUserDetails = async () => {
             const token = localStorage.getItem('userToken');
             try {
-                const response = await fetch('http://127.0.0.1:8000/obtenerUsuarioSesionAPI/', {
+                const response = await fetch('http://musify.servemp3.com:8000/obtenerUsuarioSesionAPI/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -53,7 +52,7 @@ export default function Body_inicio() {
                 setLoading(true);
                 console.log(email);
                 try {
-                    const recomendedResponse = await fetch('http://localhost:8000/recomendar/', {
+                    const recomendedResponse = await fetch('http://musify.servemp3.com:8000/recomendar/', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ correo: email })
@@ -86,11 +85,11 @@ export default function Body_inicio() {
             setLoading(true);
             try {
                 const [songsResponse, podcastsResponse] = await Promise.all([
-                    fetch('http://127.0.0.1:8000/listarPocasCanciones/', {
+                    fetch('http://musify.servemp3.com:8000/listarPocasCanciones/', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'}
                     }),
-                    fetch('http://localhost:8000/listarPocosPodcasts/', {
+                    fetch('http://musify.servemp3.com:8000/listarPocosPodcasts/', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'}
                     })
@@ -129,7 +128,7 @@ export default function Body_inicio() {
 
 
     const fetchArtistsForSong = async (songId) => {
-        const response = await fetch(`http://localhost:8000/listarArtistasCancion/`, {
+        const response = await fetch(`http://musify.servemp3.com:8000/listarArtistasCancion/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -241,7 +240,7 @@ const SongRow = ({ canciones }) => {
         if (playingIndex !== index || !isPlaying) {
             try {
                 // Solicitar el archivo de audio solo si es necesario
-                const response = await fetch('http://127.0.0.1:8000/devolverCancion/', {
+                const response = await fetch('http://musify.servemp3.com:8000/devolverCancion/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ cancionId: selectedSong.id })
@@ -250,8 +249,6 @@ const SongRow = ({ canciones }) => {
                     throw new Error('Failed to load the song audio');
                 }
                 const data = await response.json();
-                //const audioUrl = base64ToAudioSrc(data.cancion.archivoMp3);
-                //const audioUrl = getAudioUrl(data.cancion.id); Version vinal <----------
                 const audioUrl = getAudioUrl(selectedSong.id);
 
                 
@@ -346,12 +343,7 @@ const RecomendadosRow = ({ cancionesRecomendadas, podcastsRecomendados, onSelect
                 if (!response.ok) {
                     throw new Error('Failed to load the song audio');
                 }
-                const data = await response.json();
-                //const audioUrl = base64ToAudioSrc(data.cancion.archivoMp3);
-                //const audioUrl = getAudioUrl(data.cancion.id); Version vinal <----------
                 const audioUrl = getAudioUrl(selectedSong.id);
-
-                
                 // Actualiza el track actual con la nueva información, incluido el URL del audio
                 updateTrack({
                     id: selectedSong.id,
@@ -415,28 +407,6 @@ const RowContainer = styled.div`
     position: relative;
 `;
 
-const scrollSmoothly = (ref, distance) => {
-    ref.current.scrollBy({
-        left: distance,
-        behavior: 'smooth'
-    });
-}
-
-const ImagesContainer = styled.div`
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-behavior: smooth;
-    scrollbar-width: none;
-    &::-webkit-scrollbar {
-        display: none; 
-    }
-    -ms-overflow-style: none;
-`;
-
-
 const ImageBox = styled.div`
     flex: 0 0 auto;
     width: 200px; 
@@ -499,30 +469,6 @@ margin-top: 50px;
     flex-direction: row;
 `;
 
-const ButtonStyled = styled.button`
-    width: 90px;
-    height: 40px;
-    border: none;
-    outline: none;
-    border-radius: 40px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 700;
-    background: #575151;
-    color: #fff;
-    box-shadow: 0 0 10px rgba(0,0,0, .1);
-    border-radius: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    border: #575151;
-
-    &:hover {
-        background: #54b2e7;
-        color: #fff;
-    }
-`;
 
 const ImgContainer = styled.div`
     position: relative;

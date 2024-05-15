@@ -18,7 +18,7 @@ const Salas = () => {
   useEffect(() => {
     const fetchSalas = async () => {
       try {
-        const response = await fetch('http://localhost:8000/listarSalas/', {
+        const response = await fetch('http://musify.servemp3.com:8000/listarSalas/', {
           method: 'GET',
           headers: {
             'Accept': 'application/json'
@@ -39,7 +39,7 @@ const Salas = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8000/crearSalaAPI/', {
+      const response = await fetch('http://musify.servemp3.com:8000/crearSalaAPI/', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',

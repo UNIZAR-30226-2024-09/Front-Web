@@ -8,7 +8,7 @@ import { useTrack } from "../../TrackContext/trackContext";
 import Modal from '../agnadirColaboradorModal/agnadirColaborador';
 
 const getAudioUrl = (songId) => {
-    return `http://localhost:8000/audioCancion/${songId}/`;
+    return `http://musify.servemp3.com:8000/audioCancion/${songId}/`;
 };
 
 
@@ -25,7 +25,7 @@ export default function Body() {
     const [setShowDeleteConfirm] = useState(false);
     
     const getImageUrl = (type, filename) => {
-        return `http://localhost:8000/imagen${type}/${filename}/`;
+        return `http://musify.servemp3.com:8000/imagen${type}/${filename}/`;
     };
 
     const handleAddCollaborator = async () => {
@@ -33,7 +33,7 @@ export default function Body() {
             alert("Por favor, introduce un correo válido.");
             return;
         }
-        const response = await fetch('http://localhost:8000/agnadirColaboradorAPI/', {
+        const response = await fetch('http://musify.servemp3.com:8000/agnadirColaboradorAPI/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ correo: collaboratorEmail, playlistId })
@@ -50,7 +50,7 @@ export default function Body() {
 
     useEffect(() => {
         const fetchPlaylistSongs = async () => {
-            const response = await fetch(`http://127.0.0.1:8000/listarCancionesPlaylist/`, {
+            const response = await fetch(`http://musify.servemp3.com:8000/listarCancionesPlaylist/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ playlistId })
@@ -82,7 +82,7 @@ export default function Body() {
     };
 
     const fetchArtistsForSong = async (songId) => {
-        const response = await fetch(`http://localhost:8000/listarArtistasCancion/`, {
+        const response = await fetch(`http://musify.servemp3.com:8000/listarArtistasCancion/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -102,7 +102,7 @@ export default function Body() {
     };
 
     const fetchAlbumForSong = async (albumId) => {
-        const response = await fetch(`http://localhost:8000/devolverAlbum/`, {
+        const response = await fetch(`http://musify.servemp3.com:8000/devolverAlbum/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -117,6 +117,7 @@ export default function Body() {
     const fetchAudioDuration = (audioSrc) => {
         return new Promise((resolve, reject) => {
             const audio = new Audio(audioSrc);
+            audio.preload = 'metadata';  // Pre-cargar solo metadatos
             audio.onloadedmetadata = () => {
                 resolve(audio.duration);
             };
@@ -124,10 +125,11 @@ export default function Body() {
                 reject('Failed to load audio');
             };
         });
-    };    
+    };
+        
 
     const fetchPlaylistName = async (playlistId) => {
-        const response = await fetch(`http://localhost:8000/devolverPlaylist/`, {
+        const response = await fetch(`http://musify.servemp3.com:8000/devolverPlaylist/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -145,7 +147,7 @@ export default function Body() {
 
     const removeSongFromPlaylist = async (songId) => {
         try {
-            const response = await fetch('http://localhost:8000/eliminarCancionPlaylist/', {
+            const response = await fetch('http://musify.servemp3.com:8000/eliminarCancionPlaylist/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -169,7 +171,7 @@ export default function Body() {
 
     useEffect(() => {
         const fetchPlaylistName = async () => {
-            const response = await fetch(`http://localhost:8000/devolverPlaylist/`, {
+            const response = await fetch(`http://musify.servemp3.com:8000/devolverPlaylist/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -190,7 +192,7 @@ export default function Body() {
 
     const addToQueue = async (correo, cancionId) => {
         try {
-            const response = await fetch('http://localhost:8000/agnadirCancionCola/', {
+            const response = await fetch('http://musify.servemp3.com:8000/agnadirCancionCola/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -222,7 +224,7 @@ export default function Body() {
     const togglePublic = async () => {
         const newPublicState = !isPublic;
         setIsPublic(newPublicState);
-        const response = await fetch(`http://localhost:8000/actualizarPlaylist/`, {
+        const response = await fetch(`http://musify.servemp3.com:8000/actualizarPlaylist/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -254,7 +256,7 @@ export default function Body() {
         const song = songs[index];
         if (currentTrack && currentTrack.id === song.id && !audioRef.current.paused) {
             pause();
-        } else {
+        } else if (audioRef.current.readyState >= 3) { // READY_STATE_HAVE_FUTURE_DATA o superior
             updateTrack({
                 ...song,
                 id: song.id, // Asegúrate de tener un identificador único
@@ -264,8 +266,11 @@ export default function Body() {
                 artista: song.artistas // Nombre(s) de los artistas
             });
             play();
+        } else {
+            console.error("El audio aún no está listo para reproducirse.");
         }
     };
+    
 
     return (
         <Container>

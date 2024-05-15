@@ -45,7 +45,7 @@ export default function Cards() {
     useEffect(() => {
         const fetchSongs = async (genre) => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/filtrarCancionesPorGenero/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/filtrarCancionesPorGenero/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -56,7 +56,7 @@ export default function Cards() {
                 if (response.ok && data.canciones) {
                     const songsWithArtists = data.canciones.map((song) => ({
                         ...song,
-                        foto: `http://localhost:8000/imagenCancion/${song.id}/`, // Usando ID para construir la URL
+                        foto: `http://musify.servemp3.com:8000/imagenCancion/${song.id}/`, // Usando ID para construir la URL
                     }));
                     setSongs(prev => ({
                         ...prev,
@@ -77,7 +77,7 @@ export default function Cards() {
     useEffect(() => {
         const fetchPodcasts = async (genre) => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/filtrarPodcastsPorGenero/`, {
+                const response = await fetch(`http://musify.servemp3.com:8000/filtrarPodcastsPorGenero/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -88,7 +88,7 @@ export default function Cards() {
                 if (response.ok && data.podcasts) {
                     const podcastsWithDetails = data.podcasts.map((podcast) => ({
                         ...podcast,
-                        foto: `http://localhost:8000/imagenPodcast/${podcast.id}/`, // Usando ID para construir la URL
+                        foto: `http://musify.servemp3.com:8000/imagenPodcast/${podcast.id}/`, // Usando ID para construir la URL
                     }));
                     setPodcasts(prev => ({
                         ...prev,

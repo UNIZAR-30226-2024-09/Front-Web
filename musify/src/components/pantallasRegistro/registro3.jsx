@@ -39,7 +39,7 @@ export default function RegisterInfo() {
             setUserDetails(updatedUserDetails);
             console.log(userDetails);
             try {
-                const response = await fetch('http://127.0.0.1:8000/registro/', {
+                const response = await fetch('http://musify.servemp3.com:8000/registro/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -354,52 +354,47 @@ const Logo = styled.img`
 
 const Container = styled.div`
 .wrapper {
-    width: 800px;
-    height: 550px;
+    width: 650px;
+    min-height: 480px; 
     color: #fff;
     border-radius: 40px;
     padding: 30px 40px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    margin-top: 80px;
+    align-items: center; 
+    justify-content: center;
+    margin: 80px auto;
     background: rgba(0, 0, 0, 0.25);
 }
-.wrapper h1{
+
+.wrapper h1 {
     font-size: 36px;
     text-align: center;
-    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
-.wrapper .input-box {
+.wrapper .input-box, .wrapper .select-wrapper {
     position: relative;
     width: 100%;
     max-width: 400px;
     height: 50px;
-    margin: 30px auto;
-    margin-top: 50px;
+    margin: 10px auto; 
 }
 
-.date-input-box {
-    position: relative;
-}
-
-.input-box input {
+.input-box input, .wrapper select {
     width: 100%;
     height: 100%;
     background: transparent;
     outline: none;
-    border: 2px solid rgba(255,255,255, .2);
     border-radius: 20px;
     font-size: 16px;
     color: #fff;
-    padding: 20px 45px 20px 20px;
+    padding: 0 45px 0 20px;
     border: 2px solid #fff;
-
 }
 
-.input-box input::placeholder {
-    color: #fff;
+.input-box input::placeholder, .wrapper select {
+    color: #000;
 }
 
 .input-box .icon {
@@ -410,11 +405,21 @@ const Container = styled.div`
     font-size: 16px;
 }
 
+.wrapper .gender-options {
+    margin: 20px 0; 
+    display: flex;
+    justify-content: center; 
+}
+
+.wrapper .gender-options label {
+    margin-right: 20px;
+    color: #fff;
+    font-size: 16px;
+}
+
 .wrapper button {
     width: 100%;
-    background: #54b2e7;
-    color: #fff;
-    width: 100%;
+    max-width: 400px;
     height: 50px;
     border: none;
     outline: none;
@@ -422,7 +427,8 @@ const Container = styled.div`
     cursor: pointer;
     font-size: 16px;
     font-weight: 700;
-    margin: 10px 0;
+    background: #54b2e7;
+    color: #fff;
+    margin-top: 20px;
 }
-
 `;
