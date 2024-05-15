@@ -241,7 +241,7 @@ const SongRow = ({ canciones }) => {
         if (playingIndex !== index || !isPlaying) {
             try {
                 // Solicitar el archivo de audio solo si es necesario
-                const response = await fetch('http://127.0.0.1:8000/devolverCancion/', {
+                const response = await fetch('http://musify.servemp3.com:8000/devolverCancion/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ cancionId: selectedSong.id })
@@ -250,8 +250,6 @@ const SongRow = ({ canciones }) => {
                     throw new Error('Failed to load the song audio');
                 }
                 const data = await response.json();
-                //const audioUrl = base64ToAudioSrc(data.cancion.archivoMp3);
-                //const audioUrl = getAudioUrl(data.cancion.id); Version vinal <----------
                 const audioUrl = getAudioUrl(selectedSong.id);
 
                 
@@ -346,12 +344,7 @@ const RecomendadosRow = ({ cancionesRecomendadas, podcastsRecomendados, onSelect
                 if (!response.ok) {
                     throw new Error('Failed to load the song audio');
                 }
-                const data = await response.json();
-                //const audioUrl = base64ToAudioSrc(data.cancion.archivoMp3);
-                //const audioUrl = getAudioUrl(data.cancion.id); Version vinal <----------
                 const audioUrl = getAudioUrl(selectedSong.id);
-
-                
                 // Actualiza el track actual con la nueva información, incluido el URL del audio
                 updateTrack({
                     id: selectedSong.id,
@@ -415,28 +408,6 @@ const RowContainer = styled.div`
     position: relative;
 `;
 
-const scrollSmoothly = (ref, distance) => {
-    ref.current.scrollBy({
-        left: distance,
-        behavior: 'smooth'
-    });
-}
-
-const ImagesContainer = styled.div`
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-behavior: smooth;
-    scrollbar-width: none;
-    &::-webkit-scrollbar {
-        display: none; 
-    }
-    -ms-overflow-style: none;
-`;
-
-
 const ImageBox = styled.div`
     flex: 0 0 auto;
     width: 200px; 
@@ -499,30 +470,6 @@ margin-top: 50px;
     flex-direction: row;
 `;
 
-const ButtonStyled = styled.button`
-    width: 90px;
-    height: 40px;
-    border: none;
-    outline: none;
-    border-radius: 40px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 700;
-    background: #575151;
-    color: #fff;
-    box-shadow: 0 0 10px rgba(0,0,0, .1);
-    border-radius: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    border: #575151;
-
-    &:hover {
-        background: #54b2e7;
-        color: #fff;
-    }
-`;
 
 const ImgContainer = styled.div`
     position: relative;
