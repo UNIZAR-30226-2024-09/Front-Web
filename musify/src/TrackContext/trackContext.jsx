@@ -19,26 +19,24 @@ export const TrackProvider = ({ children }) => {
     const [intervalId, setIntervalId] = useState(null);
 
     useEffect(() => {
-        if (tracks.length > 0 && trackIndex < tracks.length) {
-            const track = tracks[trackIndex];
-            fetchAudio(track.id);
-        }
-    }, [trackIndex, tracks]);
+    if (currentTrackId) {
+        const loadFullAudio = async () => {
+            try {
+                const response = await fetch(`http://musify.servemp3.com:8000/audioCancion/${currentTrackId}/`);
+                const data = await response.blob();
+                const objectURL = URL.createObjectURL(data);
+                audioRef.current.src = objectURL;
+                audioRef.current.load();
+                audioRef.current.oncanplaythrough = () => play(); // Asegúrate de reproducir solo cuando esté listo
+            } catch (error) {
+                console.error("Error loading full audio:", error);
+            }
+        };
+        loadFullAudio();
+    }
+}, [currentTrackId]);
 
-    // Función para cargar y preparar el audio
-    const fetchAudio = async (trackId) => {
-        try {
-            const response = await fetch(`http://musify.servemp3.com:8000/audioCancion/${trackId}/`);
-            const data = await response.blob();
-            const objectURL = URL.createObjectURL(data);
-            audioRef.current.src = objectURL;
-            audioRef.current.load();
-            audioRef.current.oncanplaythrough = () => audioRef.current.play(); // Autoplay cuando esté listo
-        } catch (error) {
-            console.error("Error loading full audio:", error);
-        }
-    };
-    
+
     const updateTrack = (track) => {
         if (track && track.id && track.id !== currentTrackId) {
             setCurrentTrack(track);
@@ -46,17 +44,18 @@ export const TrackProvider = ({ children }) => {
         }
     };
 
-   useEffect(() => {
-        const handleEnded = () => {
-            if (trackIndex < tracks.length - 1) {
-                setTrackIndex(trackIndex + 1);  // Avanzar al siguiente índice
-            } else {
-                setIsPlaying(false);  // Si es el final de la lista, detener la reproducción
-            }
-        };
-        audioRef.current.addEventListener('ended', handleEnded);
-        return () => audioRef.current.removeEventListener('ended', handleEnded);
+    useEffect(() => {
+        if (trackIndex >= 0 && trackIndex < tracks.length) {
+            updateTrack(tracks[trackIndex]);
+        }
     }, [trackIndex, tracks]);
+
+    useEffect(() => {
+        audioRef.current.onended = () => {
+            changeTrack(true);
+            play();
+        };
+    }, [trackIndex, tracks]); 
 
     const play = () => {
         if (!isPlaying) {
