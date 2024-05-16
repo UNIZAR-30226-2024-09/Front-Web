@@ -269,13 +269,13 @@ const SongDetails = () => {
             pause();
         } else {
             updateTrack({
+                id: cancionId,
                 src: songMp3,
                 nombre: songName
             });
             play();
         }
     };
-    
 
     return (
         <Container>

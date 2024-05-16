@@ -53,6 +53,14 @@ export default function PlayerControls() {
         setIsRepeating(!isRepeating);  // Cambia el estado de isRepeating
     };
     
+    useEffect(() => {
+        if (isPlaying) {
+            audioRef.current.play();
+        } else {
+            audioRef.current.pause();
+        }
+    }, [isPlaying, audioRef.current]);
+    
     const togglePlayPause = () => {
         if (isPlaying) {
             pause();
@@ -60,14 +68,15 @@ export default function PlayerControls() {
             play();
         }
     };
-
+    
     const handleNextTrack = () => {
-        changeTrack(true);  // Este método ya debería manejar el cambio de pista
+        changeTrack(true);
     };
     
     const handlePrevTrack = () => {
-        changeTrack(false);  // Este método ya debería manejar el cambio a la pista anterior
+        changeTrack(false);
     };
+    
 
     useEffect(() => {
         console.log("Current Track ID:", currentTrackId);  // Imprimir el ID de la pista actual

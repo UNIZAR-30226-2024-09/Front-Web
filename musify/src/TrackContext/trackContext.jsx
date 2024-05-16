@@ -37,12 +37,17 @@ export const TrackProvider = ({ children }) => {
 }, [currentTrackId]);
 
 
-    const updateTrack = (track) => {
-        if (track && track.id && track.id !== currentTrackId) {
-            setCurrentTrack(track);
-            setCurrentTrackId(track.id);
+const updateTrack = (track) => {
+    if (track && track.id && track.id !== currentTrackId) {
+        setCurrentTrack(track);
+        setCurrentTrackId(track.id);
+        // Reproduce la pista inmediatamente si está actualizando desde SongDetails
+        if (!isPlaying) {
+            playAudio();
         }
-    };
+    }
+};
+
 
     useEffect(() => {
         if (trackIndex >= 0 && trackIndex < tracks.length) {
@@ -272,20 +277,20 @@ export const TrackProvider = ({ children }) => {
     
             if (response.ok) {
                 if (data.artistas && data.artistas.length > 0) {
-                    return data.artistas.map(artista => artista.nombre).join(', ');
+                    return data.artistas.map(artista => artista.nombre);
                 } else {
                     console.error('No artists found in response:', data);
-                    return 'Artista Desconocido';
+                    return ['Artista Desconocido'];
                 }
             } else {
                 throw new Error('API responded with an error: ' + data.message);
             }
         } catch (error) {
             console.error('Error fetching artists for song:', error);
-            return 'Artista Desconocido';  // Return default or error-specific message
+            return ['Artista Desconocido'];  // Return default or error-specific message
         }
     };
-
+    
     const getImageUrl = (songId) => {
     return `http://musify.servemp3.com:8000/imagenCancion/${songId}/`;
 };
@@ -293,18 +298,19 @@ export const TrackProvider = ({ children }) => {
     return `http://musify.servemp3.com:8000/audioCancion/${songId}/`;
 };
 
-    const updateTrackDetails = async (track) => {
-        if (!track.id) return;
-        // Fetch artist name if missing
-        if (!track.artista) {
-            track.artista = await fetchArtistsForSong(track.id);
-        }
-        // Fetch image if missing
-        if (!track.imagen) {
-            track.imagen = await getImageUrl(track.id);
-        }
-        updateTrack(track);
-    };
+const updateTrackDetails = async (track) => {
+    if (!track.id) return;
+    // Fetch artist name if missing
+    if (!track.artista) {
+        track.artista = await fetchArtistsForSong(track.id);
+    }
+    // Fetch image if missing
+    if (!track.imagen) {
+        track.imagen = await getImageUrl(track.id);
+    }
+    updateTrack(track);
+};
+
     
     const setTrackList = (list) => {
         setTracks(list);
