@@ -12,6 +12,7 @@ export default function Musify(){
     const [searchResults, setSearchResults] = useState([]);
     const [userSearchResults, setUserSearchResults] = useState([]);
     const [showUserSearchResults, setShowUserSearchResults] = useState(false);
+    
 
     const handleSearch = (results) => {
         const generalResults = [];
@@ -53,6 +54,9 @@ export default function Musify(){
         } else if (item.album) {
             navigate(`/musifya/${item.album.id}`);
         }
+        else if (item.playlist) {
+        navigate(`/musify/${item.playlist.id}`); 
+    }
     };
 
     const handleUserClick = (email) => {

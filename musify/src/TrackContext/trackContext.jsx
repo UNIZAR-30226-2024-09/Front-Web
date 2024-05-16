@@ -17,6 +17,11 @@ export const TrackProvider = ({ children }) => {
     const [userEmail, setUserEmail] = useState('');
     const [playedTime, setPlayedTime] = useState(0);
     const [intervalId, setIntervalId] = useState(null);
+    // Lista de IDs de canciones, posiblemente obtenida de una solicitud al servidor o codificada directamente
+const songIds = new Set([
+  32, 34, 35, 36, 37, 39, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51, 52, 53, 30, 33, 64, 38, 40, 45, 54, 55, 92
+]);
+
 
     useEffect(() => {
     if (currentTrackId) {
@@ -47,28 +52,39 @@ const updateTrack = (track) => {
     }
 };
 
-
-
     useEffect(() => {
         if (trackIndex >= 0 && trackIndex < tracks.length) {
             updateTrack(tracks[trackIndex]);
         }
     }, [trackIndex, tracks]);
 
-    useEffect(() => {
-        audioRef.current.onended = () => {
-            changeTrack(true);
-            play();
-        };
-    }, [trackIndex, tracks]); 
-
     const play = () => {
-        if (!isPlaying) {
-            audioRef.current.play()
-            .then(() => setIsPlaying(true))
-            .catch(error => console.error("Error during play:", error));
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                setIsPlaying(true);
+            }).catch(error => {
+                console.error("Error during play:", error);
+                setIsPlaying(false); // Asegúrate de manejar el estado correctamente
+            });
         }
     };
+
+    useEffect(() => {
+        const audio = audioRef.current;
+    
+        const handleEnded = () => {
+            changeTrack(true); // Cambia a la siguiente pista
+            play(); // Comienza a reproducir automáticamente la siguiente canción
+        };
+    
+        audio.addEventListener('ended', handleEnded);
+    
+        return () => {
+            audio.removeEventListener('ended', handleEnded);
+        };
+    }, [trackIndex, tracks, isShuffling, play]);
+    
 
     useEffect(() => {
         if (shouldPlayNext) {
@@ -325,7 +341,7 @@ const updateTrackDetails = async (track) => {
         if (isShuffling) {
             do {
                 newIndex = Math.floor(Math.random() * tracks.length);
-            } while (tracks.length > 1 && newIndex === trackIndex); // Asegura no repetir la misma canción si hay más de una canción
+            } while (tracks.length > 1 && newIndex === trackIndex);
         } else {
             newIndex = trackIndex + (forward ? 1 : -1);
             if (newIndex >= tracks.length) {
@@ -335,7 +351,9 @@ const updateTrackDetails = async (track) => {
             }
         }
         setTrackIndex(newIndex);
+        play(); // Asegúrate de llamar a play aquí
     };
+    
     
 
     useEffect(() => {
