@@ -46,7 +46,7 @@ export const TrackProvider = ({ children }) => {
         }
     };
 
-    useEffect(() => {
+   useEffect(() => {
         const handleEnded = () => {
             if (trackIndex < tracks.length - 1) {
                 setTrackIndex(trackIndex + 1);  // Avanzar al siguiente índice
