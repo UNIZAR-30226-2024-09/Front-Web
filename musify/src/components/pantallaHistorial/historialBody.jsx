@@ -87,8 +87,11 @@ export default function Body_historial() {
                         artistas
                     };
                 }));
-                enrichedSongs.sort((a, b) => new Date(b.playedAt) - new Date(a.playedAt));  // Assuming `playedAt` is a date string                
-                console.log("Canciones procesadas:", enrichedSongs);
+    
+                // Aquí, simplemente invierte el arreglo después de enriquecerlo y antes de setearlo al estado
+                enrichedSongs.reverse(); // Invierte el orden del arreglo
+    
+                console.log("Canciones procesadas y ordenadas al revés:", enrichedSongs);
                 setSongs(enrichedSongs);
                 setTrackList(enrichedSongs);
             } else {
@@ -99,6 +102,8 @@ export default function Body_historial() {
             setMessage('Error al cargar las canciones del historial.');
         }
     };
+    
+    
 
     const fetchArtistsForSong = async (songId) => {
         const response = await fetch(`http://musify.servemp3.com:8000/listarArtistasCancion/`, {

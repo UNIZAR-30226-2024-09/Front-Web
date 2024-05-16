@@ -77,6 +77,7 @@ const updateTrack = (track) => {
     
         const handleEnded = () => {
             changeTrack(true); // Cambia a la siguiente pista
+            addToHistory(currentTrackId); // Añade la pista actual al historial antes de cambiar a la siguiente
             play(); // Comienza a reproducir automáticamente la siguiente canción
         };
     
@@ -85,7 +86,8 @@ const updateTrack = (track) => {
         return () => {
             audio.removeEventListener('ended', handleEnded);
         };
-    }, [trackIndex, tracks, isShuffling, play]);
+    }, [trackIndex, tracks, isShuffling, play, currentTrackId]);  // Asegúrate de incluir currentTrackId en las dependencias
+    
     
 
     useEffect(() => {
@@ -150,18 +152,6 @@ const updateTrack = (track) => {
         };
     }, [trackIndex, tracks, isShuffling]); // Asegúrate de incluir isShuffling en las dependencias si su estado afecta la lógica de cambio de pista.
     
-    useEffect(() => {
-        if (!isPlaying) {
-            stopTimer();
-            if (playedTime >= 60) {
-                addToHistory(currentTrackId);  // Llama a addToHistory solo si el tiempo reproducido es al menos 60 segundos
-            }
-            setPlayedTime(0);  // Resetear el contador de tiempo reproducido
-        } else {
-            startTimer();  // Iniciar el timer cuando la canción empieza a reproducirse
-        }
-    }, [isPlaying]);
-
     const toggleShuffle = () => {
         setIsShuffling(!isShuffling);
     };
@@ -201,6 +191,7 @@ const updateTrack = (track) => {
         }
     }, []);
     
+
     
     const addToHistory = async (trackId) => {
         const url = 'http://musify.servemp3.com:8000/agnadirCancionHistorial/';
@@ -212,73 +203,56 @@ const updateTrack = (track) => {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': 'UnjuTS7rMXrft4KWKiqLVILmhWpy1ezsY5VuFAS2bdQty4YzOO7ImxLFmJaIANG0' 
                 },
-                body: JSON.stringify({ correo: userEmail, cancionId: trackId })  // Uso del correo obtenido
+                body: JSON.stringify({ correo: userEmail, cancionId: trackId })
             });
     
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || "Error al agregar la canción al historial");
-            console.log("Canción añadida al historial:", data);
+            const text = await response.text(); // Primero obtenemos el texto plano
+            try {
+                const data = JSON.parse(text); // Intentamos parsearlo como JSON
+                if (!response.ok) throw new Error(data.message || "Error al agregar la canción al historial");
+                console.log("Canción añadida al historial:", data);
+            } catch (err) {
+                console.error("Failed to parse response:", text);
+                throw err;
+            }
         } catch (error) {
             console.error("Error al añadir la canción al historial:", error);
         }
     };
     
-    const actualizarEstadoCancion = async () => {
-        if (!currentTrackId) return;
-        const currentTime = audioRef.current.currentTime;
-        const cancionID = currentTrackId;
-        const correo = userEmail;
-    
-        try {
-            const response = await fetch('http://musify.servemp3.com:8000/actualizarEstadoCancionesAPI/', {
-                method: 'POST',
-                headers: {
-                    'accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': 'tu_token_csrf'  // Make sure this token is managed securely
-                },
-                body: JSON.stringify({ correo, cancionID, tiempo: currentTime })
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || "Error al actualizar el estado de la canción");
-            console.log("Estado de canción actualizado con éxito:", data.message);
-        } catch (error) {
-            console.error('Error al actualizar el estado de la canción:', error);
-        }
-    };
-    const obtenerUltimoEstadoYReproducir = async () => {
-        if (!userEmail) return;
-        try {
-            const response = await fetch('http://musify.servemp3.com:8000/obtenerEstadoCancionesAPI/', {
-                method: 'POST',
-                headers: {
-                    'accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': 'tu_token_csrf'
-                },
-                body: JSON.stringify({ correo: userEmail })
-            });
-            const data = await response.json();
-            if (response.ok && data.ultima_cancion && data.ultima_minutos !== undefined) {
-                audioRef.current.src = getAudioUrl(data.ultima_cancion);
-                audioRef.current.currentTime = data.ultima_minutos;
-                audioRef.current.play().then(() => {
-                    setCurrentTrackId(data.ultima_cancion);
-                    setIsPlaying(true);
-                }).catch(error => console.error('Error during auto-resume play:', error));
-                console.log("Canción cargada y lista para reproducirse desde el último punto guardado.");
-            }
-        } catch (error) {
-            console.error('Error al obtener el estado de la canción o al cargar la canción:', error);
-        }
-    };
+    // const obtenerUltimoEstadoYReproducir = async () => {
+    //     if (!userEmail) return;
+    //     try {
+    //         const response = await fetch('http://musify.servemp3.com:8000/obtenerEstadoCancionesAPI/', {
+    //             method: 'POST',
+    //             headers: {
+    //                 'accept': 'application/json',
+    //                 'Content-Type': 'application/json',
+    //                 'X-CSRFToken': 'tu_token_csrf'
+    //             },
+    //             body: JSON.stringify({ correo: userEmail })
+    //         });
+    //         const data = await response.json();
+    //         if (response.ok && data.ultima_cancion && data.ultima_minutos !== undefined) {
+    //             audioRef.current.src = getAudioUrl(data.ultima_cancion);
+    //             audioRef.current.currentTime = data.ultima_minutos;
+    //             audioRef.current.play().then(() => {
+    //                 setCurrentTrackId(data.ultima_cancion);
+    //                 setIsPlaying(true);
+    //             }).catch(error => console.error('Error during auto-resume play:', error));
+    //             console.log("Canción cargada y lista para reproducirse desde el último punto guardado.");
+    //         }
+    //     } catch (error) {
+    //         console.error('Error al obtener el estado de la canción o al cargar la canción:', error);
+    //     }
+    // };
     
     
-    useEffect(() => {
-        if (userEmail) {
-            obtenerUltimoEstadoYReproducir();
-        }
-    }, [userEmail]);
+    // useEffect(() => {
+    //     if (userEmail) {
+    //         obtenerUltimoEstadoYReproducir();
+    //     }
+    // }, [userEmail]);
     
     const fetchArtistsForSong = async (songId) => {
         try {

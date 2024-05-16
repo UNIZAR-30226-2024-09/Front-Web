@@ -11,15 +11,14 @@ export default function LoginForm() {
     const navigate = useNavigate();
 
     const handleLogin = async (event) => {
-        event.preventDefault(); // Previene el comportamiento predeterminado del formulario
-    
+        event.preventDefault();
+
         try {
             const requestBody = JSON.stringify({
                 correo,
                 contrasegna,
             });
-    
-            // Imprime en consola el cuerpo de la petición para depuración
+
             console.log("Enviando petición de inicio de sesión con el cuerpo:", requestBody);
     
             const response = await fetch('http://musify.servemp3.com:8000/iniciarSesion/', {
@@ -29,17 +28,19 @@ export default function LoginForm() {
                 },
                 body: requestBody,
             });
-    
+
             if (response.ok) {
                 const data = await response.json();
                 console.log('Inicio de sesión exitoso:', data);
-
-                // Almacenar el token en LocalStorage
                 localStorage.setItem('userToken', data.token);
                 console.log('Token guardado en LocalStorage.');
 
-                // Navegar a la página de inicio tras el inicio de sesión exitoso
-                navigate('/inicio');
+                // Comprobación del correo para la redirección
+                if (correo === "Musify2024@gmail.com") {
+                    navigate('/ini_admin'); // Redirección a la página de administrador
+                } else {
+                    navigate('/inicio'); // Redirección a la página de inicio estándar
+                }
             } else {
                 console.error('Inicio de sesión fallido.');
             }
@@ -48,11 +49,6 @@ export default function LoginForm() {
         }
     };
     
-
-    const handleGoogleSignIn = () => {
-        console.log("Inicio de sesión con Google");
-    };
-
     const handleRegisterClick = () => {
         navigate('/register_1');
     };

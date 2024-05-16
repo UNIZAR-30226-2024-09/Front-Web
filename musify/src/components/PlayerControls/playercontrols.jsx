@@ -25,6 +25,8 @@ export default function PlayerControls() {
     const [isRepeating, setIsRepeating] = useState(false);
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
+    const { obtenerUltimoEstadoYReproducir, userEmail } = useTrack();
+
     
     useEffect(() => {
         if (isPlaying) {
