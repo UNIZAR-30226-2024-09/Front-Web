@@ -8,6 +8,27 @@ export default function Body_cola() {
   const audioRef = useRef(null);
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [userEmail, setUserEmail] = useState(null);
+
+useEffect(() => {
+    const fetchUserDetails = async () => {
+        const token = localStorage.getItem('userToken');
+        const response = await fetch('http://musify.servemp3.com:8000/obtenerUsuarioSesionAPI/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+            setUserEmail(data.correo);
+            fetchQueueSongs(data.correo);
+        }
+    };
+
+    if (localStorage.getItem('userToken')) {
+        fetchUserDetails();
+    }
+}, []);
 
   const togglePlayPause = () => {
     if (songs.length > 0) {
@@ -40,21 +61,6 @@ export default function Body_cola() {
     }
   };
 
-  useEffect(() => {
-    const fetchUserDetails = async () => {
-      const token = localStorage.getItem('userToken');
-      const response = await fetch('http://musify.servemp3.com:8000/obtenerUsuarioSesionAPI/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
-      });
-      const data = await response.json();
-      if (response.ok) fetchQueueSongs(data.correo);
-    };
-
-    if (localStorage.getItem('userToken')) fetchUserDetails();
-  }, []);
-
   const fetchQueueSongs = async (email) => {
     const response = await fetch('http://musify.servemp3.com:8000/listarCola/', {
       method: 'POST',
@@ -74,33 +80,37 @@ export default function Body_cola() {
   };
 
   const removeSongFromQueue = async (songId) => {
-    const email = "zineb@gmail.com"; // Replace with actual email logic
+    if (!userEmail) {
+        console.error("User email not set.");
+        return;
+    }
 
     const payload = {
-      correo: email,
-      cancionId: songId,
+        correo: userEmail,
+        cancionId: songId,
     };
 
     console.log("Sending payload to server:", payload);
 
     try {
-      const response = await fetch('http://musify.servemp3.com:8000/eliminarCancionCola/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+        const response = await fetch('http://musify.servemp3.com:8000/eliminarCancionCola/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
 
-      if (response.ok) {
-        setSongs(prevSongs => prevSongs.filter(song => song.id !== songId));
-      } else {
-        console.error('Failed to delete song from queue:', await response.json());
-      }
+        if (response.ok) {
+            setSongs(prevSongs => prevSongs.filter(song => song.id !== songId));
+            console.log("Song removed successfully.");
+        } else {
+            console.error('Failed to delete song from queue:', await response.json());
+        }
     } catch (error) {
-      console.error('Error deleting song from queue:', error);
+        console.error('Error deleting song from queue:', error);
     }
-  };
+};
 
   return (
     <Container>

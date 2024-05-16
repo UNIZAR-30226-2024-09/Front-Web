@@ -26,7 +26,7 @@ const SongDetails = () => {
     const { updateTrack, play, pause, isPlaying, audioRef } = useTrack();
     const [playlists, setPlaylists] = useState([]);
     const [showModal, setShowModal] = useState(false);
-    const [user, setUser] = useState(null);
+    const [userEmail, setUserEmail] = useState(null);
     const [songUrl, setSongUrl] = useState('');
 
     useEffect(() => {
@@ -42,23 +42,29 @@ const SongDetails = () => {
             console.error('Failed to copy:', err);
         });
     };
-
+    
     useEffect(() => {
         const fetchUserDetails = async () => {
             const token = localStorage.getItem('userToken');
+            if (!token) {
+                console.error('No token available');
+                return;
+            }
+    
             try {
                 const response = await fetch('http://musify.servemp3.com:8000/obtenerUsuarioSesionAPI/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        token: token,
-                    }),
+                    body: JSON.stringify({ token }),
                 });
+    
                 const data = await response.json();
                 if (response.ok) {
-                    setUser(data);
+                    console.log("Datos Usuario:", data);
+                    setUserEmail(data.correo); // Set the user email state
+                    fetchPlaylists(data.correo); // Now we call fetchPlaylists here with the email directly
                 } else {
                     console.error('Failed to fetch user details:', data);
                 }
@@ -67,38 +73,37 @@ const SongDetails = () => {
             }
         };
     
-        if(localStorage.getItem('userToken')) {
-            fetchUserDetails();
-        }
+        fetchUserDetails();
     }, []);
-
-    const fetchPlaylists = async () => {
-        if (user && user.correo) {
-            try {
-                const response = await fetch('http://musify.servemp3.com:8000/listarPlaylistsUsuario/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ correo: user.correo })
-                });
-                const data = await response.json();
-                if (response.ok) {
-                    if (data.playlists) {
-                        setPlaylists(data.playlists);
-                    }
-                } else {
-                    console.error('Failed to fetch playlists');
-                }
-            } catch (error) {
-                console.error('Error fetching playlists:', error);
+    
+    const fetchPlaylists = async (correo) => {
+        if (!correo) {
+            console.error('No email provided for fetching playlists');
+            return;
+        }
+        
+        try {
+            const response = await fetch('http://musify.servemp3.com:8000/listarPlaylistsUsuario/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ correo })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setPlaylists(data.playlists);
+            } else {
+                console.error('Failed to fetch playlists');
             }
+        } catch (error) {
+            console.error('Error fetching playlists:', error);
         }
     };
 
     useEffect(() => {
         fetchPlaylists();
-    }, [user]);
+    }, [userEmail]);
 
     useEffect(() => {
         const fetchSongDetails = async () => {
@@ -170,9 +175,14 @@ const SongDetails = () => {
     };
 
     const handleAddToQueue = async (songId) => {
-        const email = 'zineb@gmail.com';
-        await addToQueue(email, songId);
+        if (!userEmail) {
+            alert('User email is not available. Please wait.');
+            return;
+        }
+        await addToQueue(userEmail, songId);
     };
+    
+    
     
     // Función para añadir una canción a la playlist
     const addToPlaylist = async (playlistId) => {

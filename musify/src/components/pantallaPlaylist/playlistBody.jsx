@@ -23,6 +23,39 @@ export default function Body() {
     const [collaboratorEmail, setCollaboratorEmail] = useState('');
     const [isAddingCollaborator, setIsAddingCollaborator] = useState(false);
     const [setShowDeleteConfirm] = useState(false);
+    const [userEmail, setUserEmail] = useState(null);
+
+    useEffect(() => {
+        const fetchUserDetails = async () => {
+            const token = localStorage.getItem('userToken');
+            if (!token) {
+                console.error('No token available');
+                return;
+            }
+    
+            try {
+                const response = await fetch('http://musify.servemp3.com:8000/obtenerUsuarioSesionAPI/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token }),
+                });
+    
+                const data = await response.json();
+                if (response.ok) {
+                    console.log("Datos Usuario:", data);
+                    setUserEmail(data.correo); // Set the user email state
+                } else {
+                    console.error('Failed to fetch user details:', data);
+                }
+            } catch (error) {
+                console.error('Error fetching user details:', error);
+            }
+        };
+    
+        fetchUserDetails();
+    }, []);
     
     const getImageUrl = (type, filename) => {
         return `http://musify.servemp3.com:8000/imagen${type}/${filename}/`;
@@ -215,9 +248,11 @@ export default function Body() {
     };
 
     const handleAddToQueue = async (songId) => {
-        // Replace with the actual email you want to use
-        const email = 'zineb@gmail.com';
-        await addToQueue(email, songId);
+        if (!userEmail) {
+            alert('User email is not available. Please wait.');
+            return;
+        }
+        await addToQueue(userEmail, songId);
     };
     
 
