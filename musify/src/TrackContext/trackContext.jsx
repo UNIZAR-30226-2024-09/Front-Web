@@ -41,12 +41,12 @@ const updateTrack = (track) => {
     if (track && track.id && track.id !== currentTrackId) {
         setCurrentTrack(track);
         setCurrentTrackId(track.id);
-        // Reproduce la pista inmediatamente si está actualizando desde SongDetails
-        if (!isPlaying) {
-            playAudio();
-        }
+        audioRef.current.src = track.src;
+        audioRef.current.load();
+        audioRef.current.oncanplaythrough = () => play(); // Asegúrate de reproducir solo cuando esté listo
     }
 };
+
 
 
     useEffect(() => {
