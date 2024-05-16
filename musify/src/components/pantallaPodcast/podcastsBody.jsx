@@ -93,7 +93,8 @@ const PodcastDetails = () => {
             updateTrack({
                 id: chapter.id,
                 src: audioSrc,
-                nombre: chapter.nombre
+                nombre: chapter.nombre,
+                podcast: true
             });
             play();
         }

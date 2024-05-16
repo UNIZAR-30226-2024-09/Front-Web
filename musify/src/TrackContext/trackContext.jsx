@@ -7,6 +7,7 @@ export const useTrack = () => useContext(TrackContext);
 export const TrackProvider = ({ children }) => {
     const audioRef = useRef(new Audio());
     const [isPlaying, setIsPlaying] = useState(false);
+    const [isPodcast, setIsPodcast] = useState(false);
     const [currentTrack, setCurrentTrack] = useState({});
     const [currentTrackId, setCurrentTrackId] = useState(null);
     const [volume, setVolume] = useState(0.5);
@@ -27,7 +28,7 @@ const songIds = new Set([
     if (currentTrackId) {
         const loadFullAudio = async () => {
             try {
-                const response = await fetch(`http://musify.servemp3.com:8000/audioCancion/${currentTrackId}/`);
+                const response = isPodcast ? await fetch(`http://musify.servemp3.com:8000/audioPodcast/${currentTrackId}/`) : await fetch(`http://musify.servemp3.com:8000/audioCancion/${currentTrackId}/`);
                 const data = await response.blob();
                 const objectURL = URL.createObjectURL(data);
                 audioRef.current.src = objectURL;
@@ -46,6 +47,7 @@ const updateTrack = (track) => {
     if (track && track.id && track.id !== currentTrackId) {
         setCurrentTrack(track);
         setCurrentTrackId(track.id);
+        setIsPodcast(track.podcast || false);
         audioRef.current.src = track.src;
         audioRef.current.load();
         audioRef.current.oncanplaythrough = () => play(); // Asegúrate de reproducir solo cuando esté listo
@@ -295,6 +297,7 @@ const updateTrack = (track) => {
                 if (data.artistas && data.artistas.length > 0) {
                     return data.artistas.map(artista => artista.nombre);
                 } else {
+                    setIsPodcast(true);
                     console.error('No artists found in response:', data);
                     return ['Artista Desconocido'];
                 }
@@ -324,6 +327,7 @@ const updateTrackDetails = async (track) => {
     if (!track.imagen) {
         track.imagen = await getImageUrl(track.id);
     }
+    
     updateTrack(track);
 };
 
