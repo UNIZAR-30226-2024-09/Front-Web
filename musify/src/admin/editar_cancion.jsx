@@ -21,7 +21,7 @@ const getImageSrc = (id) => {
     return `http://musify.servemp3.com:8000/imagenCancion/${id}`;
 };
 const getAudioUrl = (songId) => {
-    return `hhttp://musify.servemp3.com:8000/audioCancion/${songId}/`;
+    return `http://musify.servemp3.com:8000/audioCancion/${songId}/`;
 };
 
 export default function EditarCancion() {
@@ -29,9 +29,10 @@ export default function EditarCancion() {
     const { cancionId } = useParams();
 
     const[nombre, setNombre] = useState('');
-    const[artistas, setArtistas] = useState([]);
+    const[artistas, setArtistas] = useState('');
     const[album, setAlbum] = useState('');
-    const[generosCancion, setGenerosCancion] = useState({});
+    const[nomAlbum, setNomAlbum] = useState('');
+    const[generoCancion, setGeneroCancion] = useState('');
     const[foto, setFoto] = useState(null);
     const[audio, setAudio] = useState(null);
     const[duracion, setDuracion] = useState('');
@@ -64,8 +65,8 @@ export default function EditarCancion() {
                 fetchArtistas();
                 fetchAlbum(data.cancion.miAlbum);
                 fetchGenerosCancion(cancionId);
-                fetchDuracion(getAudioUrl(data.cancion.id));
-                //setDuracion(0);
+                //fetchDuracion(getAudioUrl(data.cancion.id));
+                setDuracion('0');
                 fetchGeneros();
             } catch (error) {
                 setError(error.message);
@@ -87,7 +88,9 @@ export default function EditarCancion() {
                     const updatedArtistas = cancionData.artistas.map(artista => ({
                         nombre: artista.nombre
                     }));
-                    setArtistas(updatedArtistas);
+                    const nombresArtistas = updatedArtistas.map(artista => artista.nombre);
+                    const artistasString = nombresArtistas.join(', ');
+                    setArtistas(artistasString);
                     console.log(updatedArtistas);
                 } else{
                     setArtistas([]);
@@ -113,7 +116,8 @@ export default function EditarCancion() {
                 });
                 if (!response.ok) throw new Error("Failed to fetch album");
                 const albumData = await response.json();
-                setAlbum(albumData.album.nombre);
+                console.log(albumData.album.id);
+                setNomAlbum(albumData.album.nombre);
             } catch (error) {
                 setError(`Failed to fetch album: ${error.message}`);
             } finally {
@@ -132,11 +136,11 @@ export default function EditarCancion() {
                 const cancionData = await response.json();
                 if(cancionData.generos) {
                     const nombresGeneros = cancionData.generos.map(genero => genero.nombre);
-                    setGenerosCancion(nombresGeneros);
+                    setGeneroCancion(nombresGeneros);
                     console.log(nombresGeneros);
                 } else{
-                    setGenerosCancion();
-                    console.log(generosCancion);
+                    setGeneroCancion();
+                    console.log(generoCancion);
                 }
             } catch (error) {
                 setError(`Failed to fetch generos de la cancion: ${error.message}`);
@@ -223,16 +227,35 @@ export default function EditarCancion() {
     const handleCloseModalNoSave = () => {
         navigate('/lista_canciones_admin'); //Vuelve a la lista de canciones
     };
-    
-    const handleCancionAniadida = () => {
-        if(cancionValid) {
-            navigate('/lista_canciones_admin');
-        }
-    };
 
     const handleInputChange = (e) => {
         const nuevosArtistas = e.target.value.split(",").map((nombre) => nombre.trim());
         setArtistas(nuevosArtistas);
+    };
+
+    
+    const handleCancionEditada = async () => {
+        try {
+            const response = await fetch('http://musify.servemp3.com:8000/actualizarCancion/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ cancionId: cancionId, nombre: nombre, imagen_b64: foto, miAlbum: album, audio_b64: audio }),
+            });
+    
+            if (response.ok) {
+                // Actualización exitosa
+                console.log('Capitulo actualizada correctamente en la base de datos');
+                navigate('/lista_canciones_admin');
+            } else {
+                // Maneja errores de respuesta
+                console.error('Error al actualizar la canción en la base de datos');
+            }
+        } catch (error) {
+            // Maneja errores de red u otros
+            console.error('Error de red al actualizar el capítulo:', error);
+        }
     };
 
     const handleEliminarCancion = async () => {
@@ -247,7 +270,7 @@ export default function EditarCancion() {
     
             if (response.ok) {
                 // Borrado exitoso
-                //navigate('/lista_canciones_admin');
+                navigate('/lista_canciones_admin');
                 console.log('Canción eliminada correctamente en la base de datos');
             } else {
                 // Maneja errores de respuesta
@@ -279,19 +302,23 @@ export default function EditarCancion() {
                         </div>
                         <div className="artistas">
                             <h6>Artistas:</h6>
-                            <textarea
-                                rows={4} 
-                                value={artistas.length > 0 ? artistas.map(artista => artista.nombre).join(", ") : ""}
-                                onChange={handleInputChange}
-                                placeholder="Escribe los nombres de los artistas separados por comas"
+                            <input 
+                                type="text" 
+                                value={artistas ? (
+                                    artistas
+                                ) : (
+                                    "No hay artistas"
+                                )}
+                                onChange={e=>setArtistas(e.target.value)}
+                                placeholder="Artistas" 
                             />
                         </div>
                         <div className="input-box">
                             <h6>Album:</h6>
                             <input 
                                 type="album" 
-                                value={album} 
-                                onChange={(e) => setAlbum(e.target.value)}
+                                value={nomAlbum} 
+                                onChange={(e) => setNomAlbum(e.target.value)}
                                 />
                         </div>
                         <div className="input-box">
@@ -302,7 +329,7 @@ export default function EditarCancion() {
                                 onChange={(e) => setDuracion(e.target.value)}
                                 />
                         </div>
-                        <select className='seleccion' value={generosCancion} onChange={e=>setGenerosCancion(e.target.value)}>
+                        <select className='seleccion' value={generoCancion} onChange={e=>setGeneroCancion(e.target.value)}>
                             <option value="">Selecciona un género</option>
                             {generos.map((genero, index) => (
                                 <option key={index} value={genero}>{genero}</option>
@@ -324,8 +351,8 @@ export default function EditarCancion() {
                     <div className="buttons-container">
                         <button type="button" className="cancel-button" onClick={handleExitWithoutSave}>Salir sin guardar</button>
                         {showModal && <AniadirWindow onClose={handleCloseModal} ruta={handleCloseModalNoSave} />}
-                        <button type="submit" className="delete-button" onClick={handleEliminarCancion}>Eliminar</button>
-                        <button type="submit" className="save-button" onClick={handleCancionAniadida}>Guardar</button>
+                        <button type="button" className="delete-button" onClick={handleEliminarCancion}>Eliminar</button>
+                        <button type="button" className="save-button" onClick={handleCancionEditada}>Guardar</button>
                     </div>
                 </form>
             </div>

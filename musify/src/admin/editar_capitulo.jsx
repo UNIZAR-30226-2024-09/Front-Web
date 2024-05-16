@@ -14,6 +14,7 @@ export default function EditCapitulo() {
   const { idCap } = useParams();
   const [capitulo, setCapitulo] = useState(null);
   const [podcast, setPodcast] = useState('');
+  const [nomPodcast, setNomPodcast] = useState('');
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [duracion, setDuracion] = useState('');
@@ -41,7 +42,34 @@ export default function EditCapitulo() {
             setNombre(capituloData.capitulo.nombre);
             setDescripcion(capituloData.capitulo.descripcion);
             setPodcast(capituloData.capitulo.miPodcast);
-            fetchDuracion(getAudioUrl(capituloData.capitulo.id));
+            fetchNomPodcast(capituloData.capitulo.miPodcast);
+            //fetchDuracion(getAudioUrl(capituloData.capitulo.id));
+            setDuracion('0');
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchNomPodcast = async (idPodcast) => {
+        setLoading(true);
+        try {
+            const response = await fetch('http://musify.servemp3.com:8000/devolverPodcast/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ podcastId: idPodcast })
+            });
+            if (response.ok) {
+                if (!response.ok) throw new Error("Failed to fetch song details");
+                const podcastData = await response.json();
+                setNomPodcast(podcastData.podcast.nombre);
+            }else {
+                const errorData = await response.text();
+                throw new Error(errorData || "Error al recibir datos");
+            }
         } catch (error) {
             setError(error.message);
         } finally {
@@ -91,7 +119,7 @@ export default function EditCapitulo() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ capituloId: idCap, nombre: nombre, descripcion: descripcion, miPodcast: podcast }),
+                body: JSON.stringify({ capituloId: idCap, nombre: nombre, descripcion: descripcion, miPodcast: nomPodcast }),
             });
     
             if (response.ok) {
@@ -124,7 +152,7 @@ export default function EditCapitulo() {
     
             if (response.ok) {
                 // Borrado exitoso
-                navigate('/lista_podcast_admin');
+                navigate(`/editar_podcast/${podcast}`);
                 console.log('Capitulo eliminado correctamente en la base de datos');
             } else {
                 // Maneja errores de respuesta
@@ -166,8 +194,8 @@ export default function EditCapitulo() {
                 <div className="buttons-container">
                     <button type="button" className="cancel-button" onClick={handleExitWithoutSave}>Salir sin guardar</button>
                     {showModal && <AniadirWindow onClose={handleCloseModal} ruta={handleCloseModalNoSave} />}
-                    <button type="submit" className="delete-button" onClick={handleEliminarCapitulo}>Eliminar</button>
-                    <button type="submit" className="save-button" onClick={handleCapituloEditado}>Guardar</button>
+                    <button type="button" className="delete-button" onClick={handleEliminarCapitulo}>Eliminar</button>
+                    <button type="button" className="save-button" onClick={handleCapituloEditado}>Guardar</button>
                 </div>
             </form>
         </div>
