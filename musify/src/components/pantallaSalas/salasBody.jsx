@@ -14,7 +14,6 @@ const Salas = () => {
   const handleJoinRoom = (salaId, salaNombre) => {
     navigate(`/chat/${salaId}`, { state: { nombreSala: salaNombre } });
   };
-  
 
   useEffect(() => {
     const fetchSalas = async () => {

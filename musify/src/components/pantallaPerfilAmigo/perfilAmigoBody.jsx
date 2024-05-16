@@ -100,19 +100,25 @@ export default function PerfilAmigoBody () {
     };
 
     const fetchPlaylists = async (email) => {
-        const response = await fetch(`http://musify.servemp3.com:8000/listarPlaylistsUsuario/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ correo: email })
-        });
-        const data = await response.json();
-        if (response.ok) {
-            console.log("Playlists recibidas:", data.playlists);
-            setPlaylists(data.playlists || []);
-        } else {
-            console.error('Failed to fetch playlists:', data);
+        try {
+            const response = await fetch(`http://musify.servemp3.com:8000/listarPlaylistsUsuario/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ correo: email })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                console.log("Playlists recibidas:", data.playlists);
+                const publicPlaylists = data.playlists.filter(playlist => playlist.publica); // Filtra solo las playlists públicas
+                setPlaylists(publicPlaylists);
+            } else {
+                console.error('Failed to fetch playlists:', data);
+            }
+        } catch (error) {
+            console.error('Error fetching playlists:', error);
         }
     };
+    
 
     const fetchSeguidores = async (email) => {
         const response = await fetch(`http://musify.servemp3.com:8000/listarSeguidores/`, {

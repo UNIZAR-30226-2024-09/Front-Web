@@ -40,17 +40,11 @@ export const TrackProvider = ({ children }) => {
     };
     
     const updateTrack = (track) => {
-        if (track && track.id && track.id !== currentTrack.id) {
-            setCurrentTrack({
-                ...track,
-                type: track.type || 'song' // Asumimos 'song' como default
-            });
-            audioRef.current.src = track.src;
-            audioRef.current.load();
-            audioRef.current.oncanplaythrough = play;
+        if (track && track.id && track.id !== currentTrackId) {
+            setCurrentTrack(track);
+            setCurrentTrackId(track.id);
         }
     };
-    
 
     useEffect(() => {
         const handleEnded = () => {

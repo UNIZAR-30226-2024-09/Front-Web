@@ -15,7 +15,7 @@ export default function CurrentTrack() {
                 </div>
                 <div className="track__info">
                     <h4>{currentTrack.nombre}</h4>
-                    <h6>{currentTrack.artista || 'Artista Desconocido'}</h6>
+                    <h6>{currentTrack.artista}</h6>
                 </div>
             </div>
         </Container>

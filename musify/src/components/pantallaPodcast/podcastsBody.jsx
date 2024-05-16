@@ -84,20 +84,18 @@ const PodcastDetails = () => {
     const togglePlayPause = (index) => {
         const chapter = chapters[index];
         if (!chapter) return;
-    
+
         if (currentTrack && currentTrack.id === chapter.id && !audioRef.current.paused) {
             pause();
         } else {
             updateTrack({
                 id: chapter.id,
                 src: base64ToAudioSrc(chapter.archivoMp3),
-                nombre: chapter.nombre,
-                type: 'podcast' // Añadiendo tipo de track
+                nombre: chapter.nombre
             });
             play();
         }
     };
-    
 
     const formatDuration = (duration) => {
         if (!duration) return 'N/A';

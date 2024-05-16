@@ -208,9 +208,6 @@ function Chat() {
         }
     };
 
-    
-    
-
     return (
         <ChatContainer>
             <ChatHeader>
