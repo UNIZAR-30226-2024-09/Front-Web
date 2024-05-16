@@ -254,22 +254,25 @@ export default function Body() {
 
     const togglePlayPause = (index) => {
         const song = songs[index];
-        if (currentTrack && currentTrack.id === song.id && !audioRef.current.paused) {
-            pause();
-        } else if (audioRef.current.readyState >= 3) { // READY_STATE_HAVE_FUTURE_DATA o superior
+        if (currentTrack && currentTrack.id === song.id) {
+            if (!audioRef.current.paused) {
+                pause();  // If the current track is playing, pause it.
+            } else {
+                play();   // If it's paused, play it.
+            }
+        } else {
             updateTrack({
                 ...song,
-                id: song.id, // Asegúrate de tener un identificador único
-                src: song.audioUrl, // URL del archivo de audio
-                imagen: song.imageUrl, // URL de la imagen de la canción
-                nombre: song.nombre, // Nombre de la canción
-                artista: song.artistas // Nombre(s) de los artistas
+                id: song.id,
+                src: song.audioUrl,
+                imagen: song.imageUrl,
+                nombre: song.nombre,
+                artista: song.artistas
             });
-            play();
-        } else {
-            console.error("El audio aún no está listo para reproducirse.");
+            play();  // Start playing the new track
         }
     };
+    
     
 
     return (

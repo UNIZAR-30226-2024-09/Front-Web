@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useParams } from 'react-router-dom';
 import { IoIosArrowBack } from 'react-icons/io';
 import { FaUserCircle } from 'react-icons/fa';
-
+import { useLocation } from 'react-router-dom';
 
 function useExternalScript(url) {
     useEffect(() => {
@@ -26,12 +26,12 @@ function Chat() {
     const [input, setInput] = useState('');
     const [userEmail, setUserEmail] = useState('');
     const [messageCounter, setMessageCounter] = useState(0);
-
     const websocket = useRef(null);
-    const [uniqueMessageIds, setUniqueMessageIds] = useState(new Set()); // Maintain a set of unique message IDs
+    const [uniqueMessageIds, setUniqueMessageIds] = useState(new Set());
+    const location = useLocation();
+    const nombreSala = location.state?.nombreSala;
 
 
-    
     useEffect(() => {
         const fetchUserDetails = async () => {
             try {
@@ -43,10 +43,11 @@ function Chat() {
                     },
                     body: JSON.stringify({ token }),
                 });
+                console.log("Token:", token);
                 const data = await response.json();
                 if (response.ok) {
+                    console.log("Datos Usuario:", data);
                     setUserEmail(data.correo);
-                    console.log("Correo obtenido:", data.correo);
                 } else {
                     console.error('Failed to fetch user details:', data);
                 }
@@ -60,34 +61,26 @@ function Chat() {
         }
     }, []);
     
-    useEffect(() => {
-        if (userEmail) {
-            // Lógica que depende del userEmail aquí
-            console.log("Usuario Email Establecido:", userEmail);
-            // Por ejemplo, iniciar WebSocket aquí si es dependiente del userEmail
-        }
-    }, [userEmail]); // Dependencia a userEmail
-    
-    
 
     useEffect(() => {
         // Cambia el host y puerto según tu configuración de Django y asegúrate de incluir el nombre de la sala
         // Por ejemplo, si tu servidor Django corre en localhost en el puerto 8000 y la sala se llama "public"
-        websocket.current = new WebSocket(`ws://musify.servemp3.com:8000/ws/chat/${salaId}/`);
+        const token = localStorage.getItem('userToken');
+        websocket.current = new WebSocket(`ws://musify.servemp3.com:8000/ws/chat/${salaId}/${token}/`);
     
         websocket.current.onmessage = (event) => {
             const newId = messageCounter + 1;
             setMessageCounter(newId);
             const newMessage = { ...JSON.parse(event.data), id: newId };
-        
+            console.log("Nuevo Mensaje Recibido:", newMessage);
             if (!uniqueMessageIds.has(newMessage.id)) {
                 setMessages(prevMessages => [
                     ...prevMessages,
                     {
                         ...newMessage,
-                        type: newMessage.cuerpo.emisorid === userEmail ? 'sent' : 'received',
+                        type: newMessage.autor === userEmail ? 'sent' : 'received',
                         text: newMessage.cuerpo ? newMessage.cuerpo.mensaje : '', // Adjust this to match the structure of your message data
-                        userId: newMessage.cuerpo.emisorid === userEmail ? 'You' : newMessage.cuerpo.emisorid,
+                        userId: newMessage.autor === userEmail ? 'You' : newMessage.cuerpo.emisorid,
                     }
                 ]);
                 
@@ -159,8 +152,7 @@ function Chat() {
 
     const sendMessage = async (e) => {
         e.preventDefault();
-        console.log("Correo del usuario al enviar mensaje:", userEmail);  // Aquí verificas el correo del usuario
-    
+        
         if (input.trim()) {
             const messageToSend = JSON.stringify({
                 cuerpo: {
@@ -169,14 +161,36 @@ function Chat() {
                     salaid: salaId
                 }
             });
-    
+
             try {
+                // Send message through WebSocket
+                if (websocket.current.readyState === WebSocket.OPEN) {
+                    console.log("Enviando Mensaje: ", messageToSend)
+                    websocket.current.send(messageToSend);
+                } else {
+                    throw new Error('WebSocket connection is not open.');
+                }
+                
+                // Update local state with the new message
+                const newMessage = {
+                    id: messageCounter + 1,
+                    text: input,
+                    type: 'sent',
+                    userId: 'You',
+                    fecha: new Date().toISOString() // Assuming you want to use the current timestamp
+                };
+                //setMessages(prevMessages => [...prevMessages, newMessage]);
+                
+                // Clear input field
+                setInput('');
+                
+                // Call API to register the message
                 const response = await fetch('http://musify.servemp3.com:8000/registrarMensajeAPI/', {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': 'tu_token_csrf_aquí'
+                        'X-CSRFToken': 'your_csrf_token_here'
                     },
                     body: JSON.stringify({ 
                         salaid: salaId,
@@ -184,30 +198,21 @@ function Chat() {
                         mensaje: input 
                     })
                 });
-    
-                const data = await response.json();  // Asumiendo que la respuesta es un JSON
-                console.log("Respuesta del servidor:", data);
-    
-                if (response.ok) {
-                    if (websocket.current.readyState === WebSocket.OPEN) {
-                        websocket.current.send(messageToSend);
-                        setInput('');
-                    }
-                } else {
-                    throw new Error('Error al enviar mensaje.');
+
+                if (!response.ok) {
+                    throw new Error('Error al registrar mensaje.');
                 }
             } catch (error) {
-                console.error("Error al registrar mensaje: ", error);
+                console.error("Error sending message: ", error);
             }
         }
     };
-    
 
     return (
         <ChatContainer>
             <ChatHeader>
                 <IoIosArrowBack size="24" style={{ cursor: 'pointer' }} />
-                <ChatTitle>Taylor Swift Group</ChatTitle>
+                <ChatTitle>{nombreSala}</ChatTitle>
             </ChatHeader>
             <MessagesList id="messagesList">
                 {messages.map((msg, index) => (

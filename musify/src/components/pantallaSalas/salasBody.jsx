@@ -11,8 +11,8 @@ const Salas = () => {
 
   const navigate = useNavigate(); 
 
-  const handleJoinRoom = (salaId) => {
-    navigate(`/chat/${salaId}`);
+  const handleJoinRoom = (salaId, salaNombre) => {
+    navigate(`/chat/${salaId}`, { state: { nombreSala: salaNombre } });
   };
 
   useEffect(() => {
@@ -67,12 +67,12 @@ const Salas = () => {
   return (
     <SalasContainer>
       <Titulo>Salas</Titulo>
-      {salas.map((sala) => (
-        <Sala key={sala.id} onClick={() => handleJoinRoom(sala.id)}>
-          <NombreSala>{sala.nombre}</NombreSala>
-          <UnirseAhora>Únete ahora</UnirseAhora>
-        </Sala>
-      ))}
+          {salas.map((sala) => (
+      <Sala key={sala.id} onClick={() => handleJoinRoom(sala.id, sala.nombre)}>
+        <NombreSala>{sala.nombre}</NombreSala>
+        <UnirseAhora>Únete ahora</UnirseAhora>
+      </Sala>
+    ))}
       <CrearSala onClick={() => setMostrarModal(true)}>
         <PlusIcon>+</PlusIcon>
         <CrearSalaTexto>Crear Sala</CrearSalaTexto>

@@ -11,6 +11,7 @@ const base64ToAudioSrc = (base64) => {
     return `data:audio/mp3;base64,${atob(base64WithoutPrefix)}`;
 };
 
+
 const PodcastDetails = () => {
     const { podcastId } = useParams();
     const [chapters, setChapters] = useState([]);
@@ -32,7 +33,6 @@ const PodcastDetails = () => {
                 });
                 if (!response.ok) throw new Error("Failed to fetch podcast details");
                 const data = await response.json();
-                // Construye la URL de la imagen usando el servidor como base
                 setPodcastImage(`http://musify.servemp3.com:8000/imagenPodcast/${podcastId}/`);
                 setPodcastName(data.podcast.nombre);
                 fetchChapters(data.podcast.nombre);
@@ -76,7 +76,7 @@ const PodcastDetails = () => {
                 reject('Failed to load audio');
             };
         });
-    };    
+    };
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
@@ -85,12 +85,14 @@ const PodcastDetails = () => {
         const chapter = chapters[index];
         if (!chapter) return;
 
+        const audioSrc = base64ToAudioSrc(chapter.archivoMp3);
+
         if (currentTrack && currentTrack.id === chapter.id && !audioRef.current.paused) {
             pause();
         } else {
             updateTrack({
                 id: chapter.id,
-                src: base64ToAudioSrc(chapter.archivoMp3),
+                src: audioSrc,
                 nombre: chapter.nombre
             });
             play();
@@ -109,18 +111,18 @@ const PodcastDetails = () => {
     return (
         <Container>
             <div className="playlist">
-            <div className="image">
-            <img src={podcastImage} alt={podcastName} />
+                <div className="image">
+                    <img src={podcastImage} alt={podcastName} />
+                </div>
+                <div className="details">
+                    <span className="type">PODCAST</span>
+                    <h1 className="title">{podcastName}</h1>
+                </div>
             </div>
-            <div className="details">
-                <span className="type">PODCAST</span>
-                <h1 className="title">{podcastName}</h1>
-            </div>
-        </div>
-        <div className="list">
+            <div className="list">
                 <div className="header__row">
                     <div className="col"><span>#</span></div>
-                    <div className="col"><span>TITULO</span></div>
+                    <div className="col"><span>TÍTULO</span></div>
                     <div className="col"><span>PODCAST</span></div>
                     <div className="col"><span><AiFillClockCircle /></span></div>
                 </div>
@@ -134,14 +136,14 @@ const PodcastDetails = () => {
                             onClick={() => togglePlayPause(index)}>
                             <div className="col"><span>{index + 1}</span></div>
                             <div className="col detail">
-                            <div className="image">
-                                <img src={podcastImage} alt={chapter.nombre} style={{ width: "50px", height: "auto" }} />
-                                {hoverIndex === index && (
-                                    <div className="play-icon">
-                                        {isPlaying && currentTrack.id === chapter.id ? <FaPause size="2em" /> : <FaPlay size="2em" />}
-                                    </div>
-                                )}
-                            </div>
+                                <div className="image">
+                                    <img src={podcastImage} alt={chapter.nombre} style={{ width: "50px", height: "auto" }} />
+                                    {hoverIndex === index && (
+                                        <div className="play-icon">
+                                            {isPlaying && currentTrack.id === chapter.id ? <FaPause size="2em" /> : <FaPlay size="2em" />}
+                                        </div>
+                                    )}
+                                </div>
                                 <div className="info">
                                     <span className="name">{chapter.nombre}</span>
                                 </div>
@@ -156,9 +158,10 @@ const PodcastDetails = () => {
             </div>
         </Container>
     );
-}
+};
 
 export default PodcastDetails;
+
 
 const Container = styled.div`
 .image {

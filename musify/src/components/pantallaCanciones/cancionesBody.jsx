@@ -170,12 +170,10 @@ const SongDetails = () => {
     };
 
     const handleAddToQueue = async (songId) => {
-        // Replace with the actual email you want to use
         const email = 'zineb@gmail.com';
         await addToQueue(email, songId);
     };
     
-
     // Función para añadir una canción a la playlist
     const addToPlaylist = async (playlistId) => {
         try {
@@ -271,6 +269,7 @@ const SongDetails = () => {
             pause();
         } else {
             updateTrack({
+                id: cancionId,
                 src: songMp3,
                 nombre: songName
             });

@@ -80,13 +80,14 @@ export default function Body_historial() {
                 console.log("Canciones recibidas:", data.historial);
                 const enrichedSongs = await Promise.all(data.historial.map(async (song) => {
                     const imageUrl = `http://musify.servemp3.com:8000/imagenCancion/${song.id}`;
-                    const artistas = await fetchArtistsForSong(song.id);  // Llamada a la función para obtener los artistas
+                    const artistas = await fetchArtistsForSong(song.id);
                     return {
                         ...song,
                         imageUrl,
-                        artistas  // Almacenando los nombres de los artistas obtenidos
+                        artistas
                     };
                 }));
+                enrichedSongs.sort((a, b) => new Date(b.playedAt) - new Date(a.playedAt));  // Assuming `playedAt` is a date string                
                 console.log("Canciones procesadas:", enrichedSongs);
                 setSongs(enrichedSongs);
                 setTrackList(enrichedSongs);
@@ -104,14 +105,24 @@ export default function Body_historial() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': 'tu_token_csrf'
+                'X-CSRFToken': 'tu_token_csrf'  // Ensure CSRF token is correctly managed
             },
             body: JSON.stringify({ cancionId: songId })
         });
         const data = await response.json();
-        return response.ok ? data.artistas.map(artista => artista.nombre).join(', ') : 'Artista Desconocido';
+    
+        if (response.ok) {
+            if (Array.isArray(data.artistas) && data.artistas.length > 0) {
+                return data.artistas.map(artista => artista.nombre).join(', ');
+            } else {
+                return 'Artista Desconocido';  // Return default text if no artists are found
+            }
+        } else {
+            console.error('API error on fetching artists:', data);
+            return 'Artista Desconocido';  // Handle API errors gracefully
+        }
     };
-
+    
     return (
         <Container>
             <div className="historial">
@@ -126,22 +137,20 @@ export default function Body_historial() {
                 </div>
             </div>
             <div className="tracks">
-                {songs.length > 0 ? (
-                    songs.map((song, index) => (
-                        <div className="row" key={song.id}>
-                            <div className="col"><span>{index + 1}</span></div>
-                            <div className="col detail">
-                                <div className="image">
-                                    <img src={song.imageUrl} alt={song.nombre} style={{ width: "50px", height: "auto" }} />
-                                </div>
-                                <div className="info">
-                                    <span className="name">{song.nombre}</span>
-                                    <span>{song.artistas || 'Artista Desconocido'}</span>
-                                </div>
+                {songs.length > 0 ? songs.map((song, index) => (
+                    <div className="row" key={song.id}>
+                        <div className="col"><span>{index + 1}</span></div>
+                        <div className="col detail">
+                            <div className="image">
+                                <img src={song.imageUrl} alt={song.nombre} style={{ width: "50px", height: "auto" }} />
+                            </div>
+                            <div className="info">
+                                <span className="name">{song.nombre}</span>
+                                <span>{song.artistas || 'Artista Desconocido'}</span>
                             </div>
                         </div>
-                    ))
-                ) : (
+                    </div>
+                )) : (
                     <div className="row">{message}</div>
                 )}
             </div>
