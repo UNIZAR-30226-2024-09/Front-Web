@@ -26,6 +26,14 @@ export default function PlayerControls() {
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
     
+    useEffect(() => {
+        if (isPlaying) {
+            audioRef.current.play();
+        } else {
+            audioRef.current.pause();
+        }
+    }, [isPlaying, audioRef.current]);
+    
 
     useEffect(() => {
         const audio = audioRef.current;
@@ -103,13 +111,20 @@ export default function PlayerControls() {
             audio.removeEventListener('ended', onEnded);
         };
     }, [audioRef, isRepeating, changeTrack, play]);  // Incluye 'play' en las dependencias si es una función obtenida del contexto
-    
-    
-
-    
-    
+        
     const handleShowLyrics = () => setShowLyrics(true);
     const handleCloseLyrics = () => setShowLyrics(false);
+
+    useEffect(() => {
+        const onLoadedData = () => {
+            if (isPlaying) play();
+        };
+        const audio = audioRef.current;
+        audio.addEventListener('loadeddata', onLoadedData);
+    
+        return () => audio.removeEventListener('loadeddata', onLoadedData);
+    }, [audioRef, isPlaying, play]);
+    
 
     useEffect(() => {
         const audio = audioRef.current;
