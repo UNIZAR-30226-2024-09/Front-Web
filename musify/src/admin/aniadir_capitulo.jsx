@@ -70,7 +70,8 @@ export default function EditCapitulo() {
     };
 
     const handleCapituloAniadido = async () => {
-        if(capituloValid) {
+        if(audio) {
+            console.log(audio);
             try {
                 const response = await fetch('http://musify.servemp3.com:8000/crearCapitulo/', {
                     method: 'POST',
@@ -83,6 +84,7 @@ export default function EditCapitulo() {
                 if (response.ok) {
                     // Si el registro es exitoso, redirige al usuario
                     navigate(`/editar_podcast/${miPodcast}`);
+                    console.log('Capitulo creado');
                 } else {
                     // Maneja errores, por ejemplo, mostrar un mensaje al usuario
                 }
@@ -94,6 +96,20 @@ export default function EditCapitulo() {
 
     const handleDescripcionChange = (e) => {
         setDescripcion(e.target.value);
+    };
+
+    const handleAudioChange = (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+
+        reader.onloadend = () => {
+            // Cuando la carga del archivo esté completa, establecemos el audio en base64
+            setAudio(reader.result);
+        };
+
+        // Leemos el archivo como una URL de datos en base64
+        reader.readAsDataURL(file);
+        console.log(reader.result);
     };
 
   return (
@@ -121,7 +137,7 @@ export default function EditCapitulo() {
                 </div>
                 <div className="audio">
                     <h6>Archivo de audio (.mp3):</h6>
-                    <input type="file" accept=".mp3" onChange={e=>setAudio(e.target.value)}/>
+                    <input type="file" accept=".mp3" onChange={handleAudioChange}/>
                 </div>
                 <div className="input-box">
                     <h6>Descripción:</h6>
@@ -130,7 +146,7 @@ export default function EditCapitulo() {
                 <div className="buttons-container">
                     <button type="button" className="cancel-button" onClick={handleExitWithoutSave}>Salir sin guardar</button>
                     {showModal && <AniadirWindow onClose={handleCloseModal} ruta={handleCloseModalNoSave} />}
-                    <button type="submit" className="save-button" onClick={handleCapituloAniadido}>Guardar</button>
+                    <button type="button" className="save-button" onClick={handleCapituloAniadido}>Guardar</button>
                 </div>
             </form>
         </div>

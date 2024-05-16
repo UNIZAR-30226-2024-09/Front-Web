@@ -30,7 +30,7 @@ export default function ListaCancionesAdmin() {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const response = await fetch('http://musify.servemp3.com:8000/listarPocasCanciones/', {
+                const response = await fetch('http://musify.servemp3.com:8000/listarCanciones/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

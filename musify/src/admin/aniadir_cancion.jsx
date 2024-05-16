@@ -101,15 +101,15 @@ export default function AniadirCancionesAdmin() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({nombre: titulo, imagen_b64: imagen, miAlbum: album, audio_b64: audio}),
+                    body: JSON.stringify({nombre: titulo, imagen_b64: imagen, miAlbum: album, audio_b64: audio, generos: genero, artistas: artista}),
                 });
-
+                navigate('/lista_canciones_admin');
                 if (response.ok) {
                     //Si el registro es exitoso, redirige al usuario
+                    navigate('/lista_canciones_admin');
                     console.log('cancion creada');
                 }
             } catch (error) {
-                navigate('/lista_canciones_admin');
                 setError(`Failed to create song: ${error.message}`);
             }
         //}
@@ -143,7 +143,10 @@ export default function AniadirCancionesAdmin() {
                                 onChange={e=>setAlbum(e.target.value)}
                                 placeholder="Album" />
                         </div>
-                        <select value={genero} onChange={e=>setGenero(e.target.value)}>
+                        <select value={genero} onChange={e => {
+                            console.log(e.target.value);
+                            setGenero(genero);
+                        }}>
                             <option value="">Selecciona un género</option>
                             {generos.map((genero, index) => (
                                 <option key={index} value={genero}>{genero}</option>

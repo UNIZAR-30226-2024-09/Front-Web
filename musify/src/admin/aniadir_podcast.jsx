@@ -12,7 +12,6 @@ export default function AniadirPodcasrAdmin() {
     const [presentador, setPresentador] = useState('');
     const [genero, setGenero] = useState('');
     const [imagen, setImagen] = useState('');
-    const [audio, setAudio] = useState('foto.jpg');
     const [generos, setGeneros] = useState([]);
 
     const [loading, setLoading] = useState(true);
@@ -70,36 +69,22 @@ export default function AniadirPodcasrAdmin() {
 
         // Leemos el archivo como una URL de datos en base64
         reader.readAsDataURL(file);
-        console.log(reader.result);
-    };
-
-    const handleAudioChange = (e) => {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-
-        reader.onloadend = () => {
-            // Cuando la carga del archivo esté completa, establecemos el audio en base64
-            setAudio(reader.result);
-        };
-
-        // Leemos el archivo como una URL de datos en base64
-        reader.readAsDataURL(file);
-        console.log(reader.result);
     };
 
     const handlePodcastAniadido = async () => {
-        if(podcastValid) {
+        if(imagen) {
+            console.log(imagen);
             try {
                 const response = await fetch('http://musify.servemp3.com:8000/crearPodcast/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({nombre: titulo, nombreFoto: imagen}),
+                    body: JSON.stringify({nombre: titulo, imagen_b64: imagen, presentadores: presentador, generos: genero}),
                 });
                 if (response.ok) {
                     // Si el registro es exitoso, redirige al usuario
-                    //navigate('/lista_podcast_admin');
+                    navigate('/lista_podcast_admin');
                     console.log('Podcast creado');
                 } else {
                     // Maneja errores, por ejemplo, mostrar un mensaje al usuario
@@ -128,7 +113,7 @@ export default function AniadirPodcasrAdmin() {
                                 type="presentador" 
                                 value={presentador}
                                 onChange={e=>setPresentador(e.target.value)}
-                                placeholder="Presentador" required />
+                                placeholder="Presentador"/>
                         </div>
                         <select value={genero} onChange={e=>setGenero(e.target.value)}>
                             <option value="">Selecciona un género</option>
@@ -136,10 +121,6 @@ export default function AniadirPodcasrAdmin() {
                                 <option key={index} value={genero}>{genero}</option>
                             ))}
                         </select>
-                    </div>
-                    <div className="audio">
-                        <h6>Archivo de audio (.mp3):</h6>
-                        <input type="file" accept=".mp3" onChange={handleAudioChange}/>
                     </div>
                     <div className="image">
                         <h6>Imagen:</h6>

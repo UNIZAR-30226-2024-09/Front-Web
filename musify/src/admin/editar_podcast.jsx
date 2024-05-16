@@ -26,8 +26,9 @@ export default function EditarPodcasrAdmin() {
 
     const [nombre, setNombre] = useState('');
     const [presentadores, setPresentadores] = useState([]);
-    const [generosPodcast, setGenerosPodcast] = useState([]);
-    const [foto, setFoto] = useState(null);
+    const [nomPresentadores, setNomPresentadores] = useState('');
+    const [generoPodcast, setGeneroPodcast] = useState('');
+    const [imagen, setImagen] = useState(null);
     const [audio, setAudio] = useState(null);
     const [generos, setGeneros] = useState([]);
 
@@ -60,7 +61,7 @@ export default function EditarPodcasrAdmin() {
                     const podcastData = await response.json();
                     setPodcast(podcastData);
                     setNombre(podcastData.podcast.nombre);
-                    setFoto(getImageSrc(idPodcast));
+                    setImagen(getImageSrc(idPodcast));
                     fetchPresentadores(idPodcast);
                     fetchCapitulos(podcastData.podcast.nombre);
                     fetchGenerosPodcast(idPodcast);
@@ -115,6 +116,7 @@ export default function EditarPodcasrAdmin() {
                 if (podcastData.presentadores && podcastData.presentadores.length > 0) {
                     const nombresPresentadores = podcastData.presentadores.map(presentador => presentador.nombre);
                     setPresentadores(nombresPresentadores);
+                    console.log(nombresPresentadores);
                 } else {
                     return null;
                 }
@@ -134,7 +136,8 @@ export default function EditarPodcasrAdmin() {
                 const podcastData = await response.json();
                 if (podcastData.generos && podcastData.generos.length > 0) {
                     const nombresGeneros = podcastData.generos.map(genero => genero.nombre);
-                    setGenerosPodcast(nombresGeneros);
+                    setGeneroPodcast(nombresGeneros);
+                    console.log(nombresGeneros);
                 }
             } catch (error) {
                 setError(`Failed to fetch generos del podcast: ${error.message}`);
@@ -201,6 +204,20 @@ export default function EditarPodcasrAdmin() {
         navigate('/aniadir_capitulo');
     };
 
+    const handleImagenChange = (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+
+        reader.onloadend = () => {
+            // Cuando la carga del archivo esté completa, establecemos la imagen en base64
+            setImagen(reader.result);
+        };
+
+        // Leemos el archivo como una URL de datos en base64
+        reader.readAsDataURL(file);
+        console.log(reader.result);
+    };
+
     const handleActualizarPodcast = async () => {
         try {
             const response = await fetch('http://musify.servemp3.com:8000/actualizarPodcast/', {
@@ -217,7 +234,7 @@ export default function EditarPodcasrAdmin() {
                 console.log('Podcast actualizada correctamente en la base de datos');
             } else {
                 // Maneja errores de respuesta
-                console.error('Error al actualizar la canción en la base de datos');
+                console.error('Error al actualizar el podcast en la base de datos');
             }
         } catch (error) {
             // Maneja errores de red u otros
@@ -273,11 +290,11 @@ export default function EditarPodcasrAdmin() {
                                 ) : (
                                     "No hay presentadores"
                                 )}
-                                onChange={e=>setNombre(e.target.value)}
+                                onChange={e=>{setNomPresentadores(e.target.value); console.log(nomPresentadores);}}
                                 placeholder="Presentadores" 
                             />
                         </div>
-                        <select value={generosPodcast} onChange={e=>setGenerosPodcast(e.target.value)} >
+                        <select value={generoPodcast} onChange={e=>{setGeneroPodcast(e.target.value); console.log(generoPodcast);}} >
                             <option value="">Selecciona un género</option>
                             {generos.map((genero, index) => (
                                 <option key={index} value={genero}>{genero}</option>
@@ -288,9 +305,10 @@ export default function EditarPodcasrAdmin() {
                     <h6>Imagen:</h6>
                         <img 
                             className="podcast-image"
-                            src={foto} alt="Imagen predefinida" 
+                            src={imagen} alt="Imagen predefinida" 
                         />
-                        <input type="file" accept="image/*" onChange={e=>setFoto(e.target.value)}/>
+                        <input className="image-input" type="file" accept="image/*" onChange={handleImagenChange}/>
+
                     </div>
                     <div className="chapter-list-header">
                         <div className="chapter-list-item">Capítulo</div>
@@ -327,8 +345,8 @@ export default function EditarPodcasrAdmin() {
                     <div className="buttons-container">
                         <button type="button" className="cancel-button" onClick={handleExitWithoutSave}>Salir sin guardar</button>
                         {showModal && <AniadirWindow onClose={handleCloseModal} ruta={handleCloseModalNoSave} />}
-                        <button type="submit" className="delete-button" onClick={handleEliminarPodcast}>Eliminar</button>
-                        <button type="submit" className="save-button" onClick={handleActualizarPodcast}>Guardar</button>
+                        <button type="button" className="delete-button" onClick={handleEliminarPodcast}>Eliminar</button>
+                        <button type="button" className="save-button" onClick={handleActualizarPodcast}>Guardar</button>
                     </div>
                 </form>
             </div>
